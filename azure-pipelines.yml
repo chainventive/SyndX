@@ -11,6 +11,11 @@ pool:
 
 steps:
 
+- task: NodeTool@0
+  inputs:
+    versionSpec: '20.x'
+  displayName: 'Install Node.js'
+
 - script: |
     cd dapp/frontend
     ls
@@ -18,5 +23,8 @@ steps:
 
 - script: |
     npm install
+  displayName: 'install npm dependancies'
+
+- script: |
     npm run build
-  displayName: 'build dapp frontend'
+  displayName: 'build frontend app'
