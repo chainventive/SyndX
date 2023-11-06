@@ -22,3 +22,17 @@ steps:
     cd dapp/frontend
     npm run build
   displayName: 'build dapp frontend'
+
+- task: ArchiveFiles@2
+  displayName: 'Archive files'
+  inputs:
+    rootFolderOrFile: '$(Build.SourcesDirectory)/dapp/frontend/.next'
+    includeRootFolder: false
+    archiveType: 'zip'
+    archiveFile: '$(Build.ArtifactStagingDirectory)/build.zip'
+    replaceExistingArchive: true
+
+- task: PublishBuildArtifacts@1
+  displayName: 'Publish Artifact: dapp-frontent-drop'
+  inputs:
+    ArtifactName: 'dapp-frontent-drop'
