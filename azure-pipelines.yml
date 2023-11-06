@@ -12,5 +12,6 @@ pool:
 steps:
 
 - script: |
+    cd dapp/frontend
     ls
-  displayName: 'see files'
+  displayName: 'open frontend directory'
