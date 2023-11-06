@@ -1,7 +1,4 @@
-# Node.js with webpack
-# Build a Node.js project using the webpack CLI.
-# Add steps that analyze code, save build artifacts, deploy, and more:
-# https://docs.microsoft.com/azure/devops/pipelines/languages/javascript
+# Node.js
 
 trigger:
 - main
@@ -18,13 +15,10 @@ steps:
 
 - script: |
     cd dapp/frontend
-    ls
-  displayName: 'open frontend directory'
-
-- script: |
     npm install
-  displayName: 'install npm dependancies'
+  displayName: 'install dependancies'
 
 - script: |
+    cd dapp/frontend
     npm run build
-  displayName: 'build frontend app'
+  displayName: 'build dapp frontend'
