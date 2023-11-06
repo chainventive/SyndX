@@ -15,3 +15,8 @@ steps:
     cd dapp/frontend
     ls
   displayName: 'open frontend directory'
+
+- script: |
+    npm install
+    npm run build
+  displayName: 'build dapp frontend'
