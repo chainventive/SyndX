@@ -11,7 +11,7 @@ steps:
   - task: DockerInstaller@0
     displayName: 'Install Docker CLI'
     inputs:
-      dockerVersion: 'docker-24.0.7'
+      dockerVersion: '24.0.7'
 
     # Build the docker image to check if everything is ok
   - script: docker build --target production -t syndx:prod .
