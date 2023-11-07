@@ -35,4 +35,6 @@ steps:
 - task: PublishBuildArtifacts@1
   displayName: 'Publish Artifact: dapp-frontent-drop'
   inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
     ArtifactName: 'dapp-frontent-drop'
+    publishLocation: 'Container'
