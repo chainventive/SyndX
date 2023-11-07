@@ -3,38 +3,27 @@
 trigger:
 - main
 
-pool:
-  vmImage: ubuntu-latest
+pool: Azure Pipelines
 
 steps:
 
-- task: NodeTool@0
-  inputs:
-    versionSpec: '20.x'
-  displayName: 'Install Node.js'
+  # Install Docker CLI
+  - task: DockerInstaller@0
+    displayName: 'Install Docker CLI'
+    inputs:
+      dockerVersion: '24.0.6-ce'
 
-- script: |
-    cd dapp/frontend
-    npm install
-  displayName: 'install dependancies'
+    # Build the docker image to check if everything is ok
+  - script: docker build --target production -t syndx:prod .
+    displayName: 'Build docker image'
 
-- script: |
-    cd dapp/frontend
-    npm run build
-  displayName: 'build dapp frontend'
+    # Create docker image artifact
+  - script: docker save -o $(Build.ArtifactStagingDirectory)/syndx.tar syndx:prod
+    displayName: 'Create docker image artifact'
 
-- task: ArchiveFiles@2
-  displayName: 'Archive files'
-  inputs:
-    rootFolderOrFile: '$(Build.SourcesDirectory)/dapp/frontend/.next'
-    includeRootFolder: false
-    archiveType: 'zip'
-    archiveFile: '$(Build.ArtifactStagingDirectory)/build.zip'
-    replaceExistingArchive: true
-
-- task: PublishBuildArtifacts@1
-  displayName: 'Publish Artifact: dapp-frontent-drop'
-  inputs:
-    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-    ArtifactName: 'dapp-frontent-drop'
-    publishLocation: 'Container'
+    # Publish the artifacts folder for release pipeline use
+  - task: PublishBuildArtifacts@1
+    inputs:
+      PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+      ArtifactName: 'syndx-build-drop'
+      publishLocation: 'Container'
