@@ -22,11 +22,11 @@ steps:
     displayName: 'Install dependancies'
     workingDirectory: ./dapp/backend/
 
-  - script: npx hardhat compile
+  - script: npx hardhat compile --network hardhat
     displayName: 'Compile contracts'
     workingDirectory: ./dapp/backend/
 
-  - script: npx hardhat test
+  - script: npx hardhat test --network hardhat
     displayName: 'Test contracts'
     workingDirectory: ./dapp/backend/
 
