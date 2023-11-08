@@ -18,6 +18,10 @@ steps:
   displayName: 'Compile contracts'
   workingDirectory: ./dapp/backend/
 
+- script: npx hardhat test
+  displayName: 'Test contracts'
+  workingDirectory: ./dapp/backend/
+
 - script: |
     echo Add other tasks to build, test, and deploy your project.
     echo See https://aka.ms/yaml
