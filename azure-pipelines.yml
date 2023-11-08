@@ -13,17 +13,13 @@ steps:
 
     # Build the docker image to check if everything is ok
   - script: |
-      pwd
-      ls
-      docker build --target production -t syndx:prod .
+      docker build -t syndx .
     displayName: 'Build docker image'
     workingDirectory: ./dapp/frontend
 
     # Create docker image artifact
   - script: |
-      pwd
-      ls
-      docker save -o $(Build.ArtifactStagingDirectory)/syndx.tar syndx:prod
+      docker save -o $(Build.ArtifactStagingDirectory)/syndx.tar syndx
     displayName: 'Create docker image artifact'
     workingDirectory: ./dapp/frontend
 
