@@ -5,10 +5,7 @@ export default function Home() {
   return (
     <main className={styles.main}>
       <div className={styles.description}>
-        <p>
-          Hello SyndX ! &nbsp;
-          <code className={styles.code}>src/app/page.js</code>
-        </p>
+        <p>Hello SyndX !</p>
         <div>
           <a
             href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
