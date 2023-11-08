@@ -7,8 +7,6 @@ trigger:
   paths:
     include:
       - dapp/frontend
-    exclude:
-      - dapp/backend/
 
 steps:
 
