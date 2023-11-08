@@ -10,6 +10,8 @@ trigger:
   paths:
     include:
       - dapp/backend/*
+    exclude:
+      - dapp/frontend/*
 
 pool:
   vmImage: ubuntu-latest
