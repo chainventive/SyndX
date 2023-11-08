@@ -17,12 +17,16 @@ async function main() {
   });
 
   await lock.waitForDeployment();
-
+  
   console.log(
     `Lock with ${ethers.formatEther(
       lockedAmount
     )}ETH and unlock timestamp ${unlockTime} deployed to ${lock.target}`
   );
+
+  // Output environnement variables for next Azure DevOps pipeline tasks
+  console.log(`##vso[task.setvariable variable=LOCK_CONTRACT_ADDRESS;]${lock.target}`);
+  console.log(`##vso[task.setvariable variable=LOCK_CONTRACT_UNLOCK_TIME;]${unlockTime}`);
 }
 
 // We recommend this pattern to be able to use async/await everywhere
