@@ -18,7 +18,7 @@ module.exports = {
       accounts: [SEPOLIA_PRIVATE_KEY]
     },
     etherscan: {
-      apiKey: ETHERSCAN_API_KEY,
+      apiKey: `${ETHERSCAN_API_KEY}`,
     },
   }
 };
