@@ -6,9 +6,9 @@ trigger:
       - main
   paths:
     include:
-      - ./dapp/frontend/*
+      - dapp/frontend
     exclude:
-      - ./dapp/backend/*
+      - dapp/backend/
 
 steps:
 

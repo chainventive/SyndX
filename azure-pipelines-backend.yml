@@ -9,9 +9,9 @@ trigger:
       - main
   paths:
     include:
-      - ./dapp/backend/*
+      - dapp/backend
     exclude:
-      - ./dapp/frontend/*
+      - dapp/frontend
 
 pool:
   vmImage: ubuntu-latest
