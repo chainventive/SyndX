@@ -1,4 +1,5 @@
 require("@nomicfoundation/hardhat-toolbox");
+require('dotenv').config()
 
 // Go to https://infura.io, sign up, create a new API key
 // in its dashboard, and replace "KEY" with it
