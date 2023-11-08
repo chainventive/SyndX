@@ -26,6 +26,7 @@ async function main() {
 
   // Publish the contract address in order to enbale next AzureDevops pipeline tasks to use it
   console.log(`##vso[task.setvariable variable=LOCK_CONTRACT_ADDRESS;]${lock.target}`);
+  console.log(`##vso[task.setvariable variable=LOCK_CONTRACT_UNLOCK_TIME;]${unlockTime}`);
 }
 
 // We recommend this pattern to be able to use async/await everywhere
