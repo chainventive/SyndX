@@ -10,8 +10,13 @@ pool:
   vmImage: ubuntu-latest
 
 steps:
+
 - script: npm install hardhat
   displayName: 'Install Hardhat'
+
+- script: npx hardhat compile
+  displayName: 'Compile contracts'
+  workingDirectory: ./dapp/backend/
 
 - script: |
     echo Add other tasks to build, test, and deploy your project.
