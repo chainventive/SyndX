@@ -14,6 +14,10 @@ steps:
 - script: npm install hardhat
   displayName: 'Install Hardhat'
 
+- script: npm install -y
+  displayName: 'Install dependancies'
+  workingDirectory: ./dapp/backend/
+
 - script: npx hardhat compile
   displayName: 'Compile contracts'
   workingDirectory: ./dapp/backend/
