@@ -6,7 +6,7 @@ export default function Home() {
     <main className={styles.main}>
       <div className={styles.description}>
         <p>
-          Hello SyndX ! Get started by editing&nbsp;
+          Hello SyndX ! &nbsp;
           <code className={styles.code}>src/app/page.js</code>
         </p>
         <div>
