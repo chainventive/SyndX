@@ -6,7 +6,7 @@ require('dotenv').config()
 const INFURA_API_KEY = process.env.INFURA_API_KEY || '';
 
 // Replace this private key with your Sepolia account private key
-const SEPOLIA_PRIVATE_KEY = process.env.SEPOLIA_PRIVATE_KEY || '';
+const SEPOLIA_PRIVATE_KEY = process.env.SEPOLIA_PRIVATE_KEY || '0x0000000000000000000000000000000000000000000000000000000000000000';
 
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
