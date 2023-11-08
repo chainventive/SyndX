@@ -1,11 +1,16 @@
 # SyndX Build Pipeline
 
 trigger:
-- main
+  branches:
+    include:
+      - main
+  paths:
+    include:
+      - dapp/frontend/*
 
 steps:
 
-  # Install Docker CLI
+    # Install Docker CLI
   - task: DockerInstaller@0
     displayName: 'Install Docker CLI'
     inputs:
