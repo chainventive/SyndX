@@ -12,12 +12,18 @@ steps:
       dockerVersion: '24.0.7'
 
     # Build the docker image to check if everything is ok
-  - script: docker build --target production -t syndx:prod .
+  - script: |
+      pwd
+      ls
+      docker build --target production -t syndx:prod .
     displayName: 'Build docker image'
     workingDirectory: ./dapp/frontend
 
     # Create docker image artifact
-  - script: docker save -o $(Build.ArtifactStagingDirectory)/syndx.tar syndx:prod
+  - script: |
+      pwd
+      ls
+      docker save -o $(Build.ArtifactStagingDirectory)/syndx.tar syndx:prod
     displayName: 'Create docker image artifact'
     workingDirectory: ./dapp/frontend
 
