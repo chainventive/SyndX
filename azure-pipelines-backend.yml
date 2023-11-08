@@ -26,7 +26,15 @@ steps:
   displayName: 'Test contracts'
   workingDirectory: ./dapp/backend/
 
-- script: |
-    echo Add other tasks to build, test, and deploy your project.
-    echo See https://aka.ms/yaml
-  displayName: 'Run a multi-line script'
+- task: ArchiveFiles@2
+  inputs:
+    rootFolderOrFile: ./dapp/backend/
+    archiveType: 'tar'
+    archiveFile: '$(Build.ArtifactStagingDirectory)/syndx.tar'
+
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    ArtifactName: 'syndx-build-drop'
+    publishLocation: 'Container'
+
