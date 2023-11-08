@@ -15,30 +15,38 @@ pool:
 
 steps:
 
-- script: npm install hardhat
-  displayName: 'Install Hardhat'
+- stage: Prepare
 
-- script: npm install -y
-  displayName: 'Install dependancies'
-  workingDirectory: ./dapp/backend/
+  - script: npm install hardhat
+    displayName: 'Install Hardhat'
 
-- script: npx hardhat compile
-  displayName: 'Compile contracts'
-  workingDirectory: ./dapp/backend/
+  - script: npm install -y
+    displayName: 'Install dependancies'
+    workingDirectory: ./dapp/backend/
 
-- script: npx hardhat test
-  displayName: 'Test contracts'
-  workingDirectory: ./dapp/backend/
+- stage: Compile
 
-- task: ArchiveFiles@2
-  inputs:
-    rootFolderOrFile: ./dapp/backend/
-    archiveType: 'tar'
-    archiveFile: '$(Build.ArtifactStagingDirectory)/syndx.tar'
+  - script: npx hardhat compile
+    displayName: 'Compile contracts'
+    workingDirectory: ./dapp/backend/
 
-- task: PublishBuildArtifacts@1
-  inputs:
-    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-    ArtifactName: 'syndx-build-drop'
-    publishLocation: 'Container'
+- stage: Test
+
+  - script: npx hardhat test
+    displayName: 'Test contracts'
+    workingDirectory: ./dapp/backend/
+
+- stage: Publish
+
+  - task: ArchiveFiles@2
+    inputs:
+      rootFolderOrFile: ./dapp/backend/
+      archiveType: 'tar'
+      archiveFile: '$(Build.ArtifactStagingDirectory)/syndx.tar'
+
+  - task: PublishBuildArtifacts@1
+    inputs:
+      PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+      ArtifactName: 'syndx-build-drop'
+      publishLocation: 'Container'
 

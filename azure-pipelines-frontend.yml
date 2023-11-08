@@ -8,6 +8,16 @@ trigger:
     include:
       - dapp/frontend
 
+resources:
+  pipelines:
+  - pipeline: "syndx.backend.ressource"
+    source: "[release] syndx.backend"
+    trigger: 
+      branches:
+        - main
+      stages: 
+        - Publish
+
 steps:
 
     # Install Docker CLI
