@@ -16,7 +16,7 @@ pool:
 steps:
 
 - stage: Prepare
-
+  
   - script: npm install hardhat
     displayName: 'Install Hardhat'
 
@@ -25,18 +25,21 @@ steps:
     workingDirectory: ./dapp/backend/
 
 - stage: Compile
-
+  dependsOn: Prepare
+  
   - script: npx hardhat compile
     displayName: 'Compile contracts'
     workingDirectory: ./dapp/backend/
 
 - stage: Test
+  dependsOn: Compile
 
   - script: npx hardhat test
     displayName: 'Test contracts'
     workingDirectory: ./dapp/backend/
 
 - stage: Publish
+  dependsOn: Test
 
   - task: ArchiveFiles@2
     inputs:
