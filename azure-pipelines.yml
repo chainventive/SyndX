@@ -3,8 +3,6 @@
 trigger:
 - main
 
-pool: Azure Pipelines
-
 steps:
 
   # Install Docker CLI
