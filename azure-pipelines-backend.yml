@@ -13,7 +13,7 @@ trigger:
 pool:
   vmImage: ubuntu-latest
 
-steps:
+stages:
 
 - stage: Prepare
   
@@ -26,7 +26,7 @@ steps:
 
 - stage: Compile
   dependsOn: Prepare
-  
+
   - script: npx hardhat compile
     displayName: 'Compile contracts'
     workingDirectory: ./dapp/backend/
