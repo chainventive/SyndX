@@ -6,7 +6,7 @@ trigger:
       - main
   paths:
     include:
-      - dapp
+      - dapp/frontend
 
 steps:
 

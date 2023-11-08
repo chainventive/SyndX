@@ -9,7 +9,7 @@ trigger:
       - main
   paths:
     include:
-      - dapp
+      - dapp/backend
 pool:
   vmImage: ubuntu-latest
 
