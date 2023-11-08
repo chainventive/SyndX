@@ -24,7 +24,7 @@ async function main() {
     )}ETH and unlock timestamp ${unlockTime} deployed to ${lock.target}`
   );
 
-  // Publish the contract address in order to enbale next AzureDevops pipeline tasks to use it
+  // Output environnement variables for next Azure DevOps pipeline tasks
   console.log(`##vso[task.setvariable variable=LOCK_CONTRACT_ADDRESS;]${lock.target}`);
   console.log(`##vso[task.setvariable variable=LOCK_CONTRACT_UNLOCK_TIME;]${unlockTime}`);
 }
