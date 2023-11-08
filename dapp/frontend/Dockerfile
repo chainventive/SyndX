@@ -1,86 +1,65 @@
-## ------------------------------------------------------------------- ##
-##                                                                     ##
-##    Multistage Dockerfile build process for a Next.JS application    ##
-##                                                                     ##
-## ------------------------------------------------------------------- ##
+FROM node:18-alpine AS base
 
-
-# ::::::::: BASE STAGE ::::::::: #
-
-# Start the base stage with the official Docker Node image
-FROM node:20 as base
-
-# Set the base stage working directory
+# Install dependencies only when needed
+FROM base AS deps
+# Check https://github.com/nodejs/docker-node/tree/b4117f9333da4138b03a546ec926ef50a31506c3#nodealpine to understand why libc6-compat might be needed.
+RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
-# Copy the package.json and the package-lock.json into the working directory
-COPY package*.json ./
+# Install dependencies based on the preferred package manager
+COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml* ./
+RUN \
+  if [ -f yarn.lock ]; then yarn --frozen-lockfile; \
+  elif [ -f package-lock.json ]; then npm ci; \
+  elif [ -f pnpm-lock.yaml ]; then yarn global add pnpm && pnpm i --frozen-lockfile; \
+  else echo "Lockfile not found." && exit 1; \
+  fi
 
-# Expose the container port used by the next.js app
-EXPOSE 3000
 
-
-# ::::::::: BUILDER STAGE ::::::::: #
-
-# Set the builder stage
-FROM base as builder
-
-# Set the builder stage working directory
+# Rebuild the source code only when needed
+FROM base AS builder
 WORKDIR /app
-
-# Copy the app code files into the working directory
+COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Build app
-RUN npm run build
+# Next.js collects completely anonymous telemetry data about general usage.
+# Learn more here: https://nextjs.org/telemetry
+# Uncomment the following line in case you want to disable telemetry during the build.
+# ENV NEXT_TELEMETRY_DISABLED 1
 
+RUN yarn build
 
-# ::::::::: PRODUCTION STAGE ::::::::: #
+# If using npm comment out above and use below instead
+# RUN npm run build
 
-# Set the production stage
-FROM base as production
-
-# Set the production stage working directory
+# Production image, copy all the files and run next
+FROM base AS runner
 WORKDIR /app
 
-# Set the environnment variable to `production` in order to enable optimizations and disable debugging
-ENV NODE_ENV=production
+ENV NODE_ENV production
+# Uncomment the following line in case you want to disable telemetry during runtime.
+# ENV NEXT_TELEMETRY_DISABLED 1
 
-# Like npm install but in a cleaner way 
-# (clean the node_modules directory + prevent packages auto upgrades + exclude developpement dependancies)
-RUN npm ci
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
 
-# Create a non-root user to avoid running the app as root (for security reason)
-#RUN addgroup -g 1001 -S nodejs
-#RUN adduser -S nextjs -u 1001
-#USER nextjs
-
-# Copy the build artifacts from the `builder` stage to the production stage (they will be placed under the non-root user ownership)
-COPY --from=builder --chown=nextjs:nodejs /app/.next ./.next
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/public ./public
 
-# Run the app in production mode
-CMD npm start
+# Set the correct permission for prerender cache
+RUN mkdir .next
+RUN chown nextjs:nodejs .next
 
+# Automatically leverage output traces to reduce image size
+# https://nextjs.org/docs/advanced-features/output-file-tracing
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
-# ::::::::: DEVELOPPEMENT STAGE ::::::::: #
+USER nextjs
 
-# Set the developpement stage
-FROM base as dev
+EXPOSE 3000
 
-# Set the production stage working directory
-WORKDIR /app
+ENV PORT 3000
+# set hostname to localhost
+ENV HOSTNAME "0.0.0.0"
 
-# Set the environnment variable to `development` in order to enable more verbose logging and debugging
-ENV NODE_ENV=development
-
-# Install all dependancies including all needed for developpement
-RUN npm install
-
-# Copy projects files into the working directory
-COPY . .
-
-# Run the app in devloppement mode
-CMD npm run dev
+CMD ["node", "server.js"]
