@@ -20,35 +20,23 @@ resources:
 
 steps:
 
-  # Fix bugs with use of DownloadSecureFile task
-  - task: PowerShell@2
-    displayName: 'Set CA Cert'
-    inputs:
-      targetType: inline
-      script: |
-        if ($env:AGENT_HOMEDIRECTORY -ne $null) { $TargetFolder = $env:AGENT_HOMEDIRECTORY }
-        else { $TargetFolder = [System.Environment]::GetEnvironmentVariable('TEMP','Machine') }
-        Get-ChildItem -Path Cert:\LocalMachine\CA | ForEach-Object {
-          $Cert = "-----BEGIN CERTIFICATE-----`n"
-          $Cert+= $([System.Convert]::ToBase64String($_.export([System.Security.Cryptography.X509Certificates.X509ContentType]::Cert),'InsertLineBreaks'))
-          $Cert+= "`n-----END CERTIFICATE-----`n"
-          $Chain+= $Cert
-        }
-        $CertFile = "$TargetFolder\TrustedRootCAs.pem"
-        $Chain | Out-File $CertFile -Force -Encoding ASCII
-        $Chain = $null
-        Write-Host "##vso[task.setvariable variable=NODE.EXTRA.CA.CERTS]$CertFile"
-
     # Install Docker CLI
   - task: DockerInstaller@0
     displayName: 'Install Docker CLI'
     inputs:
       dockerVersion: '24.0.7'
 
-    # Download the secured .env
-  - task: DownloadSecureFile@1
-    inputs:
-      secureFile: ‘.env’
+  - script: |
+      touch .env
+      echo "NEXT_PUBLIC_ALCHEMY_API_KEY=$(NEXT_PUBLIC_ALCHEMY_API_KEY)" >> .env
+      echo "NEXT_PUBLIC_WALLET_CONNECT_PROJECT_NAME=$(NEXT_PUBLIC_WALLET_CONNECT_PROJECT_NAME)" >> .env
+      echo "NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID=$(NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID)" >> .env
+      echo "NEXT_PUBLIC_CONTRACT_ADDRESS=$(NEXT_PUBLIC_CONTRACT_ADDRESS)" >> .env
+      echo "NEXT_PUBLIC_CONTRACT_NETWORK=$(NEXT_PUBLIC_CONTRACT_NETWORK)" >> .env
+      echo "NEXT_PUBLIC_CONTRACT_BLOCK_NUMBER=$(NEXT_PUBLIC_CONTRACT_BLOCK_NUMBER)" >> .env
+    displayName: 'Creating environnement variables'
+    workingDirectory: ./dapp/frontend
+
 
     # Build the docker image to check if everything is ok
   - script: |
