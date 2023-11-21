@@ -31,13 +31,13 @@ steps:
     name: envFile
     displayName: 'Download .env file'
     inputs:
-      secureFile: ‘.env’
+      secureFile: ‘frontend.env’
 
     # Copy the secured .env into the frontend directory
   - task: CopyFiles@2
     inputs:
       SourceFolder: $(envFile.secureFilePath)
-      Contents: ‘.env’
+      Contents: ‘frontend.env’
       TargetFolder: ./dapp/frontend
 
     # Build the docker image to check if everything is ok
