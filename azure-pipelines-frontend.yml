@@ -20,6 +20,25 @@ resources:
 
 steps:
 
+  # Fix bugs with use of DownloadSecureFile task
+  - task: PowerShell@2
+    displayName: 'Set CA Cert'
+    inputs:
+      targetType: inline
+      script: |
+        if ($env:AGENT_HOMEDIRECTORY -ne $null) { $TargetFolder = $env:AGENT_HOMEDIRECTORY }
+        else { $TargetFolder = [System.Environment]::GetEnvironmentVariable('TEMP','Machine') }
+        Get-ChildItem -Path Cert:\LocalMachine\CA | ForEach-Object {
+          $Cert = "-----BEGIN CERTIFICATE-----`n"
+          $Cert+= $([System.Convert]::ToBase64String($_.export([System.Security.Cryptography.X509Certificates.X509ContentType]::Cert),'InsertLineBreaks'))
+          $Cert+= "`n-----END CERTIFICATE-----`n"
+          $Chain+= $Cert
+        }
+        $CertFile = "$TargetFolder\TrustedRootCAs.pem"
+        $Chain | Out-File $CertFile -Force -Encoding ASCII
+        $Chain = $null
+        Write-Host "##vso[task.setvariable variable=NODE.EXTRA.CA.CERTS]$CertFile"
+
     # Install Docker CLI
   - task: DockerInstaller@0
     displayName: 'Install Docker CLI'
