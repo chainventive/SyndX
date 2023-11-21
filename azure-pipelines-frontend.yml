@@ -28,15 +28,14 @@ steps:
 
   - script: |
       touch .env
-      echo "NEXT_PUBLIC_ALCHEMY_API_KEY=$(NEXT_PUBLIC_ALCHEMY_API_KEY)" >> .env
-      echo "NEXT_PUBLIC_WALLET_CONNECT_PROJECT_NAME=$(NEXT_PUBLIC_WALLET_CONNECT_PROJECT_NAME)" >> .env
-      echo "NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID=$(NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID)" >> .env
-      echo "NEXT_PUBLIC_CONTRACT_ADDRESS=$(NEXT_PUBLIC_CONTRACT_ADDRESS)" >> .env
-      echo "NEXT_PUBLIC_CONTRACT_NETWORK=$(NEXT_PUBLIC_CONTRACT_NETWORK)" >> .env
-      echo "NEXT_PUBLIC_CONTRACT_BLOCK_NUMBER=$(NEXT_PUBLIC_CONTRACT_BLOCK_NUMBER)" >> .env
+      echo "NEXT_PUBLIC_ALCHEMY_API_KEY=$(ALCHEMY_API_KEY)" >> .env
+      echo "NEXT_PUBLIC_WALLET_CONNECT_PROJECT_NAME=$(WALLET_CONNECT_PROJECT_NAME)" >> .env
+      echo "NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID=$(WALLET_CONNECT_PROJECT_ID)" >> .env
+      echo "NEXT_PUBLIC_CONTRACT_ADDRESS=$(CONTRACT_ADDRESS)" >> .env
+      echo "NEXT_PUBLIC_CONTRACT_NETWORK=$(CONTRACT_NETWORK)" >> .env
+      echo "NEXT_PUBLIC_CONTRACT_BLOCK_NUMBER=$(CONTRACT_BLOCK_NUMBER)" >> .env
     displayName: 'Creating environnement variables'
     workingDirectory: ./dapp/frontend
-
 
     # Build the docker image to check if everything is ok
   - script: |
