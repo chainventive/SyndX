@@ -28,17 +28,8 @@ steps:
 
     # Download the secured .env
   - task: DownloadSecureFile@1
-    name: envFile
-    displayName: 'Download .env file'
     inputs:
-      secureFile: ‘frontend.env’
-
-    # Copy the secured .env into the frontend directory
-  - task: CopyFiles@2
-    inputs:
-      SourceFolder: $(envFile.secureFilePath)
-      Contents: ‘frontend.env’
-      TargetFolder: ./dapp/frontend
+      secureFile: ‘.env’
 
     # Build the docker image to check if everything is ok
   - script: |
