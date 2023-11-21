@@ -1,10 +1,8 @@
+"use client"
+
+require('dotenv').config();
 import { Inter } from 'next/font/google'
 const inter = Inter({ subsets: ['latin'] })
-
-export const metadata = {
-  title: 'SyndX',
-  description: 'SyndX dApp',
-}
 
 // RainbowKit / Wagmi
 
@@ -21,8 +19,8 @@ const { chains, publicClient } = configureChains (
 );
 
 const { connectors } = getDefaultWallets({
-  appName   : process.env.WALLET_CONNECT_PROJECT_NAME,
-  projectId : process.env.NEXT_PUBLIC_WALLET_CONNECT_ID,
+  appName   : process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_NAME,
+  projectId : process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID,
   chains
 });
 
