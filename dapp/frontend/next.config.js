@@ -2,7 +2,11 @@
 
 const nextConfig = {
     // required for docker support
-    output: 'standalone'
+    output: 'standalone',
+    webpack: (config) => {
+        config.externals.push("pino-pretty");
+        return config;
+    },
 }
 
 module.exports = nextConfig
