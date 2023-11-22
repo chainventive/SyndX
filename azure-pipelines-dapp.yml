@@ -82,11 +82,18 @@ steps:
   ### CREATE ARTEFACTS ###
 
 
-  # Create the dApp artifact
+  # Create the frontend docker image artifact
   - script: |
-      docker save -o $(Build.ArtifactStagingDirectory)/syndx.tar syndx
+      docker save -o $(Build.ArtifactStagingDirectory)/syndx-front.tar syndx
     displayName: 'Create docker image artifact'
-    workingDirectory: ./dapp
+    workingDirectory: ./dapp/frontend
+
+  # Create the backend artifact
+  - task: ArchiveFiles@2
+    inputs:
+      rootFolderOrFile: ./dapp/backend/
+      archiveType: 'tar'
+      archiveFile: '$(Build.ArtifactStagingDirectory)/syndx-back.tar'
 
     # Publish the artifacts folder for release pipeline use
   - task: PublishBuildArtifacts@1
