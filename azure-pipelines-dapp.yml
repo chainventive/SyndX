@@ -1,0 +1,96 @@
+trigger:
+  branches:
+    include:
+      - main
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+
+
+  ### PREPARE BACKEND ###
+
+
+  # Install hardhat on the agent
+  - script: npm install hardhat
+    displayName: 'Install Hardhat'
+
+  # Install backend dependancies
+  - script: npm install -y
+    displayName: 'Install dependancies'
+    workingDirectory: ./dapp/backend/
+
+  # Create the backend environnement variables
+  - script: |
+      touch .env
+      echo "ALCHEMY_API_KEY=$(ALCHEMY_API_KEY)" >> .env
+      echo "ETHERSCAN_API_KEY=$(ETHERSCAN_API_KEY)" >> .env
+      echo "SEPOLIA_PRIVATE_KEY=$(SEPOLIA_PRIVATE_KEY)" >> .env
+    displayName: 'Creating backend environnement variables'
+    workingDirectory: ./dapp/frontend
+
+  # Compile dApp smart-contracts
+  - script: npx hardhat compile --network hardhat
+    displayName: 'Compile contracts'
+    workingDirectory: ./dapp/backend/
+
+  # Test dApp smart-contracts
+  - script: npx hardhat test --network hardhat
+    displayName: 'Test contracts'
+    workingDirectory: ./dapp/backend/
+
+  # Run the hardhat localchain
+  - script: npx hardhat node
+    displayName: 'Run hardhat chain'
+    workingDirectory: ./dapp/backend/
+
+  # Deploy dApp smart-contracts on hardhat chain
+  - script: npx hardhat run scripts/deploy.js --network localhost
+    displayName: 'Deploy contracts'
+    workingDirectory: ./dapp/backend/
+
+
+  ### PREPARE FRONTEND ###
+
+
+  # Install Docker CLI on the agent
+  - task: DockerInstaller@0
+    displayName: 'Install Docker CLI'
+    inputs:
+      dockerVersion: '24.0.7'
+
+  # Create the frontend environnement variables
+  - script: |
+      touch .env
+      echo "NEXT_PUBLIC_ALCHEMY_API_KEY=$(ALCHEMY_API_KEY)" >> .env
+      echo "NEXT_PUBLIC_WALLET_CONNECT_PROJECT_NAME=$(WALLET_CONNECT_PROJECT_NAME)" >> .env
+      echo "NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID=$(WALLET_CONNECT_PROJECT_ID)" >> .env
+      echo "NEXT_PUBLIC_CONTRACT_ADDRESS=$(CONTRACT_ADDRESS)" >> .env
+      echo "NEXT_PUBLIC_CONTRACT_NETWORK=$(CONTRACT_NETWORK)" >> .env
+      echo "NEXT_PUBLIC_CONTRACT_BLOCK_NUMBER=$(CONTRACT_BLOCK_NUMBER)" >> .env
+    displayName: 'Creating frontend environnement variables'
+    workingDirectory: ./dapp/frontend
+
+  # Build the dApp docker image
+  - script: |
+      docker build -t syndx .
+    displayName: 'Build docker image'
+    workingDirectory: ./dapp/frontend
+
+
+  ### CREATE ARTEFACTS ###
+
+
+  # Create the dApp artifact
+  - script: |
+      docker save -o $(Build.ArtifactStagingDirectory)/syndx.tar syndx
+    displayName: 'Create docker image artifact'
+    workingDirectory: ./dapp
+
+    # Publish the artifacts folder for release pipeline use
+  - task: PublishBuildArtifacts@1
+    inputs:
+      PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+      ArtifactName: 'syndx-build-drop'
+      publishLocation: 'Container'
