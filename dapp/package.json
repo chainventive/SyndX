@@ -6,7 +6,7 @@
     "backend:node": "cd backend && npx hardhat node",
     "backend:compile": "cd backend && npx hardhat compile",
     "backend:deploy:localhost": "cd backend && npx hardhat run scripts/deploy.js --network localhost",
-    "backend:deploy:sepolia": "cd backend && npx hardhat run scripts/deploy.js --network localhost",
+    "backend:deploy:sepolia": "cd backend && npx hardhat run scripts/deploy.js --network sepolia",
     "frontend:install": "cd frontend && npm install",
     "frontend:next-server": "cd frontend && npx next dev"
   },
