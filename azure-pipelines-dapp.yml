@@ -41,14 +41,14 @@ steps:
     workingDirectory: ./dapp/backend/
 
   # Run the hardhat localchain
-  - script: npx hardhat node
-    displayName: 'Run hardhat chain'
-    workingDirectory: ./dapp/backend/
+  #- script: npx hardhat node
+  #  displayName: 'Run hardhat chain'
+  #  workingDirectory: ./dapp/backend/
 
   # Deploy dApp smart-contracts on hardhat chain
-  - script: npx hardhat run scripts/deploy.js --network localhost
-    displayName: 'Deploy contracts'
-    workingDirectory: ./dapp/backend/
+  #- script: npx hardhat run scripts/deploy.js --network localhost
+  #  displayName: 'Deploy contracts'
+  #  workingDirectory: ./dapp/backend/
 
 
   ### PREPARE FRONTEND ###
