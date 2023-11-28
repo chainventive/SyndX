@@ -18,5 +18,10 @@ library Constants {
     uint256 constant TITLE_MIN_LENGHT = 1;
     uint256 constant TITLE_MAX_LENGHT = 32;
     uint256 constant DESCRIPTION_MIN_LENGHT = 1;
-    uint256 constant DESCRIPTION_MAX_LENGHT = 128;
+    uint256 constant DESCRIPTION_MAX_LENGHT = 500;
+
+    // TIMELINE
+    uint256 constant MIN_DURATION_BEFORE_LOCKUP = 30;
+    uint256 constant RESOLUTIONS_LOCKUP_DURATION = 30;
+    uint256 constant VOTE_SESSION_DURATION = 30;
 }

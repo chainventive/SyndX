@@ -18,6 +18,9 @@ const dateToShortDateTime = (date) => {
   
 const getDateTimestamp = (date) => Math.round(date / 1000);
   
-const getTimestampDate = (timestamp) => dateToShortDateTime(new Date(timestamp * 1000));
+const getTimestampDate = (timestamp) => dateToShortDateTime(new Date(Number(timestamp) * 1000));
 
-module.exports = { dateToShortDateTime, getDateTimestamp, getTimestampDate };
+// Fonction pour créer une pause
+const delay = (seconds) => new Promise(resolve => setTimeout(resolve, seconds * 1000));
+
+module.exports = { dateToShortDateTime, getDateTimestamp, getTimestampDate, delay };

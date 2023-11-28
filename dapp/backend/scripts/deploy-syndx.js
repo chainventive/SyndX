@@ -7,8 +7,14 @@
 const hre = require("hardhat");
 
 const { SYNDX } = require('../data/syndx');
+const { getDateTimestamp, getTimestampDate, dateToShortDateTime, delay } = require('../helpers/time');
 
 async function main() {
+
+  // Perform synchronisation between hardhat chain and local system time
+
+  await network.provider.send("evm_setNextBlockTimestamp", [getDateTimestamp(Date.now())]);
+  await network.provider.send("evm_mine");
 
   // Checks contracts byte code size
 
@@ -16,12 +22,14 @@ async function main() {
   const copropertyArtifact = await hre.artifacts.readArtifact("Coproperty");
   const synTokenArtifact = await hre.artifacts.readArtifact("SynToken");
   const meetingArtifact = await hre.artifacts.readArtifact("AGMeeting");
+  const voteArtifact = await hre.artifacts.readArtifact("Vote");
 
   console.log();
   console.log("  ### SyndxFactory bytecode size:", (syndxFactoryArtifact.bytecode.length/2), "bytes / 24576 bytes");
   console.log("  ### Coproperty bytecode size:", (copropertyArtifact.bytecode.length/2), "bytes / 24576 bytes");
   console.log("  ### SynToken bytecode size:", (synTokenArtifact.bytecode.length/2), "bytes / 24576 bytes");
   console.log("  ### Meeting bytecode size:", (meetingArtifact.bytecode.length/2), "bytes / 24576 bytes");
+  console.log("  ### Vote bytecode size:", (voteArtifact.bytecode.length/2), "bytes / 24576 bytes");
   console.log();
 
   // Load signers to manipulate contracts
@@ -74,16 +82,16 @@ async function main() {
 
   // Get the token contract
 
-  const synToken = await hre.ethers.getContractAt("SynToken", await BATACOFT.contract.token());
-  console.log(`> Coproperty token contract: ${synToken.target}`);
+  BATACOFT.token.contract = await hre.ethers.getContractAt("SynToken", await BATACOFT.contract.token());
+  console.log(`> Coproperty token contract: ${BATACOFT.token.contract.target}`);
 
   // Get the coproperty contract token infos
 
-  const tokenOwner = await synToken.owner();
-  const tokenAdmin = await synToken.admin();
-  const tokenName = await synToken.name();
-  const tokenSymbol = await synToken.symbol();
-  const totalSupply = await synToken.totalSupply();
+  const tokenOwner = await BATACOFT.token.contract.owner();
+  const tokenAdmin = await BATACOFT.token.contract.admin();
+  const tokenName = await BATACOFT.token.contract.name();
+  const tokenSymbol = await BATACOFT.token.contract.symbol();
+  const totalSupply = await BATACOFT.token.contract.totalSupply();
 
   console.log();
   console.log(`  - token: ${tokenName} (${tokenSymbol})`);
@@ -94,12 +102,12 @@ async function main() {
 
   // Show the initial token distribution
 
-  let adminBalance = await synToken.balanceOf(syndic.wallet.address);
-  let anigailBalance = await synToken.balanceOf(anigail.wallet.address);
-  let bernardBalance = await synToken.balanceOf(bernard.wallet.address);
-  let cynthiaBalance = await synToken.balanceOf(cynthia.wallet.address);
-  let douniaBalance = await synToken.balanceOf(dounia.wallet.address);
-  let elyesBalance = await synToken.balanceOf(elyes.wallet.address);
+  let adminBalance   = await BATACOFT.token.contract.balanceOf(syndic.wallet.address);
+  let anigailBalance = await BATACOFT.token.contract.balanceOf(anigail.wallet.address);
+  let bernardBalance = await BATACOFT.token.contract.balanceOf(bernard.wallet.address);
+  let cynthiaBalance = await BATACOFT.token.contract.balanceOf(cynthia.wallet.address);
+  let douniaBalance  = await BATACOFT.token.contract.balanceOf(dounia.wallet.address);
+  let elyesBalance   = await BATACOFT.token.contract.balanceOf(elyes.wallet.address);
   let totalDistributed = adminBalance + anigailBalance + bernardBalance + cynthiaBalance + douniaBalance + elyesBalance;
 
   console.log(`> Initial token distribution (tot. ${totalDistributed}):`);
@@ -114,29 +122,29 @@ async function main() {
 
   // Perfom token distribution according to tantiem shares calculation
 
-  await synToken.connect(syndic.wallet.account).setWhitelist(anigail.wallet.address, true);
-  await synToken.connect(syndic.wallet.account).transfer(anigail.wallet.address, anigail.shares);
+  await BATACOFT.token.contract.connect(syndic.wallet.account).setWhitelist(anigail.wallet.address, true);
+  await BATACOFT.token.contract.connect(syndic.wallet.account).transfer(anigail.wallet.address, anigail.shares);
 
-  await synToken.connect(syndic.wallet.account).setWhitelist(bernard.wallet.address, true);
-  await synToken.connect(syndic.wallet.account).transfer(bernard.wallet.address, bernard.shares);
+  await BATACOFT.token.contract.connect(syndic.wallet.account).setWhitelist(bernard.wallet.address, true);
+  await BATACOFT.token.contract.connect(syndic.wallet.account).transfer(bernard.wallet.address, bernard.shares);
 
-  await synToken.connect(syndic.wallet.account).setWhitelist(cynthia.wallet.address, true);
-  await synToken.connect(syndic.wallet.account).transfer(cynthia.wallet.address, cynthia.shares);
+  await BATACOFT.token.contract.connect(syndic.wallet.account).setWhitelist(cynthia.wallet.address, true);
+  await BATACOFT.token.contract.connect(syndic.wallet.account).transfer(cynthia.wallet.address, cynthia.shares);
 
-  await synToken.connect(syndic.wallet.account).setWhitelist(dounia.wallet.address, true);
-  await synToken.connect(syndic.wallet.account).transfer(dounia.wallet.address, dounia.shares);
+  await BATACOFT.token.contract.connect(syndic.wallet.account).setWhitelist(dounia.wallet.address, true);
+  await BATACOFT.token.contract.connect(syndic.wallet.account).transfer(dounia.wallet.address, dounia.shares);
 
-  await synToken.connect(syndic.wallet.account).setWhitelist(elyes.wallet.address, true);
-  await synToken.connect(syndic.wallet.account).transfer(elyes.wallet.address, elyes.shares);
+  await BATACOFT.token.contract.connect(syndic.wallet.account).setWhitelist(elyes.wallet.address, true);
+  await BATACOFT.token.contract.connect(syndic.wallet.account).transfer(elyes.wallet.address, elyes.shares);
 
   // Show the initial token distribution after tantiem shares calculation
 
-  adminBalance = await synToken.balanceOf(syndic.wallet.address);
-  anigailBalance = await synToken.balanceOf(anigail.wallet.address);
-  bernardBalance = await synToken.balanceOf(bernard.wallet.address);
-  cynthiaBalance = await synToken.balanceOf(cynthia.wallet.address);
-  douniaBalance = await synToken.balanceOf(dounia.wallet.address);
-  elyesBalance = await synToken.balanceOf(elyes.wallet.address);
+  adminBalance   = await BATACOFT.token.contract.balanceOf(syndic.wallet.address);
+  anigailBalance = await BATACOFT.token.contract.balanceOf(anigail.wallet.address);
+  bernardBalance = await BATACOFT.token.contract.balanceOf(bernard.wallet.address);
+  cynthiaBalance = await BATACOFT.token.contract.balanceOf(cynthia.wallet.address);
+  douniaBalance  = await BATACOFT.token.contract.balanceOf(dounia.wallet.address);
+  elyesBalance   = await BATACOFT.token.contract.balanceOf(elyes.wallet.address);
   totalDistributed = adminBalance + anigailBalance + bernardBalance + cynthiaBalance + douniaBalance + elyesBalance;
 
   console.log(`> Token distribution after tantiem shares calculation (tot. ${totalDistributed}):`);
@@ -149,8 +157,81 @@ async function main() {
   console.log(`  - elyes   balance: ${elyesBalance}`);
   console.log();
 
-  // Create an AG meeting
-  await BATACOFT.contract.name();
+  // Create and retrieve the latest AG meeting
+  
+  const votingStartTime = getDateTimestamp(Date.now()) + 120; // +120 value is hight enought to avoid time synchronisation problems between harhat chain and local env.
+  await BATACOFT.contract.connect(syndic.wallet.account).createMeeting(votingStartTime);
+  const meeting = await hre.ethers.getContractAt("AGMeeting", await BATACOFT.contract.connect(syndic.wallet.account).getLatestMeeting()); 
+  console.log(`> Latest AG meeting contract: ${meeting.target} owned by ${ await meeting.owner() }`);
+  console.log();
+
+  // Fetch meeting timeline
+
+  const meetingTimeline = await meeting.getMeetingTimeline();
+  console.log(`  - meeting creation time  : ${getTimestampDate(meetingTimeline.created)}`);
+  console.log(`  - unlock period duration : ${Number(meetingTimeline.lockup) - Number(meetingTimeline.created)} sec. to submit resolutions/amendments`);
+  console.log(`  - resol.lockup time      : ${getTimestampDate(meetingTimeline.lockup)}`);
+  console.log(`  - voting start time      : ${getTimestampDate(meetingTimeline.voteStart)}`);
+  console.log(`  - voting end time        : ${getTimestampDate(meetingTimeline.voteEnd)}`);
+  console.log();
+  
+  // Submit some resolutions
+
+  await meeting.connect(syndic.wallet.account).createResolution("Approbation des comptes", "Le syndic SIMPLE COMME SYNDIC sollicite l'approbation intégrale des comptes de charge de l'exercice 2022 clos le 31 décembre, adressés à chaque copropriétaire");
+  console.log(`  - submitted syndic resolution 'Approbation des comptes'`);
+
+  await meeting.connect(syndic.wallet.account).createResolution("Désignation du syndic", "Le syndic SIMPLE COMME SYNDIC demande de le désigner comme syndic pour un montant annuel de EUR 2,400.-. Début de contrat au 01/01/2024 - Fin de contrat au 31/12/2024");
+  console.log(`  - submitted syndic resolution 'Désignation du syndic'`);
+
+  await meeting.connect(dounia.wallet.account).createResolution("Acquisition d’un garage privé", "Bonjour, nous souhaiterions que la copropriété fasse l’acquisition du garage privée mitoyen à l’immeuble dont mon mari est déjà propriétaire. Merci.");
+  console.log(`  - submitted dounia resolution 'Acquisition d’un garage privé'`);
+
+  // Amend some resolutions
+
+  await meeting.connect(syndic.wallet.account).amendResolution(Number(await meeting.getResolutionCount())-1, "le syndic tient à vous informer qu’en cas d’adoption, les quote-parts de chaque copropriétaire ferait l’objet d’une modification prenant en compte les tantièmes du garage au sein de la copropriété");
+  console.log(`  - syndic amended dounia's resolution 'Acquisition d’un garage privé'`);
+
+  // Show all meeting resolutions and amendments
+
+  const getVoteType = (value) => value === 0 ? "Undetermined" : value === 1 ? "AbsoluteMajority" : value === 2 ? "Unanimity" : "ERROR";
+
+  const amendments = [];
+  const amendmentCount = Number(await meeting.getAmendementCount());
+  
+  for(let i = 0; i < amendmentCount; ++i) {
+    const amendment = await meeting.getAmendment(i);
+    amendments.push(amendment);
+  }
+
+  const resolutionCount = Number(await meeting.getResolutionCount());
+  console.log();
+  console.log(`> Resolutions summary: `);
+  console.log();
+
+  for(let i = 0; i < resolutionCount; ++i) {
+
+    const resolution = await meeting.getResolution(i);
+    const resolutionAmendments = amendments.filter(amendment => amendment.resolutionID == i);
+    console.log(`  - ${resolution.author}: ${resolution.title} [${getVoteType(Number(resolution.voteType))}] -> ${resolution.description}`);
+
+    for(let j = 0; j < resolutionAmendments.length; ++j) {
+      const amendment = resolutionAmendments[j];
+      console.log(`    * ${amendment.author}: ${amendment.description}`);
+    }
+  }
+
+  // Let syndic assign the vote type of each resolution
+
+  console.log();
+  console.log(`> Vote types assignations: `);
+  console.log();
+
+  for(let i = 0; i < resolutionCount; ++i) {
+    await meeting.connect(syndic.wallet.account).assignResolutionVoteType(i, 1);
+    const resolution = await meeting.getResolution(i);
+    console.log(`  - syndic changed vote type of resolution '${resolution.title}' from '${getVoteType(0)}'. to '${getVoteType(Number(resolution.voteType))}'`);
+  }
+
 
   // DO NOT REMOVE
   console.log();

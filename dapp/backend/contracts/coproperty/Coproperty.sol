@@ -6,7 +6,6 @@ pragma solidity 0.8.20;
 
 // OpenZippelin imports
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/utils/Strings.sol";
 
 // Common imports
 import "../common/Errors.sol";
@@ -57,14 +56,20 @@ contract Coproperty is Ownable {
         _createToken(_tokenName, _tokenSymbol, _syndic);
     }
 
+    function getLatestMeeting() external view returns (IAGMeeting) {
+        
+        if (meetings.length == 0) revert MeetingListIsEmpty();
+        return meetings[meetings.length-1];
+    }
+
     function setTokenAdmin(address _admin) external onlyOwner {
 
         token.setAdmin(_admin);
     }
 
-    function createMeeting() external onlySyndic {
+    function createMeeting(uint256 _votingStartTime) external onlySyndic {
 
-        _createMeeting();
+        _createMeeting(_votingStartTime);
     }
 
     function _injectSyndicFactory(address _address) private onlyOwner {
@@ -88,18 +93,16 @@ contract Coproperty is Ownable {
 
     function _createToken(string memory _name, string memory _symbol, address _syndic) private onlyOwner {
 
-        address synTokenAddress = syndxFactory.createSynToken(_name, _symbol, _syndic);
+        address synTokenAddress = syndxFactory.getSynToken(_name, _symbol, _syndic);
         token = ISynToken(synTokenAddress);
     }
 
-    function _createMeeting() private onlySyndic {
+    function _createMeeting(uint256 _votingStartTime) private onlySyndic {
 
         if (address(token) == address(0)) revert MissingTokenContract();
-
-        address meetingContractAddress = syndxFactory.createMeeting(token);
-
+        if (address(syndic) == address(0)) revert SyndicAddressUndefined();
+        address meetingContractAddress = syndxFactory.getMeeting(token, syndic, _votingStartTime);
         meetings.push(IAGMeeting(meetingContractAddress));
-
         emit MeetingCreated (meetings.length-1, address(token));
     }
 }
