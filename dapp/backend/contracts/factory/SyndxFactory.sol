@@ -17,7 +17,6 @@ import "../factory/ISyndxFactory.sol";
 import "../token/ISynToken.sol";
 
 // Syndx imports
-import "../vote/Vote.sol";
 import "../token/SynToken.sol";
 import "../meeting/AGMeeting.sol";
 
@@ -42,12 +41,6 @@ contract SyndxFactory is ISyndxFactory, Ownable {
         return _createMeeting(synToken, _syndic, _votingStartTime);
     }
 
-    // Return a Vote contract according to the asked vote type
-    function getVote() external returns(address) {
-
-        return _createVote();
-    }
-
     function _createSynToken(string memory _name, string memory _symbol, address _admin) private returns (address) {
 
         SynToken synToken = new SynToken(_name, _symbol, _admin);
@@ -60,12 +53,5 @@ contract SyndxFactory is ISyndxFactory, Ownable {
         AGMeeting meeting = new AGMeeting(synToken, _syndic, _votingStartTime);
 
         return address(meeting);
-    }
-
-    function _createVote() private returns (address) {
-        
-        Vote vote = new Vote();
-
-        return address(vote);
     }
 }

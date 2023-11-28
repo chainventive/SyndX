@@ -18,7 +18,4 @@ interface ISyndxFactory {
 
     // Return a AGMeeting contract
     function getMeeting(ISynToken synToken, address _syndic, uint256 _votingStartTime) external returns(address);
-
-    // Return a Vote contract
-    function getVote() external returns(address);
 }

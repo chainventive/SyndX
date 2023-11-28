@@ -22,14 +22,12 @@ async function main() {
   const copropertyArtifact = await hre.artifacts.readArtifact("Coproperty");
   const synTokenArtifact = await hre.artifacts.readArtifact("SynToken");
   const meetingArtifact = await hre.artifacts.readArtifact("AGMeeting");
-  const voteArtifact = await hre.artifacts.readArtifact("Vote");
 
   console.log();
   console.log("  ### SyndxFactory bytecode size:", (syndxFactoryArtifact.bytecode.length/2), "bytes / 24576 bytes");
   console.log("  ### Coproperty bytecode size:", (copropertyArtifact.bytecode.length/2), "bytes / 24576 bytes");
   console.log("  ### SynToken bytecode size:", (synTokenArtifact.bytecode.length/2), "bytes / 24576 bytes");
   console.log("  ### Meeting bytecode size:", (meetingArtifact.bytecode.length/2), "bytes / 24576 bytes");
-  console.log("  ### Vote bytecode size:", (voteArtifact.bytecode.length/2), "bytes / 24576 bytes");
   console.log();
 
   // Load signers to manipulate contracts
