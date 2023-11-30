@@ -10,12 +10,16 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 // Common imports
 import "./common/SDX.sol";
 
+// Base imports
+import "./SyndxValidations.sol";
+
 // Contracts imports
 import "./coproperty/Coproperty.sol";
+import "./coproperty/CopropertyToken.sol";
 
 // Events
 
-contract Syndx is Ownable {
+contract Syndx is SyndxValidations, Ownable {
 
     // Keep track of created coproperty contracts
     mapping (string => address) public coproperties;
@@ -36,24 +40,16 @@ contract Syndx is Ownable {
     constructor() Ownable (msg.sender) {}
 
     // Create a new coproperty contract (only the owner of Syndx can create a coproperty)
-    function createCoproperty(string memory _name, address _syndic) external onlyOwner returns (address) {
-        
-        if (bytes(_name).length <= 3) revert ("Coproperty name too short");
-        if (bytes(_name).length > 15) revert ("Coproperty name too long");
-        if (_syndic == address(0)) revert ("Address zero unauthorized");
+    function createCoproperty(string memory _name, string memory _tokenName, string memory _tokenSymbol, address _syndic) external onlyOwner validCopropertyName(_name) validTokenName(_name) validTokenSymbol(_tokenSymbol) notAddressZero(_syndic) {
+
         if (coproperties[_name] != address(0)) revert ("Coproperty already created");
 
-        Coproperty coproperty = new Coproperty(_name, _syndic);
+        CopropertyToken governanceToken = new CopropertyToken(_tokenName, _tokenSymbol, _syndic);
+
+        Coproperty coproperty = new Coproperty(_name, _syndic, governanceToken);
         coproperties[_name] = address(coproperty);
 
         emit CopropertyContractCreated(_name, _syndic, coproperties[_name]);
-
-        return coproperties[_name];
-    }
-
-    // Create a new vote token contract (because there is 1 vote token per assembly, token contracts cannot )
-    function createVoteToken() private returns (address) {
-        
     }
 
     // Create a new vote assembly contract (only knowns coproperty contracts can call this function)

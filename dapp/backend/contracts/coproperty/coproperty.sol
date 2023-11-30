@@ -10,13 +10,22 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 // Common imports
 import "../common/SDX.sol";
 
-contract Coproperty is Ownable {
+// Base imports
+import "../SyndxValidations.sol";
+
+// Interface imports
+import "./ICopropertyToken.sol";
+
+contract Coproperty is SyndxValidations, Ownable {
 
     // The name of the coproperty
     string public name;
 
     // Syndic address which administrate the coproperty
     address public syndic;
+
+    // Coproperty gouvernance token contract
+    ICopropertyToken public governanceToken;
 
     // Ensure the caller is the syndic of the coproperty
     modifier onlySyndic {
@@ -26,9 +35,9 @@ contract Coproperty is Ownable {
 
     // Syndx remain the owner of the contract;
     // This contract is administrated by a syndic;
-    constructor (string memory _name, address _syndic) Ownable (msg.sender) {
-
+    constructor (string memory _name, address _syndic, ICopropertyToken _governanceToken) Ownable (msg.sender) validCopropertyName(_name) notAddressZero(_syndic) {
         name   = _name;
         syndic = _syndic;
+        governanceToken = _governanceToken;
     }
 }
