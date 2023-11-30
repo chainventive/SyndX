@@ -9,9 +9,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 // Common imports
 import "../common/SDX.sol";
-
-// Base imports
-import "../SyndxValidations.sol";
+import "../common/SyndxValidations.sol";
 
 // Interface imports
 import "./ICopropertyToken.sol";

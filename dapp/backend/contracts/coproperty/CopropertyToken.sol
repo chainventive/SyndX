@@ -10,42 +10,37 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 // Common imports
 import "../common/SDX.sol";
+import "../common/SyndxValidations.sol";
 
 // Interfaces imports
 import "./ICopropertyToken.sol";
 
-contract CopropertyToken is ICopropertyToken, ERC20, Ownable {
+contract CopropertyToken is ICopropertyToken, SyndxValidations, ERC20, Ownable {
 
-    // Token administrator address
-    address public admin;
+    // The token administrator
+    address public administrator;
 
-    // Whiteliste of token holders
+    // The token holders whitelist
     mapping (address => bool) private whitelist;
 
     // Ensure the caller is the administrator
     modifier onlyAdmin
     {
-        if (msg.sender != admin) revert ("Your are not the token administrator");
+        if (msg.sender != administrator) revert ("Your are not the token administrator");
         _;
     }
 
     // The owner of this contract is Syndx in order to keep control of this contract
     // The administrator receive all the token supply and will be in charge to distribute them then
-    constructor(string memory _name, string memory _symbol, address _admin) ERC20(_name, _symbol) Ownable(msg.sender) {
-        
-        require(bytes(_name).length > TOKEN_NAME_MIN_LENGHT, "Token name too short");
-        require(bytes(_name).length < TOKEN_NAME_MAX_LENGHT, "Token name too long");
-        require(bytes(_symbol).length > TOKEN_SYMBOL_MIN_LENGHT, "Token symbol too short");
-        require(bytes(_symbol).length < TOKEN_SYMBOL_MAX_LENGHT, "Token symbol too long");
-
+    constructor(string memory _name, string memory _symbol, address _admin) ERC20(_name, _symbol) Ownable(msg.sender) validTokenName(_name) validTokenSymbol(_symbol) notAddressZero(_admin) {
         _setAdmin(_admin);
-
         _mint(_admin, PROPERTY_SHARES_MAX_SUPPLY);
     }
 
-    function setWhitelist(address _address, bool _allowed) external onlyAdmin {
+    function setWhitelist(address _address, bool _allowed) external onlyAdmin notAddressZero(_address) {
 
-        if (_address == address(0)) revert AddressZeroUnauthorized();
+        if (_allowed == false && balanceOf(_address) > 0) revert ("Cannot remove token holder from whitelist");
+
         whitelist[_address] = _allowed;
     }
 
@@ -54,10 +49,9 @@ contract CopropertyToken is ICopropertyToken, ERC20, Ownable {
         _setAdmin(_address);
     }
 
-    function _setAdmin(address _address) private onlyOwner {
+    function _setAdmin(address _address) private onlyOwner notAddressZero(_address) {
 
-        if (_address == address(0)) revert InvalidTokenAdminAdress();
-        admin = _address;
+        administrator = _address;
     }
 
     // As recommended by OpenZippelin, the 'virtual' keyword is preserved here in order to allow hypothetic child contracts to use the hook
@@ -68,8 +62,8 @@ contract CopropertyToken is ICopropertyToken, ERC20, Ownable {
 
         super._update(from, to, amount); // The 'super' keyword is mandatory to call the parent hook
         
-        if (from != address(0) && from != admin) revert AddressUnauthorizedToSendToken(from);
+        if (from != address(0) && from != administrator) revert AddressUnauthorizedToSendToken(from);
 
-        if (to != admin && whitelist[to] == false) revert AddressUnauthorizedToReceiveToken(to);
+        if (to != administrator && whitelist[to] == false) revert AddressUnauthorizedToReceiveToken(to);
     }
 }

@@ -125,6 +125,8 @@ async function main() {
   console.log(`    TOTAL DISTRIBUTED = ${totalGovernanceDistributedTokens}`);
   console.log();
 
+  // Create a new coproperty assembly
+
 }
 
 // We recommend this pattern to be able to use async/await everywhere

@@ -5,7 +5,7 @@ pragma solidity 0.8.20;
 // import "hardhat/console.sol";
 
 // Common imports
-import "./common/SDX.sol";
+import "./SDX.sol";
 
 contract SyndxValidations {
 
