@@ -4,11 +4,16 @@ pragma solidity 0.8.20;
 // Uncomment this line to use console.log
 // import "hardhat/console.sol";
 
+// OpenZippelin imports
+import "@openzeppelin/contracts/access/Ownable.sol";
+
+// Common imports
 import "./common/SDX.sol";
 
-contract Syndx {
+contract Syndx is Ownable {
 
-    constructor() {
+    // Syndx contract is owned by its deployer
+    constructor() Ownable (msg.sender) {
 
     }
 }
