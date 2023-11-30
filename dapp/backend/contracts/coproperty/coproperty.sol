@@ -12,8 +12,11 @@ import "../common/SDX.sol";
 
 contract Coproperty is Ownable {
 
+    // The name of the coproperty
+    string public name;
+
     // Syndic address which administrate the coproperty
-    address syndic;
+    address public syndic;
 
     // Ensure the caller is the syndic of the coproperty
     modifier() onlySyndic {
@@ -23,8 +26,9 @@ contract Coproperty is Ownable {
 
     // Syndx remain the owner of the contract;
     // This contract is administrated by a syndic;
-    constructor (address _syndic) Ownable (msg.sender) {
+    constructor (string calldata _name, address _syndic) Ownable (msg.sender) {
 
+        name   = _name;
         syndic = _syndic;
     }
 }

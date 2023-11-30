@@ -10,6 +10,9 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 // Common imports
 import "./common/SDX.sol";
 
+// Contracts imports
+import "./coproperty/coproperty.sol";
+
 contract Syndx is Ownable {
 
     // Keep track of deployed contracts allowed to ask for random number
@@ -22,13 +25,18 @@ contract Syndx is Ownable {
     }
 
     // Syndx contract is owned by its deployer
-    constructor() Ownable (msg.sender) {
-
-    }
+    constructor() Ownable (msg.sender) {}
 
     // Create a new coproperty contract (only the owner of Syndx can create a coproperty)
-    function createCoproperty() external onlyOwner returns (address) {
+    function createCoproperty(string calldata _name, address _syndic) external onlyOwner returns (address) {
         
+        if (bytes(_name) <= 3) revert ("Coproperty name too short");
+        if (bytes(_name) > 15) revert ("Coproperty name too long");
+        if (_syndic == address(0)) revert ("Address zero unauthorized");
+
+        Coproperty coproperty = Coproperty(_name, _syndic);
+
+        return address(coproperty);
     }
 
     // Create a new vote token contract (because there is 1 vote token per assembly, token contracts cannot )
