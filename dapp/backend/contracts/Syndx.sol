@@ -11,7 +11,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "./common/SDX.sol";
 
 // Contracts imports
-import "./coproperty/coproperty.sol";
+import "./coproperty/Coproperty.sol";
 
 contract Syndx is Ownable {
 
@@ -28,13 +28,13 @@ contract Syndx is Ownable {
     constructor() Ownable (msg.sender) {}
 
     // Create a new coproperty contract (only the owner of Syndx can create a coproperty)
-    function createCoproperty(string calldata _name, address _syndic) external onlyOwner returns (address) {
+    function createCoproperty(string memory _name, address _syndic) external onlyOwner returns (address) {
         
-        if (bytes(_name) <= 3) revert ("Coproperty name too short");
-        if (bytes(_name) > 15) revert ("Coproperty name too long");
+        if (bytes(_name).length <= 3) revert ("Coproperty name too short");
+        if (bytes(_name).length > 15) revert ("Coproperty name too long");
         if (_syndic == address(0)) revert ("Address zero unauthorized");
 
-        Coproperty coproperty = Coproperty(_name, _syndic);
+        Coproperty coproperty = new Coproperty(_name, _syndic);
 
         return address(coproperty);
     }

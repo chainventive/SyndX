@@ -15,13 +15,12 @@ async function main() {
 
   // Deploy Syndx
 
-  const enableChainlinkVRF = true;
-
-  const syndx = await hre.ethers.deployContract("SyndxFactory", [1]);
+  const syndx = await hre.ethers.deployContract("SyndxFactory");
   await syndx.waitForDeployment();
+  
   console.log(`> Syndx contract: ${ syndx.target } (managed by SyndX)`);
   console.log();
-  
+
 }
 
 // We recommend this pattern to be able to use async/await everywhere

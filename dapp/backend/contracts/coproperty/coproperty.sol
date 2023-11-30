@@ -26,7 +26,7 @@ contract Coproperty is Ownable {
 
     // Syndx remain the owner of the contract;
     // This contract is administrated by a syndic;
-    constructor (string calldata _name, address _syndic) Ownable (msg.sender) {
+    constructor (string memory _name, address _syndic) Ownable (msg.sender) {
 
         name   = _name;
         syndic = _syndic;
