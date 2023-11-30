@@ -17,7 +17,6 @@ contract Syndx is Ownable {
 
     // Ensure the caller is registered as randomnessConsumer
     modifier onlyAuthorizedRandomnessConsumers () {
-
         if (randomnessConsumers[msg.sender].authorized == false) revert ("Unauthorized randomness consumer");
         _;
     }
@@ -27,17 +26,17 @@ contract Syndx is Ownable {
 
     }
 
-    // Create a new coproperty contract
-    function createCoproperty() external returns (address) {
+    // Create a new coproperty contract (only the owner of Syndx can create a coproperty)
+    function createCoproperty() external onlyOwner returns (address) {
         
     }
 
-    // Create a new vote token contract
-    function createVoteToken() external returns (address) {
+    // Create a new vote token contract (because there is 1 vote token per assembly, token contracts cannot )
+    function createVoteToken() private returns (address) {
         
     }
 
-    // Create a new vote assembly contract
+    // Create a new vote assembly contract (only knowns coproperty contracts can call this function)
     function createVoteAssembly() external returns (address) {
         
     }
