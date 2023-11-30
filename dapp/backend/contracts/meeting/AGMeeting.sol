@@ -14,8 +14,12 @@ import "../common/Constants.sol";
 // Interfaces imports
 import "../token/ISynToken.sol";
 import "../meeting/IAGMeeting.sol";
+import "../factory/SyndxFactory.sol";
 
 contract AGMeeting is IAGMeeting, Ownable {
+
+    // SyndxFactoryContract to consume services like getting a random number
+    SyndxFactory syndxFactory;
 
     // Coproperty token contract
     // Used here to check if an address can sumbmit a resolution or an amendment
@@ -26,18 +30,19 @@ contract AGMeeting is IAGMeeting, Ownable {
 
     mapping(uint256 => mapping(address => bool)) hasVoted;
 
-    uint256 creationTimestamp;
-    uint256 resolutionLockupTime;
-    uint256 votingPeriodStartTime;
-    uint256 votingPeriodEndTime;
-
-    // VOIR POUR GERER LES EGALITES AVEC CHAINLINK EN PRENANT UN NOMBRE ALEATOIRE A LA FIN DE LA SESSION DE VOTE
-    // FAIRE UNE FONCTION DEDIE APPELLE PAR LE SYNDIC APRES LA FIN DES VOTES ET STOCKEE DANS LETAT DU CONTRAT PUIS UTILISER PAR GET VOTE RESULT
-    uint256 random;
+    uint256 creationTime;
+    uint256 lockupTime;
+    uint256 voteStartTime;
+    uint256 voteEndTime;
 
     event ResolutionAdded(uint256 id, address author);
 
     event AmendementAdded(uint256 id, uint256 resolutionID, address author);
+
+    modifier onlySyndxFactory {
+        if (msg.sender != address(syndxFactory)) revert UnauthorizedContract();
+        _;
+    }
 
     modifier onlyCopropertyMembers {
         if (msg.sender != owner() && token.balanceOf(msg.sender) <= 0) revert CopropertyMemberExpected();
@@ -50,28 +55,30 @@ contract AGMeeting is IAGMeeting, Ownable {
     }
 
     modifier onlyBeforeResolutionLockup {
-        if (block.timestamp > resolutionLockupTime) revert ResolutionAreNowLocked();
+        if (block.timestamp > lockupTime) revert ResolutionAreNowLocked();
         _;
     }
 
     modifier onlyDuringVotingPeriod {
-        if (block.timestamp < votingPeriodStartTime) revert VotingPeriodHasNotStarted();
-        if (block.timestamp > votingPeriodEndTime) revert VotingPeriodHasEnded();
+        if (block.timestamp < voteStartTime) revert VotingPeriodHasNotStarted();
+        if (block.timestamp > voteEndTime) revert VotingPeriodHasEnded();
         _;
     }
 
     modifier onlyAfterVotingPeriod {
-        if (block.timestamp < votingPeriodEndTime) revert VotingPeriodHasNotEnded();
+        if (block.timestamp < voteEndTime) revert VotingPeriodHasNotEnded();
         _;
     }
 
     // We let the AGMeeting contract under the syndic ownership that is the only allowed to create a meeting from the coproperty contract
     // We assume once the AGMeeting is created, property owners are allowed to submit resolutions and amendments
-    constructor(ISynToken _synToken, address _syndic, uint256 _votingStartTime) Ownable(_syndic) {
+    constructor(SyndxFactory _syndxFactory, ISynToken _synToken, address _syndic, uint256 _votingStartTime) Ownable(_syndic) {
 
+        if (address(_syndxFactory) == address(0)) revert MissingSyndxFactoryContract();
         if (address(_synToken) == address(0)) revert MissingTokenContract();
 
         token = _synToken;
+        syndxFactory = _syndxFactory;
 
         _setMeetingTimeline(_votingStartTime);
     }
@@ -91,9 +98,9 @@ contract AGMeeting is IAGMeeting, Ownable {
         _setResolutionVoteType(_resolutionID, _voteType);
     }
 
-    function vote(uint256 _resolutionID, bool _approve) external onlyPropertyOwners onlyDuringVotingPeriod {
+    function vote(uint256 _resolutionID, bool _approve) external onlyPropertyOwners /*onlyDuringVotingPeriod*/ {
 
-        if (_resolutionID > resolutions.length) revert ResolutionNotFound(_resolutionID);
+        if (_resolutionID >= resolutions.length) revert ResolutionNotFound(_resolutionID);
 
         // Checks that the property owner hasn't already voted for this resolution;
         if (hasVoted[_resolutionID][msg.sender] == true) revert YouAlreadyVotedForThisResolution(_resolutionID);
@@ -112,44 +119,106 @@ contract AGMeeting is IAGMeeting, Ownable {
         else {
 
             resolutions[_resolutionID].noVotes += shares; // increase the weight of no votes with the property owner voting power
-        }   
+        }
+
+        // Record that the user has voted for this resolution
+        hasVoted[_resolutionID][msg.sender] == true;
     }
 
-    function tieBreak() external onlyAfterVotingPeriod onlyOwner {
+    // Once the voting period as ended, anybody can call tiebreack
+    function tieBreak() public onlyAfterVotingPeriod {
 
-        // set the random number with chainlink oracle here !
+        syndxFactory.requestRandomNumber();
     }
 
-    function getVoteResult(uint256 _resolutionID) external onlyAfterVotingPeriod returns(bool) {
+    function getVoteResult(uint256 _resolutionID) external view onlyAfterVotingPeriod returns(bool approved, uint256 yesCount, uint256 noCount, uint256 tiebreak) {
 
-        if (_resolutionID > resolutions.length) revert ResolutionNotFound(_resolutionID);
+        if (_resolutionID >= resolutions.length) revert ResolutionNotFound(_resolutionID);
 
         if (resolutions[_resolutionID].voteType == Enums.VoteType.Undetermined) revert ResolutionVoteTypeNonAssignated(_resolutionID);
 
         uint256 no = resolutions[_resolutionID].noVotes;
         uint256 yes = resolutions[_resolutionID].yesVotes;
-        uint256 blank = Constants.SYN_TOKEN_TOTAL_SUPPLY - (yes + no);
+        uint256 noCount = resolutions[_resolutionID].noCount;
+        uint256 yesCount = resolutions[_resolutionID].yesCount;
 
         if (resolutions[_resolutionID].voteType == Enums.VoteType.Unanimity) {
-
-            bool approved = resolutions[_resolutionID].yesVotes == Constants.SYN_TOKEN_TOTAL_SUPPLY;
-            return approved;
+            
+            // To be approved the resolution must receive 100% of yes vote
+            return (yes == Constants.SYN_TOKEN_TOTAL_SUPPLY, yes, no, 0);
         }
 
         if (resolutions[_resolutionID].voteType == Enums.VoteType.SimpleMajority) {
 
-            // pour gérer les égalitées random doit être > 0
-            bool approved = true;
-            return true;
-        }
+            // Blank vote are ignored
+            // To be approved the resolution must receive more yes votes than no votes
+            // If nobody has voted we process the case as if it is an equality
+            // If equality is found we use a random number provided by chainlink to determine if the resolution is approved or not
+            if (yes == no) {
 
+                // get the meeting random number
+                uint256 tiebreakNumber = syndxFactory.getMeetingRandomNumber(address(this));
+                if (tiebreakNumber <= 0) revert RandomNumberRequestNotFullfilled();
+
+                // the resolution is approved if tiebreackNumber is odd (impair)
+                return (tiebreakNumber % 2 == 1, yes, no, tiebreakNumber);
+            }
+
+            return (yes > no, yes, no, 0);
+        }
+        
         if (resolutions[_resolutionID].voteType == Enums.VoteType.AbsoluteMajority) {
 
-            // pour gérer les égalitées random doit être > 0
-            bool approved = true;
-            return true;
+            // Blank votes are excluded from the ballot. That impacts the majority threshold
+            // To be approved the resolution must receive more yes votes than the majority threshold
+            // If nobody has voted we process the case as if it is an equality
+            if (yes == no) {
+                
+                // get the meeting random number
+                uint256 tiebreakNumber = syndxFactory.getMeetingRandomNumber(address(this));
+                if (tiebreakNumber <= 0) revert RandomNumberRequestNotFullfilled();
+
+                // the resolution is approved if tiebreackNumber is odd (impair)
+                return (tiebreakNumber % 2 == 1, yes, no, tiebreakNumber);
+            }
+
+            // To increase precision due to the fact that solidy do not manage float numbers we use a scale factor 
+            // (we also checked that the max possible values calculated with this scale factor cannot exceed the uint256 max limit)
+            uint256 factor    = 10000;
+            uint256 scaledYes = yes * factor;
+            uint256 scaledNo  = no  * factor;
+            uint256 threshold = (scaledYes + scaledNo) / 2;
+
+            return (scaledYes > threshold, yes, no, 0);
         }
 
+        if (resolutions[_resolutionID].voteType == Enums.VoteType.DoubleMajority) {
+
+            // Pour l'emporter le vote doit obtenir la majorité a la fois en terme de puissance de vote mais aussi en termes de nombre de votants
+
+            if (yes == no && yesCount == noCount) {
+                
+                // get the meeting random number
+                uint256 tiebreakNumber = syndxFactory.getMeetingRandomNumber(address(this));
+                if (tiebreakNumber <= 0) revert RandomNumberRequestNotFullfilled();
+
+                // the resolution is approved if tiebreackNumber is odd (impair)
+                return (tiebreakNumber % 2 == 1, yes, no, tiebreakNumber);
+            }
+
+            uint256 factor = 10000;
+
+            uint256 scaledYes = yes * factor;
+            uint256 scaledNo = no  * factor;
+            uint256 threshold1 = (scaledYes + scaledNo) / 2;
+
+            uint256 scaledYesCount = yesCount * factor;
+            uint256 scaledNoCount = noCount  * factor;
+            uint256 threshold2 = (scaledYesCount + scaledNoCount) / 2;
+
+            return (scaledYes > threshold1 && scaledYesCount > threshold2, yes, no, 0);
+        }
+        
         revert ResolutionVoteTypeIsUnknown(_resolutionID);
     }
 
@@ -175,7 +244,7 @@ contract AGMeeting is IAGMeeting, Ownable {
 
     function getMeetingTimeline() external view returns (uint256 created, uint256 lockup, uint256 voteStart, uint256 voteEnd) {
 
-        return (creationTimestamp, resolutionLockupTime, votingPeriodStartTime, votingPeriodEndTime);
+        return (creationTime, lockupTime, voteStartTime, voteEndTime);
     }
 
     function _createResolution(string calldata _title, string calldata _description, address _author) private onlyCopropertyMembers returns (uint256) {
@@ -186,7 +255,7 @@ contract AGMeeting is IAGMeeting, Ownable {
         uint256 descriptionLen = bytes(_description).length;
         if (descriptionLen < Constants.DESCRIPTION_MIN_LENGHT || descriptionLen > Constants.DESCRIPTION_MAX_LENGHT) revert InvalidDescriptionLength();
 
-        resolutions.push(Base.Resolution(_title, _description, _author, Enums.VoteType.Undetermined, 0, 0));
+        resolutions.push(Base.Resolution(_title, _description, _author, Enums.VoteType.Undetermined, 0, 0, 0, 0));
 
         uint256 resolutionID = resolutions.length - 1;
 
@@ -214,21 +283,23 @@ contract AGMeeting is IAGMeeting, Ownable {
     function _setResolutionVoteType(uint256 _resolutionID, Enums.VoteType _voteType) private onlyOwner {
 
         if (_resolutionID >= resolutions.length) revert ResolutionNotFound(_resolutionID);
+        if (_voteType == Enums.VoteType.Undetermined) revert ResolutionVoteTypeCannotBassignatedToUdetermined(_resolutionID);
 
         resolutions[_resolutionID].voteType = _voteType;
     }
 
-    function _setMeetingTimeline(uint256 _votingStartTime) private {
+    function _setMeetingTimeline(uint256 _voteStartTime) private {
 
-        creationTimestamp = block.timestamp;
+        creationTime = block.timestamp;
 
-        resolutionLockupTime = _votingStartTime - Constants.RESOLUTIONS_LOCKUP_DURATION;
+        lockupTime = _voteStartTime - Constants.RESOLUTIONS_LOCKUP_DURATION;
 
-        if (creationTimestamp > resolutionLockupTime) revert ResolutionLockupTimeComeToEarly(_votingStartTime, resolutionLockupTime, Constants.MIN_DURATION_BEFORE_LOCKUP);
-        if (resolutionLockupTime - creationTimestamp < Constants.MIN_DURATION_BEFORE_LOCKUP) revert ResolutionLockupTimeComeToEarly(_votingStartTime, resolutionLockupTime, Constants.MIN_DURATION_BEFORE_LOCKUP);
+        if (creationTime > lockupTime) revert ResolutionLockupTimeComeToEarly(creationTime, lockupTime, _voteStartTime);
+        
+        if (lockupTime - creationTime < Constants.MIN_DURATION_BEFORE_LOCKUP) revert ResolutionLockupTimeComeToEarly(creationTime, lockupTime, _voteStartTime);
 
-        votingPeriodStartTime = _votingStartTime;
+        voteStartTime = _voteStartTime;
 
-        votingPeriodEndTime = _votingStartTime + Constants.VOTE_SESSION_DURATION;
+        voteEndTime = _voteStartTime + Constants.VOTE_SESSION_DURATION;
     }
 }

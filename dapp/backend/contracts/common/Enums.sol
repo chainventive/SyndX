@@ -6,10 +6,23 @@ pragma solidity 0.8.20;
 
 library Enums {
 
+    enum ContractType {
+        Undetermined,
+        Coproperty,
+        SynToken,
+        AGMeeting
+    }
+
     enum VoteType {
         Undetermined,
         Unanimity,
         SimpleMajority,
-        AbsoluteMajority
+        AbsoluteMajority,
+        DoubleMajority
+    }
+
+    enum RandomnessStrategy {
+        Keccak256Based,
+        ChainlinkVRF
     }
 }

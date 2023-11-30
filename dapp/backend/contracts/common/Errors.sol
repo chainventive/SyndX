@@ -1,9 +1,15 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.20;
 
+// Common imports
+import "../common/Enums.sol";
+
 // SyndxFactory
+error MissingSyndxFactoryContract();
 error InvalidSyndxFactoryAddress();
 error UnknowVoteType();
+error NotImplementedException();
+error UnauthorizedContract();
 
 // Address
 error AddressZeroUnauthorized();
@@ -40,7 +46,7 @@ error ResolutionVoteTypeNonAssignated(uint256 id);
 error ResolutionVoteTypeIsUnknown(uint256 id);
 
 // Timeline
-error ResolutionLockupTimeComeToEarly(uint256 votingStartTime, uint256 resolutionLockupTime, uint256 minDurationBeforeLockup);
+error ResolutionLockupTimeComeToEarly(uint256 creationTime, uint256 lockupTime, uint256 votingStartTime);
 error ResolutionAreNowLocked();
 error VotingPeriodHasNotStarted();
 error VotingPeriodHasEnded();
@@ -49,11 +55,15 @@ error VotingPeriodHasNotEnded();
 // Votes
 error YouAlreadyVotedForThisResolution(uint256 resolutionID);
 error TieBreakNeedToBeCalled(uint256 resolutionID);
+error ResolutionVoteTypeCannotBassignatedToUdetermined(uint256 resolutionID);
 
-// NOT USED
-error CurrentVoteSessionNotEnded();
-error CurrentVoteSessionAlreadyUsed();
-error VoteSessionNotFound(uint256 id);
-error UndeterminedVoteType();
+// Random Chainlink
+error TiebreackRequestAlreadyAcknowledged();
+error TiebreackNumberAlreadyDeterminated();
+error RandomNumberRequestNotSent();
+error RandomNumberRequestIsPending();
+error UnknownRandomnessStrategy();
+error RandomNumberRequestAlreadyFullfilled();
+error RandomNumberRequestNotFullfilled();
 
 

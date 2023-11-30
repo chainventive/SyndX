@@ -16,6 +16,8 @@ library Base {
         Enums.VoteType voteType;
         uint256 yesVotes;
         uint256 noVotes;
+        uint256 yesCount;
+        uint256 noCount;
     }
 
     struct Amendment {
@@ -24,16 +26,8 @@ library Base {
         address author;
     }
 
-
-    // deprectated
-    struct VoteSession {
-        bool alreadyUsed;
-        uint256 noCount;
-        uint256 yesCount;
-        uint256 blankCount;
-        uint256 resolutionID;
-        uint256 expiryTimestamp;
-        Enums.VoteType voteType;
-        mapping (address => bool) hasVoted;
+    struct RandomNumberRequest {
+        uint256 requestId;
+        uint256[] words;
     }
 }

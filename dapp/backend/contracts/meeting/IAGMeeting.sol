@@ -37,7 +37,7 @@ interface IAGMeeting {
     function vote(uint256 _resolutionID, bool _approve) external;
 
     // get if a resolution is approved or rejected
-    function getVoteResult(uint256 _resolutionID) external returns(bool);
+    function getVoteResult(uint256 _resolutionID) external view returns(bool approved, uint256 yesCount, uint256 noCount, uint256 tiebreak);
 
     // défait les égalitées grâçe a une nombre random obtenu aupres de chainlink
     function tieBreak() external;

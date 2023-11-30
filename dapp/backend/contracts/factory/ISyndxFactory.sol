@@ -18,4 +18,10 @@ interface ISyndxFactory {
 
     // Return a AGMeeting contract
     function getMeeting(ISynToken synToken, address _syndic, uint256 _votingStartTime) external returns(address);
+
+    // Initiate a random number request
+    //function requestRandomNumber() ;
+
+    // Get the random number of a givent request request
+    function getMeetingRandomNumber(address _meeting) external view returns(uint256);
 }
