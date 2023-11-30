@@ -15,9 +15,9 @@ async function main() {
 
   // Deploy Syndx
 
-  const syndx = await hre.ethers.deployContract("SyndxFactory");
+  const syndx = await hre.ethers.deployContract("Syndx");
   await syndx.waitForDeployment();
-  
+
   console.log(`> Syndx contract: ${ syndx.target } (managed by SyndX)`);
   console.log();
 
