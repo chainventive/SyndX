@@ -5,10 +5,10 @@ pragma solidity 0.8.20;
 // import "hardhat/console.sol";
 
 import "./common/SDX.sol";
-import "./common/CONST.sol";
-import "./common/ERRORS.sol";
 
 contract Syndx {
 
-    constructor() {}
+    constructor() {
+
+    }
 }
