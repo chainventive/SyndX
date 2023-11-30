@@ -21,6 +21,15 @@ async function main() {
   console.log(`> Syndx contract: ${ syndx.target } (managed by SyndX)`);
   console.log();
 
+  // Create a coproperty contract for BATACOFT
+
+  const txCoproperty = await syndx.createCoproperty("BATACOFT", _syndic.address);
+  await txCoproperty.wait();
+
+  console.log(txCoproperty.logs);
+
+  //const coproperty = await hre.ethers.getContractAt("AGMeeting", meetingContractAddress); 
+
 }
 
 // We recommend this pattern to be able to use async/await everywhere
