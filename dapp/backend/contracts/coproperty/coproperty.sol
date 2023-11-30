@@ -19,7 +19,7 @@ contract Coproperty is Ownable {
     address public syndic;
 
     // Ensure the caller is the syndic of the coproperty
-    modifier() onlySyndic {
+    modifier onlySyndic {
         require(syndic == msg.sender, "You're not the syndic of this coproperty");
         _;
     }

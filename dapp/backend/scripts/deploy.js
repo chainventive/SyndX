@@ -7,26 +7,21 @@
 const hre = require("hardhat");
 
 async function main() {
-  const currentTimestampInSeconds = Math.round(Date.now() / 1000);
-  const unlockTime = currentTimestampInSeconds + 60;
-
-  const lockedAmount = hre.ethers.parseEther("0.001");
-
-  const lock = await hre.ethers.deployContract("Lock", [unlockTime], {
-    value: lockedAmount,
-  });
-
-  await lock.waitForDeployment();
   
-  console.log(
-    `Lock with ${ethers.formatEther(
-      lockedAmount
-    )}ETH and unlock timestamp ${unlockTime} deployed to ${lock.target}`
-  );
+  // Load signers to manipulate contracts
 
-  // Output environnement variables for next Azure DevOps pipeline tasks
-  console.log(`##vso[task.setvariable variable=LOCK_CONTRACT_ADDRESS;]${lock.target}`);
-  console.log(`##vso[task.setvariable variable=LOCK_CONTRACT_UNLOCK_TIME;]${unlockTime}`);
+  const [ _admin, _syndic, _anigail, _bernard, _cynthia, _dounia, _elyes ] = await hre.ethers.getSigners();
+  console.log();
+
+  // Deploy Syndx
+
+  const enableChainlinkVRF = true;
+
+  const syndx = await hre.ethers.deployContract("SyndxFactory", [1]);
+  await syndx.waitForDeployment();
+  console.log(`> Syndx contract: ${ syndx.target } (managed by SyndX)`);
+  console.log();
+  
 }
 
 // We recommend this pattern to be able to use async/await everywhere
