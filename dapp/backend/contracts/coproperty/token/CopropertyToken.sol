@@ -9,8 +9,8 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 // Common imports
-import "../common/SDX.sol";
-import "../common/SyndxValidations.sol";
+import "../../common/SDX.sol";
+import "../../common/SyndxValidations.sol";
 
 // Interfaces imports
 import "./ICopropertyToken.sol";

@@ -12,7 +12,7 @@ import "../common/SDX.sol";
 import "../common/SyndxValidations.sol";
 
 // Interface imports
-import "./ICopropertyToken.sol";
+import "./token/ICopropertyToken.sol";
 
 contract Coproperty is SyndxValidations, Ownable {
 

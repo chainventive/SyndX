@@ -13,7 +13,7 @@ import "./common/SyndxValidations.sol";
 
 // Contracts imports
 import "./coproperty/Coproperty.sol";
-import "./coproperty/CopropertyToken.sol";
+import "./coproperty/token/CopropertyToken.sol";
 
 // Events
 
@@ -50,8 +50,8 @@ contract Syndx is SyndxValidations, Ownable {
         emit CopropertyContractCreated(_name, _syndic, coproperties[_name]);
     }
 
-    // Create a new vote assembly contract (only knowns coproperty contracts can call this function)
-    function createVoteAssembly() external returns (address) {
+    // Create a new general assembly contract (only knowns coproperty contracts can call this function)
+    function createGeneralAssembly() external returns (address) {
         
     }
 

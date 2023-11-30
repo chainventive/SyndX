@@ -41,7 +41,7 @@ async function main() {
   const governanceTokenName = await governanceToken.name();
   const governanceTokenSymbol = await governanceToken.symbol();
   const governanceTokenSupply = await governanceToken.totalSupply();
-  const governanceTokenAdministrator = await governanceToken.admin();
+  const governanceTokenAdministrator = await governanceToken.administrator();
   const governanceTokenOwner= await governanceToken.owner();
 
   console.log(`> Governance token contract: ${ governanceToken.target }`);
