@@ -38,9 +38,9 @@ library SDX {
         string description;
         address author;
         VoteType voteType;
-        uint256 yesVotes;
+        uint256 yesShares;
         uint256 yesCount;
-        uint256 noVotes;
+        uint256 noShares;
         uint256 noCount;
     }
 
@@ -62,6 +62,17 @@ library SDX {
         uint256 voteStart;  // When the voting session starts
         uint256 voteEnd;    // When the voting session ends
     }
+
+    struct VoteResult {
+        uint256 resolutionID;
+        uint256 yesShares;  // Amount of property shares allocated to YES
+        uint256 noShares;   // Amount of property shares allocated to NO
+        uint256 yesCount;   // Number of YES votes
+        uint256 noCount;    // Number of NO votes
+        bool equality;      // If YES/NO votes are at equality
+        uint256 tiebreaker; // Optional random number used to tie break equality
+        bool approved;      // State of the resolution approval
+    }
     
     /* HELPERS */
 
@@ -73,5 +84,10 @@ library SDX {
     function createAmendment(uint256 _resolutionID, string memory _description, address _author) internal pure returns (Amendment memory) {
         
         return Amendment(_resolutionID, _description, _author);
+    }
+
+    function createUntalliedVoteResult(uint256 _resolutionID, Resolution memory _resolution) internal pure returns (VoteResult memory) {
+
+        return VoteResult(_resolutionID, _resolution.yesShares, _resolution.noShares, _resolution.yesCount, _resolution.noCount, false, 0, false);
     }
 }

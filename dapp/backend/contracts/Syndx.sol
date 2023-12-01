@@ -82,7 +82,7 @@ contract Syndx is SyndxValidations, Ownable {
     }
 
     // Ask for a random number (only authorized contracts are able to call)
-    function requestRandomNumber(SDX.RandomStrategy _strategy) public onlyAuthorizedRandomnessConsumers {
+    function requestRandomNumber() public onlyAuthorizedRandomnessConsumers {
 
     }
 

@@ -193,9 +193,7 @@ async function main() {
 
   // Summarize all meeting resolutions and amendments
 
-  console.log();
   console.log(`> Fetch all resolutions and amendments ...`);
-  console.log();
 
   const amendments = [];
   const amendmentCount = Number(await generalAssembly.getAmendmentCount());
@@ -268,11 +266,78 @@ async function main() {
   
   console.log();
   console.log(`> It's time to vote, it is: ${dateToShortDateTime(new Date())}`);
+
+  // Set votes for resolutionID 0
   console.log();
+  console.log('  - voting for resolution #0 ...');
+  console.log();
+
+  const resolution0 = 0;
+  const txAnigail0 = await generalAssembly.connect(_anigail).vote(resolution0, true);
+  await txAnigail0.wait();
+  console.log('    * anigail voted yes');
+  const txBernard0 = await generalAssembly.connect(_bernard).vote(resolution0, true);
+  await txBernard0.wait();
+  console.log('    * bernard voted yes');
+  const txCynthia0 = await generalAssembly.connect(_cynthia).vote(resolution0, true);
+  await txCynthia0.wait();
+  console.log('    * cynthia voted yes');
+  const txDounia0 = await generalAssembly.connect(_dounia).vote(resolution0, true);
+  await txDounia0.wait();
+  console.log('    * dounia voted yes');
+  const txElyes0 = await generalAssembly.connect(_elyes).vote(resolution0, true);
+  await txElyes0.wait();
+  console.log('    * elyes voted yes');
+
+  // Set votes for resolutionID 1
+  console.log();
+  console.log('  - voting for resolution #1 ...');
+  console.log();
+
+  const resolution1 = 1;
+  const txAnigail1 = await generalAssembly.connect(_anigail).vote(resolution1, true);
+  await txAnigail1.wait();
+  console.log('    * anigail voted yes');
+  const txBernard1 = await generalAssembly.connect(_bernard).vote(resolution1, true);
+  await txBernard1.wait();
+  console.log('    * bernard voted yes');
+  const txCynthia1 = await generalAssembly.connect(_cynthia).vote(resolution1, true);
+  await txCynthia1.wait();
+  console.log('    * cynthia voted yes');
+  const txDounia1 = await generalAssembly.connect(_dounia).vote(resolution1, true);
+  await txDounia1.wait();
+  console.log('    * dounia voted yes');
+  const txElyes1 = await generalAssembly.connect(_elyes).vote(resolution1, true);
+  await txElyes1.wait();
+  console.log('    * elyes voted yes');
+
+  // Set votes for resolutionID 2
+  console.log();
+  console.log('  - voting for resolution #2 ...');
+  console.log();
+
+  const resolution2 = 2;
+  const txAnigail2 = await generalAssembly.connect(_anigail).vote(resolution2, true);
+  await txAnigail2.wait();
+  console.log('    * anigail voted yes');
+  const txBernard2 = await generalAssembly.connect(_bernard).vote(resolution2, true);
+  await txBernard2.wait();
+  console.log('    * bernard voted yes');
+  const txCynthia2 = await generalAssembly.connect(_cynthia).vote(resolution2, true);
+  await txCynthia2.wait();
+  console.log('    * cynthia voted yes');
+  const txDounia2 = await generalAssembly.connect(_dounia).vote(resolution2, true);
+  await txDounia2.wait();
+  console.log('    * dounia voted yes');
+  const txElyes2 = await generalAssembly.connect(_elyes).vote(resolution2, true);
+  await txElyes2.wait();
+  console.log('    * elyes voted yes');
 
   //
-  console.log();
 
+
+  // DO NOT REMOVE
+  console.log();
 }
 
 

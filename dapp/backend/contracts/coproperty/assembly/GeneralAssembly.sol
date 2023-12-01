@@ -29,6 +29,9 @@ contract GeneralAssembly is SyndxValidations, Ownable {
     // The governance token of the coproperty
     ICopropertyToken governanceToken;
 
+    // The unique random number provided by the syndx contract if asked by this contract
+    uint256 public tiebreaker;
+
     // The general assembly timeline
     uint256 public created;    // When the general assembly was created
     uint256 public lockup;      // Resolution and amendements cannot be created after this time
@@ -41,6 +44,9 @@ contract GeneralAssembly is SyndxValidations, Ownable {
     // The amendments committed to resolutions
     SDX.Amendment[] amendments;
 
+    // Keep track of who has voted for each resolution
+    mapping (uint256 => mapping (address => bool)) hasVoted;
+
     // Emmitted when a new resolution is created
     event ResolutionCreated(uint256 id, address author);
 
@@ -49,6 +55,9 @@ contract GeneralAssembly is SyndxValidations, Ownable {
 
     // Emitted when a resolution vote type has changed
     event ResolutionVoteTypeChanged(uint256 id, SDX.VoteType typeBefore, SDX.VoteType typeAfter);
+
+    // Emmitted when a new vote is submitted
+    event Voted (address author, uint256 resolutionID, bool approved);
 
     // Ensure tha the caller is the coproperty syndic
     modifier onlyCopropertySyndic {
@@ -62,7 +71,7 @@ contract GeneralAssembly is SyndxValidations, Ownable {
         _;
     }
 
-    // ENsure that the caller is a coproperty governance token holder
+    // Ensure that the caller is a coproperty governance token holder
     modifier onlyGovernanceTokenHolders {
         if (governanceToken.balanceOf(msg.sender) <= 0) revert ("You are not a governance token holder");
         _;
@@ -193,5 +202,188 @@ contract GeneralAssembly is SyndxValidations, Ownable {
         resolutions[_id].voteType = _voteType;
 
         emit ResolutionVoteTypeChanged(_id, voteTypeBeforeChange, _voteType);
+    }
+
+    // Vote for a resolution
+    function vote(uint256 _resolutionID, bool _approve) external onlyCopropertyMembers onlyDuringVotingSession {
+
+        if (_resolutionID >= resolutions.length) revert ("Unknown resolution ID");
+        if (hasVoted[_resolutionID][msg.sender] == true) revert ("You already voted for this resolution");
+        if (resolutions[_resolutionID].voteType == SDX.VoteType.Undefined) revert ("Resolution vote type undetermined");
+
+        // Get the voting power of the property owner
+        uint256 propertyShares = governanceToken.balanceOf(msg.sender);
+
+        if (_approve) {
+
+            // Increase the weight of YES votes with the property owner voting power
+            resolutions[_resolutionID].yesShares += propertyShares;
+
+            // Increase the counter of YES votes
+            resolutions[_resolutionID].yesCount += 1;
+        }
+        else {
+
+            // Increase the weight of the NO votes with the property owner voting power
+            resolutions[_resolutionID].noShares += propertyShares;
+
+            // Increase the counter of NO votes
+            resolutions[_resolutionID].noCount += 1;
+        }
+
+        hasVoted[_resolutionID][msg.sender] = true;
+
+        emit Voted (msg.sender, _resolutionID, _approve);
+    }
+
+    // Request for a tibreaker number
+    // As requesting a tiebreaker number my incur costs (ex: with chainlink VRF randmness startegy) we rstrict the use of this function to the coproperty memebers
+    function requestTiebreaker() public onlyAfterVotingSession onlyCopropertyMembers {
+
+        syndx.requestRandomNumber();
+    }
+
+    // Get the vote result of a given resolution
+    function getVoteResult(uint256 _resolutionID) external onlyAfterVotingSession returns (SDX.VoteResult memory) {
+        
+        if (_resolutionID >= resolutions.length) revert ("Unknown resolution ID");
+
+        // Prepare an empty vote result that will be filled according to the resolution vote type
+        SDX.VoteResult memory voteResult;
+
+        // Retrieve the resolution to tally
+        SDX.Resolution memory resolution = resolutions[_resolutionID];
+
+        // Tally
+        if (resolution.voteType == SDX.VoteType.Undefined) {
+
+            revert ("Resolution with an undefined vote type are not part of voting sesssion");
+        }
+        else if (resolution.voteType == SDX.VoteType.Unanimity) {
+
+            voteResult = _unanimityTally(_resolutionID, resolution);
+        }
+        else if (resolution.voteType == SDX.VoteType.SimpleMajority) {
+
+            voteResult = _simpleMajorityTally(_resolutionID, resolution);
+        }
+        else if (resolution.voteType == SDX.VoteType.AbsoluteMajority) {
+
+            voteResult = _absoluteMajorityTally(_resolutionID, resolution);
+        }
+        else if (resolution.voteType == SDX.VoteType.DoubleMajority) {
+
+            voteResult = _doubleMajorityTally(_resolutionID, resolution);
+        }
+        else {
+            
+            revert ("Unexpected error: vote type tally not implemented");
+        }
+
+        // Tiebreak equality if there is and if the tiebreaker number is available
+        if (voteResult.equality) voteResult = _tiebreakVoteResult(voteResult);
+
+        return voteResult;
+    }
+
+    // Tally a given resolution votes according to the 'Unanimity' rules
+    // All property owner are taken into account (included the ones that have not voted)
+    // To be approved a resolution must get the approval of all property share owners
+    function _unanimityTally(uint256 _resolutionID, SDX.Resolution memory _resolution) private pure returns (SDX.VoteResult memory) {
+
+        SDX.VoteResult memory voteResult = SDX.createUntalliedVoteResult(_resolutionID, _resolution);
+
+        voteResult.approved = _resolution.yesShares == PROPERTY_SHARES_MAX_SUPPLY;
+
+        return voteResult;
+    }
+
+    // Tally a given resolution votes according to the 'SimpleMajority' rules
+    // Blank votes does not impacts the final result
+    // To be approved a resolution must receive more yes vote shares than no vote shares
+    function _simpleMajorityTally(uint256 _resolutionID, SDX.Resolution memory _resolution) private pure returns (SDX.VoteResult memory) {
+
+        SDX.VoteResult memory voteResult = SDX.createUntalliedVoteResult(_resolutionID, _resolution);
+
+        // Verify equality
+        voteResult.equality = (voteResult.yesShares == voteResult.noShares);
+        if (voteResult.equality) return voteResult;
+
+        voteResult.approved = _resolution.yesShares > _resolution.noShares;
+
+        return voteResult;
+    }
+
+    // Tally a given resolution votes according to the 'AbsoluteMajority' rules
+    // Blank votes impacts the result because they have an effect on the required thresold to obtains the majority
+    function _absoluteMajorityTally(uint256 _resolutionID, SDX.Resolution memory _resolution) private pure returns (SDX.VoteResult memory) {
+        
+        SDX.VoteResult memory voteResult = SDX.createUntalliedVoteResult(_resolutionID, _resolution);
+
+        // Verify equality
+        voteResult.equality = (voteResult.yesShares == voteResult.noShares);
+        if (voteResult.equality) return voteResult;
+
+        // Limit risks caused by a floating point threshold
+        uint256 factor = PROPERTY_SHARES_MAX_SUPPLY <= 10000 ? PROPERTY_SHARES_MAX_SUPPLY : 10000;
+        uint256 scaledYesShares = voteResult.yesShares * factor;
+        uint256 scaledNoShares = voteResult.noShares * factor;
+
+        // The amount of property shares to be exceeded to gain the majority
+        uint256 threshold = (scaledYesShares + scaledNoShares) / 2;
+        
+        voteResult.approved = (voteResult.yesShares * factor) > threshold;
+
+        return voteResult;
+    }
+
+    // Tally a given resolution votes according to the 'DoubleMajority' rules
+    // Blank votes impacts the result because they have an effect on the required thresolds to obtains both majorities
+    function _doubleMajorityTally(uint256 _resolutionID, SDX.Resolution memory _resolution) private pure returns (SDX.VoteResult memory) {
+
+        SDX.VoteResult memory voteResult = SDX.createUntalliedVoteResult(_resolutionID, _resolution);
+
+        // Verify equality
+        voteResult.equality = (voteResult.yesShares == voteResult.noShares) && (voteResult.yesCount == voteResult.noCount);
+        if (voteResult.equality) return voteResult;
+        
+        // Limit risks caused by a floating point threshold
+        uint256 factor = PROPERTY_SHARES_MAX_SUPPLY <= 10000 ? PROPERTY_SHARES_MAX_SUPPLY : 10000;
+        uint256 scaledYesShares = voteResult.yesShares * factor;
+        uint256 scaledNoShares  = voteResult.noShares  * factor;
+        uint256 scaledYesCount  = voteResult.yesCount * factor;
+        uint256 scaledNoCount   = voteResult.noCount  * factor;
+
+        // The amount of property shares to be be exceeded to gain the first majority
+        uint256 threshold1 = (scaledYesShares + scaledNoShares) / 2;
+
+        // The amount of yes vote count to be exceeded to gain the first majority
+        uint256 threshold2 = (scaledYesCount + scaledNoCount) / 2;
+
+        voteResult.approved = (scaledYesShares > threshold1 && scaledYesCount > threshold2);
+
+        return voteResult;
+    }
+
+    // function tie break equality with a random number
+    function _tiebreakVoteResult (SDX.VoteResult memory _voteResult) private returns (SDX.VoteResult memory) {
+
+        // If the tibreaker number is not already fectched from the syndx contract, we try to request it
+        // Note: Syndx contract manage to ensure that there will be one and only one unique random number request for each general assembly contract
+        //       This means that if we accidentally fetch the random number twice, it will always be the same
+        if (tiebreaker <= 0) {
+
+            // Fetch the general assembly unique random number from the syndx contract
+            // If a tiebreaker number is provided we will not request it again
+            tiebreaker = syndx.getRequestedRandomNumber(address(this));
+
+            // If the syndx contract is not able to provide us the tiebreaker number we need to wait and try again later
+            if (tiebreaker <= 0) revert ("Tiebreaker request not fullfilled yet");
+        }
+
+        // To tie braek we just checks random tiebreaker number is odd or even 
+        _voteResult.approved = tiebreaker % 2 == 1;
+
+        return _voteResult;
     }
 }
