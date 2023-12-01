@@ -125,8 +125,26 @@ async function main() {
   console.log(`    TOTAL DISTRIBUTED = ${totalGovernanceDistributedTokens}`);
   console.log();
 
+  // Force local chain to mine a bloc to updates his timestamp and limit desynchronisation with local environnement
+  if (hre.network.name == 'hardhat' || hre.network.name == 'localhost') await hre.network.provider.send("evm_mine");
+
   // Create a new coproperty assembly
 
+  console.log(`> Creating a new general assembly ...`);
+  console.log();
+
+  const now = (await ethers.provider.getBlock("latest")).timestamp;
+  const timespanFromNowAndVoteStartTime = (hre.network.name == 'hardhat' || hre.network.name == 'localhost') ? 60 : 120;
+  const votetartTime = now + timespanFromNowAndVoteStartTime;
+
+  const txGeneralAssembly = await coproperty.connect(_syndic).createGeneralAssembly(votetartTime);
+  await txGeneralAssembly.wait();
+
+  const generalAssemblyContractAddress = await coproperty.getLastestGeneralAssembly();
+  const generalAssembly = await hre.ethers.getContractAt("GeneralAssembly", generalAssemblyContractAddress); 
+
+  console.log(`> Created a new general assembly contract: ${generalAssembly.target}`);
+  console.log();
 }
 
 // We recommend this pattern to be able to use async/await everywhere

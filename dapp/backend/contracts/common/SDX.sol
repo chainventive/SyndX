@@ -12,10 +12,10 @@ library SDX {
     /* ENUMS */
 
     enum ContractType {
-        Undetermined,
+        Unknown,
         Coproperty,
-        VoteAssembly,
-        VoteToken
+        GovernanceToken,
+        GeneralAssembly
     }
 
     enum VoteType {
