@@ -19,7 +19,7 @@ library SDX {
     }
 
     enum VoteType {
-        Undetermined,
+        Undefined,
         Unanimity,
         SimpleMajority,
         AbsoluteMajority,
@@ -55,12 +55,19 @@ library SDX {
         uint256 requestID;
         uint256 randomWords;
     }
+
+    struct GeneralAssemblyTimeline {
+        uint256 created;    // When the general assembly was created
+        uint256 lockup;     // Resolution and amendements cannot be created after this time
+        uint256 voteStart;  // When the voting session starts
+        uint256 voteEnd;    // When the voting session ends
+    }
     
     /* HELPERS */
 
     function createResolution(string memory _title, string memory _description, address _author) internal pure returns (Resolution memory) {
         
-        return Resolution(_title, _description, _author, VoteType.Undetermined, 0, 0, 0, 0);
+        return Resolution(_title, _description, _author, VoteType.Undefined, 0, 0, 0, 0);
     }
 
     function createAmendment(uint256 _resolutionID, string memory _description, address _author) internal pure returns (Amendment memory) {

@@ -35,5 +35,19 @@ contract SyndxValidations {
         require(bytes(_symbol).length < TOKEN_SYMBOL_MAX_LENGHT, "Token symbol too long");
         _;
     }
+
+    // Ensure a title is valid
+    modifier validTitle(string memory _title) {
+        require(bytes(_title).length > TITLE_MIN_LENGHT, "Title is too short");
+        require(bytes(_title).length < TITLE_MAX_LENGHT, "Title is too long");
+        _;
+    }
+
+    // Ensure a description is valid
+    modifier validDescription(string memory _description) {
+        require(bytes(_description).length > DESCRIPTION_MIN_LENGHT, "Description is too short");
+        require(bytes(_description).length < DESCRIPTION_MAX_LENGHT, "Description is too long");
+        _;
+    }
     
 }

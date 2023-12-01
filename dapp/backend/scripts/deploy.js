@@ -6,6 +6,10 @@
 // global scope, and execute the script.
 const hre = require("hardhat");
 
+const { getDateTimestamp, getTimestampDate, dateToShortDateTime, wait } = require('../helpers/time');
+
+const getVoteType = (value) => value === 0 ? "Undetermined" : value === 1 ? "Unanimity" : value === 2 ? "SimpleMajority" : value === 3 ? "AbsoluteMajority" : "ERROR";
+
 async function main() {
   
   // Load signers to manipulate contracts
@@ -141,11 +145,136 @@ async function main() {
   await txGeneralAssembly.wait();
 
   const generalAssemblyContractAddress = await coproperty.getLastestGeneralAssembly();
-  const generalAssembly = await hre.ethers.getContractAt("GeneralAssembly", generalAssemblyContractAddress); 
+  const generalAssembly = await hre.ethers.getContractAt("GeneralAssembly", generalAssemblyContractAddress);
 
-  console.log(`> Created a new general assembly contract: ${generalAssembly.target}`);
+  const generalAssemblyTimeline = await generalAssembly.getTimeline();
+  const unlockedTimespan = Number(generalAssemblyTimeline.lockup) - Number(generalAssemblyTimeline.created);
+  console.log(`  - meeting creation time  : ${getTimestampDate(generalAssemblyTimeline.created)}`);
+  console.log(`  - unlock period duration : ${unlockedTimespan} sec. to submit resolutions/amendments`);
+  console.log(`  - resol.lockup time      : ${getTimestampDate(generalAssemblyTimeline.lockup)}`);
+  console.log(`  - voting start time      : ${getTimestampDate(generalAssemblyTimeline.voteStart)}`);
+  console.log(`  - voting end time        : ${getTimestampDate(generalAssemblyTimeline.voteEnd)}`);
   console.log();
+
+  // Submit general assembly resolutions
+
+  console.log(`> Submitting resolutions ...`);
+  console.log();
+
+  const title1 = "Approbation des comptes";
+  const description1 = "Le syndic SIMPLE COMME SYNDIC sollicite l'approbation intégrale des comptes de charge de l'exercice 2022 clos le 31 décembre, adressés à chaque copropriétaire";
+  const tx12 = await generalAssembly.connect(_syndic).createResolution(title1, description1);
+  console.log(`  - created syndic resolution 'Approbation des comptes'`);
+
+  const title2 = "Désignation du syndic";
+  const description2 = "Le syndic SIMPLE COMME SYNDIC demande de le désigner comme syndic pour un montant annuel de EUR 2,400.-. Début de contrat 01/01/2024 - Fin de contrat 31/12/2024";
+  const tx13 = await generalAssembly.connect(_syndic).createResolution(title2, description2);
+  console.log(`  - created syndic resolution 'Désignation du syndic'`);
+
+  const title3 = "Acquisition d’un garage privé";
+  const description3 = "Bonjour, nous souhaiterions que la copropriété fasse l’acquisition du garage privée mitoyen à l’immeuble dont mon mari est déjà propriétaire";
+  const tx14 = await generalAssembly.connect(_dounia).createResolution(title3, description3);
+  console.log(`  - created dounia resolution 'Acquisition d’un garage privé'`);
+
+  await tx14.wait(); // wait that the latest submitted resolution tx was mined to continue
+
+  console.log();
+  console.log(`> Amending the latest resolution ...`);
+  console.log();
+
+  const latestResolutionId = Number(await generalAssembly.getResolutionCount()) - 1;
+  const amendmentDescription = "le syndic tient à vous informer qu’en cas d’adoption, les quote-parts de chaque copropriétaire ferait l’objet d’une modification prenant en compte les tantièmes du garage au sein de la copropriété";
+  const tx15 = await generalAssembly.connect(_syndic).createAmendment(latestResolutionId, amendmentDescription);
+  
+  await tx15.wait(); // wait that the submitted amendment tx was mined to continue
+
+  console.log(`  - syndic amended dounia's resolution 'Acquisition d’un garage privé'`);
+  console.log(); 
+
+  // Summarize all meeting resolutions and amendments
+
+  console.log();
+  console.log(`> Fetch all resolutions and amendments ...`);
+  console.log();
+
+  const amendments = [];
+  const amendmentCount = Number(await generalAssembly.getAmendmentCount());
+
+  for(let i = 0; i < amendmentCount; ++i) {
+
+      const amendment = await generalAssembly.getAmendment(i);
+      amendments.push(amendment);
+  }
+
+  const resolutionCount = Number(await generalAssembly.getResolutionCount());
+
+  console.log();
+  console.log(`> Resolutions summary: `);
+  console.log();
+
+  for(let i = 0; i < resolutionCount; ++i) {
+
+    const resolution = await generalAssembly.getResolution(i);
+    const resolutionAmendments = amendments.filter(amendment => amendment.resolutionID == i);
+    const resolutionVoteType = getVoteType(Number(resolution.voteType));
+        
+    console.log(`  - ${resolution.author}: ${resolution.title} [${resolutionVoteType}] -> ${resolution.description}`);
+    
+    for(let j = 0; j < resolutionAmendments.length; ++j) {
+
+      const amendment = resolutionAmendments[j];
+      console.log(`    * ${amendment.author}: ${amendment.description}`);
+    }
+  }
+
+  // Let the syndic assign the vote type of each resolution
+
+  console.log();
+  console.log(`> Simulate vote types assignations by the syndic ... `);
+  console.log();
+
+  let tx16;
+  for(let i = 0; i < resolutionCount; ++i) {
+
+      const newVoteType = i==0 ? (1) : (i==1 ? (2) : (i==2 ? (3) : (0)));
+      tx16 = await generalAssembly.connect(_syndic).setResolutionVoteType(i, newVoteType);
+  }
+
+  await tx16.wait(); // wait that the latest vote type assignation tx was mined before fetching all resolutions again to checks if right changes are done
+
+  for(let i = 0; i < resolutionCount; ++i) {
+
+      const resolution = await generalAssembly.getResolution(i);
+      const resolutionVoteType = getVoteType(Number(resolution.voteType));
+      console.log(`  - syndic changed vote type of resolution '${resolution.title}' from '${getVoteType(0)}' to '${resolutionVoteType}'`);
+  }
+
+
+  // Simulate votes
+
+  console.log();
+  console.log(`> Wait the opening of the voting session scheduled ${getTimestampDate(generalAssemblyTimeline.voteStart)} ... `);
+  console.log();
+
+  let latestBlockTimeStamp = 0;
+  while(latestBlockTimeStamp < Number(generalAssemblyTimeline.voteStart))
+  {
+      if (hre.network.name == 'hardhat' || hre.network.name == 'localhost') await hre.network.provider.send("evm_mine");
+
+      latestBlockTimeStamp = (await ethers.provider.getBlock("latest")).timestamp;
+      console.log(`  - latest block time: ${getTimestampDate(Number(latestBlockTimeStamp))}`);
+      await wait(15); // wait approx. 1 block
+  }
+  
+  console.log();
+  console.log(`> It's time to vote, it is: ${dateToShortDateTime(new Date())}`);
+  console.log();
+
+  //
+  console.log();
+
 }
+
 
 // We recommend this pattern to be able to use async/await everywhere
 // and properly handle errors.
