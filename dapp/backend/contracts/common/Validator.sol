@@ -7,7 +7,7 @@ pragma solidity 0.8.20;
 // Common imports
 import "./SDX.sol";
 
-contract SyndxValidations {
+contract Validator {
 
     // Ensure address is not zero
     modifier notAddressZero(address _address) {

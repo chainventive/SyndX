@@ -5,17 +5,18 @@ pragma solidity 0.8.20;
 // import "hardhat/console.sol";
 
 // OpenZippelin imports
+import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 // Common imports
 import "../../common/SDX.sol";
-import "../../common/SyndxValidations.sol";
+import "../../common/Validator.sol";
 
 // Interfaces imports
 import "./ICopropertyToken.sol";
 
-contract CopropertyToken is ICopropertyToken, SyndxValidations, ERC20, Ownable {
+contract CopropertyToken is ICopropertyToken, Validator, ERC20, Ownable {
 
     // The token administrator
     address public administrator;
@@ -37,13 +38,6 @@ contract CopropertyToken is ICopropertyToken, SyndxValidations, ERC20, Ownable {
         _mint(_admin, PROPERTY_SHARES_MAX_SUPPLY);
     }
 
-    function setWhitelist(address _address, bool _allowed) external onlyAdmin notAddressZero(_address) {
-
-        if (_allowed == false && balanceOf(_address) > 0) revert ("Cannot remove token holder from whitelist");
-
-        whitelist[_address] = _allowed;
-    }
-
     function setAdmin(address _address) external onlyOwner {
 
         _setAdmin(_address);
@@ -52,6 +46,13 @@ contract CopropertyToken is ICopropertyToken, SyndxValidations, ERC20, Ownable {
     function _setAdmin(address _address) private onlyOwner notAddressZero(_address) {
 
         administrator = _address;
+    }
+
+    function setWhitelist(address _address, bool _allowed) external onlyAdmin notAddressZero(_address) {
+
+        if (_allowed == false && balanceOf(_address) > 0) revert ("Cannot remove token holder from whitelist");
+
+        whitelist[_address] = _allowed;
     }
 
     // As recommended by OpenZippelin, the 'virtual' keyword is preserved here in order to allow hypothetic child contracts to use the hook

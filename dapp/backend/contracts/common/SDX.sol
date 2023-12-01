@@ -26,11 +26,6 @@ library SDX {
         DoubleMajority
     }
 
-    enum RandomStrategy {
-        Keccak256Based,
-        ChainlinkVRF
-    }
-
     /* STRUCTS */
 
     struct Resolution {
@@ -50,10 +45,16 @@ library SDX {
         address author;
     }
 
-    struct RandomnessConsumer {
+    struct ConsumerRequest {
         bool authorized;
         uint256 requestID;
-        uint256 randomWords;
+        uint256 requesBlockNumber;
+        SDX.ContractType consumerType;
+    }
+
+    struct ConsumerResponse {
+        address consumer;
+        uint256[] randomWords;
     }
 
     struct GeneralAssemblyTimeline {
@@ -89,5 +90,10 @@ library SDX {
     function createUntalliedVoteResult(uint256 _resolutionID, Resolution memory _resolution) internal pure returns (VoteResult memory) {
 
         return VoteResult(_resolutionID, _resolution.yesShares, _resolution.noShares, _resolution.yesCount, _resolution.noCount, false, 0, false);
+    }
+
+    function createAuthorizedConsumerRequest(SDX.ContractType _contractType) internal pure returns (ConsumerRequest memory) {
+
+        return ConsumerRequest(true, 0, 0, _contractType);
     }
 }

@@ -147,6 +147,9 @@ async function main() {
   const generalAssemblyContractAddress = await coproperty.getLastestGeneralAssembly();
   const generalAssembly = await hre.ethers.getContractAt("GeneralAssembly", generalAssemblyContractAddress);
 
+  console.log(`> General assembly contract: ${ generalAssembly.target }`);
+  console.log();
+
   const generalAssemblyTimeline = await generalAssembly.getTimeline();
   const unlockedTimespan = Number(generalAssemblyTimeline.lockup) - Number(generalAssemblyTimeline.created);
   console.log(`  - meeting creation time  : ${getTimestampDate(generalAssemblyTimeline.created)}`);
@@ -353,6 +356,8 @@ async function main() {
         await hre.network.provider.send("evm_mine");
       }
 
+      await wait(15); // wait approx. 1 block
+
       latestBlockTimeStamp = (await ethers.provider.getBlock("latest")).timestamp;
       console.log(`  - latest block time: ${getTimestampDate(Number(latestBlockTimeStamp))}`);
   }
@@ -369,14 +374,13 @@ async function main() {
   while(tiebreaker <= 0)
   {
       console.log(`  - VRF request pending ...`);
-      console.log();
 
       await wait(15); // wait approx. 1 block
       
       tiebreaker = Number(await generalAssembly.tiebreaker());
-      console.log(tiebreaker)
   }
-
+  
+  console.log();
   console.log(`> Tiebreak number received: ${tiebreaker}`);
   console.log();
 
@@ -421,8 +425,6 @@ async function main() {
     }
 
   }
-
-
 
   // DO NOT REMOVE
   console.log();

@@ -9,7 +9,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 // Common imports
 import "../common/SDX.sol";
-import "../common/SyndxValidations.sol";
+import "../common/Validator.sol";
 
 // Interface imports
 import "./token/ICopropertyToken.sol";
@@ -18,7 +18,7 @@ import "./token/ICopropertyToken.sol";
 import "../Syndx.sol";
 import "./assembly/GeneralAssembly.sol";
 
-contract Coproperty is SyndxValidations, Ownable {
+contract Coproperty is Validator, Ownable {
 
     // The syndx contract
     Syndx private syndx;

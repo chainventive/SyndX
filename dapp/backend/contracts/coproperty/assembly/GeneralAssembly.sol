@@ -9,7 +9,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 // Common imports
 import "../../common/SDX.sol";
-import "../../common/SyndxValidations.sol";
+import "../../common/Validator.sol";
 
 // Interfaces imports
 import '../token/ICopropertyToken.sol';
@@ -18,7 +18,7 @@ import '../token/ICopropertyToken.sol';
 import "../../Syndx.sol";
 import "../Coproperty.sol";
 
-contract GeneralAssembly is SyndxValidations, Ownable {
+contract GeneralAssembly is Validator, Ownable {
 
     // The syndx contract
     Syndx private syndx;
@@ -33,7 +33,7 @@ contract GeneralAssembly is SyndxValidations, Ownable {
     uint256 public tiebreaker;
 
     // The general assembly timeline
-    uint256 public created;    // When the general assembly was created
+    uint256 public created;     // When the general assembly was created
     uint256 public lockup;      // Resolution and amendements cannot be created after this time
     uint256 public voteStart;   // When the voting session starts
     uint256 public voteEnd;     // When the voting session ends
@@ -252,9 +252,11 @@ contract GeneralAssembly is SyndxValidations, Ownable {
     }
 
     // Callback function to allow the syndx contract to provide the requested tiebreak number
+    // We protect the contract against tiebreaker overwrites. This mean once the tiebreak number is set, it is forever
     function fullfillTiebreaker(uint256 _tiebreaker) public onlyOwner {
 
-        if (_tiebreaker <= 0) revert ("Tiebreak number cannot be zero");
+        if (tiebreaker > 0) revert ("Tiebreaker already fullfilled");
+        if (_tiebreaker <= 0) revert ("Provided tiebreaker cannot be zero");
 
         tiebreaker = _tiebreaker;
 

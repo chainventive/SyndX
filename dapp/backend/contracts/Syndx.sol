@@ -9,16 +9,17 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 // Common imports
 import "./common/SDX.sol";
-import "./common/SyndxValidations.sol";
+import "./common/Validator.sol";
 
 // Contracts imports
+import "./randomness/SyndxVRF.sol";
 import "./coproperty/Coproperty.sol";
 import "./coproperty/token/CopropertyToken.sol";
 import "./coproperty/assembly/GeneralAssembly.sol";
 
 // Events
 
-contract Syndx is SyndxValidations, Ownable {
+contract Syndx is Validator, Ownable, SyndxVRF {
 
     // Keep track of created contract
     mapping (address => SDX.ContractType) public contracts;
@@ -26,12 +27,9 @@ contract Syndx is SyndxValidations, Ownable {
     // Keep track of created coproperty contracts
     mapping (string => address) public coproperties;
 
-    // Keep track of deployed contracts allowed to ask for random number
-    mapping (address => SDX.RandomnessConsumer) randomnessConsumers;
-
     // Ensure the caller is registered as randomnessConsumer
     modifier onlyAuthorizedRandomnessConsumers () {
-        if (randomnessConsumers[msg.sender].authorized == false) revert ("Unauthorized randomness consumer");
+        if (consumerRequests[msg.sender].authorized == false) revert ("Unauthorized randomness consumer");
         _;
     }
 
@@ -46,6 +44,9 @@ contract Syndx is SyndxValidations, Ownable {
 
     // Emitted when a new general assembly contract is created
     event GeneralAssemblyContractCreated(address generalAssembly, address copropertyContract);
+
+    // Emitted when a randomness number request is reset for a given consumer (in order to keep tracks of what happened)
+    event RandomnessRequestReset(uint256 requestID, address consumer);
 
     // Syndx contract is owned by its deployer
     constructor() Ownable (msg.sender) {}
@@ -76,30 +77,48 @@ contract Syndx is SyndxValidations, Ownable {
         address generalAssemblyAddress = address(generalAssembly);
         contracts[generalAssemblyAddress] = SDX.ContractType.GeneralAssembly;
 
-        randomnessConsumers[generalAssemblyAddress].authorized = true;
+        consumerRequests[generalAssemblyAddress].authorized = true;
+        consumerRequests[generalAssemblyAddress].consumerType = SDX.ContractType.GeneralAssembly;
 
         emit GeneralAssemblyContractCreated(generalAssemblyAddress, msg.sender);
 
         return generalAssemblyAddress;
     }
 
+    // Reset the random request number of a given consumer
+    // It can be helpful if the service provider fails to fullfill random words
+    // If consumer request was already fullfilled the consumer request cannot be reseted
+    function resetRandomNumberRequest(address _consumer) external onlyOwner notAddressZero(_consumer) {
+
+        // The provided consumer must be an authorized randmness consumer
+        if (consumerRequests[_consumer].authorized == false) revert ("Unauthorized randomness consumer");
+
+        // If yes get the current requestID associated to this consumer
+        uint256 currentRequestID = consumerRequests[_consumer].requestID;
+
+        // To be reset the current request must exists
+        if (currentRequestID <= 0) revert ("There is no existing request for this consumer");
+ 
+        // To be reset the current request must have not be already fullfilled
+        if (consumerRequestResponses[currentRequestID].randomWords.length > 0) revert ("Consumer request already fullfilled");
+
+        // To be reset the current request must be older enough to prevent againt Syndx manipulation
+        if (block.number < (consumerRequests[_consumer].requesBlockNumber + RANDMNESS_REQUEST_BLOCKS_LOCKUP_BEFORE_RETRY)) revert ("Random number request lockup has not ended yet");
+
+        // Reset the consumer request
+        consumerRequests[_consumer] = SDX.createAuthorizedConsumerRequest(contracts[_consumer]);
+
+        emit RandomnessRequestReset(currentRequestID, _consumer);
+    }
+
+
     // Ask for a random number (only authorized contracts are able to call)
     function requestRandomNumber() public onlyAuthorizedRandomnessConsumers {
 
-        uint256 randomNumber = 17;
+        // Checks if a request was already made by the caller
+        if (consumerRequests[msg.sender].requestID > 0) revert ("Random number request already made");
 
-        // Retrieve the type of the consumer contract
-        SDX.ContractType contractType = contracts[msg.sender];
-
-        if (contractType == SDX.ContractType.GeneralAssembly) {
-
-            // If the consumer is a GeneralAssembly contract, we provide the random number through its callback function
-            GeneralAssembly consumer = GeneralAssembly(msg.sender);
-            consumer.fullfillTiebreaker(randomNumber);
-        }
-        else {
-
-            revert ("Unknown consumer contract type");
-        }
+        // Perform the request for the caller consumer
+        requestRandomWords(msg.sender);
     }
 }
