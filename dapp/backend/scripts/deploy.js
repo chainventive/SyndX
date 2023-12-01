@@ -257,7 +257,10 @@ async function main() {
   let latestBlockTimeStamp = 0;
   while(latestBlockTimeStamp < Number(generalAssemblyTimeline.voteStart))
   {
-      if (hre.network.name == 'hardhat' || hre.network.name == 'localhost') await hre.network.provider.send("evm_mine");
+      if (hre.network.name == 'hardhat' || hre.network.name == 'localhost') {
+        await hre.network.provider.send("evm_setNextBlockTimestamp", [Number(generalAssemblyTimeline.voteStart)]);
+        await hre.network.provider.send("evm_mine");
+      }
 
       latestBlockTimeStamp = (await ethers.provider.getBlock("latest")).timestamp;
       console.log(`  - latest block time: ${getTimestampDate(Number(latestBlockTimeStamp))}`);
@@ -298,15 +301,15 @@ async function main() {
   const txAnigail1 = await generalAssembly.connect(_anigail).vote(resolution1, true);
   await txAnigail1.wait();
   console.log('    * anigail voted yes');
-  const txBernard1 = await generalAssembly.connect(_bernard).vote(resolution1, true);
+  const txBernard1 = await generalAssembly.connect(_bernard).vote(resolution1, false);
   await txBernard1.wait();
   console.log('    * bernard voted yes');
   const txCynthia1 = await generalAssembly.connect(_cynthia).vote(resolution1, true);
   await txCynthia1.wait();
   console.log('    * cynthia voted yes');
-  const txDounia1 = await generalAssembly.connect(_dounia).vote(resolution1, true);
-  await txDounia1.wait();
-  console.log('    * dounia voted yes');
+  //const txDounia1 = await generalAssembly.connect(_dounia).vote(resolution1, true);
+  //await txDounia1.wait();
+  console.log('    * dounia abstained');
   const txElyes1 = await generalAssembly.connect(_elyes).vote(resolution1, true);
   await txElyes1.wait();
   console.log('    * elyes voted yes');
@@ -320,16 +323,16 @@ async function main() {
   const txAnigail2 = await generalAssembly.connect(_anigail).vote(resolution2, true);
   await txAnigail2.wait();
   console.log('    * anigail voted yes');
-  const txBernard2 = await generalAssembly.connect(_bernard).vote(resolution2, true);
+  const txBernard2 = await generalAssembly.connect(_bernard).vote(resolution2, false);
   await txBernard2.wait();
   console.log('    * bernard voted yes');
-  const txCynthia2 = await generalAssembly.connect(_cynthia).vote(resolution2, true);
-  await txCynthia2.wait();
-  console.log('    * cynthia voted yes');
+  //const txCynthia2 = await generalAssembly.connect(_cynthia).vote(resolution2, true);
+  //await txCynthia2.wait();
+  console.log('    * cynthia abstained');
   const txDounia2 = await generalAssembly.connect(_dounia).vote(resolution2, true);
   await txDounia2.wait();
   console.log('    * dounia voted yes');
-  const txElyes2 = await generalAssembly.connect(_elyes).vote(resolution2, true);
+  const txElyes2 = await generalAssembly.connect(_elyes).vote(resolution2, false);
   await txElyes2.wait();
   console.log('    * elyes voted yes');
 
@@ -339,13 +342,17 @@ async function main() {
 
   // Wait the end of the voting session
 
-  console.log(`> Wait the voting session end scheduled ${getTimestampDate(meetingTimeline.voteEnd)} ... `);
+  console.log(`> Wait the voting session end scheduled ${getTimestampDate(generalAssemblyTimeline.voteEnd)} ... `);
   console.log();
 
   latestBlockTimeStamp = 0;
-  while(latestBlockTimeStamp < Number(meetingTimeline.voteEnd))
+  while(latestBlockTimeStamp < Number(generalAssemblyTimeline.voteEnd))
   {
-      if (hre.network.name == 'hardhat' || hre.network.name == 'localhost') await hre.network.provider.send("evm_mine");
+      if (hre.network.name == 'hardhat' || hre.network.name == 'localhost') {
+        await hre.network.provider.send("evm_setNextBlockTimestamp", [Number(generalAssemblyTimeline.voteEnd)]);
+        await hre.network.provider.send("evm_mine");
+      }
+
       latestBlockTimeStamp = (await ethers.provider.getBlock("latest")).timestamp;
       console.log(`  - latest block time: ${getTimestampDate(Number(latestBlockTimeStamp))}`);
   }
@@ -356,7 +363,7 @@ async function main() {
   console.log(`> Asking for tiebreaker number through Chainlink VRF service ...`);
   console.log();
 
-  await generalAssembly.requestTiebreaker();
+  await generalAssembly.connect(_syndic).requestTiebreaker();
 
   let tiebreaker = 0;
   while(tiebreaker <= 0)
@@ -366,11 +373,56 @@ async function main() {
 
       await wait(15); // wait approx. 1 block
       
-      tiebreaker = await syndx.getRequestedRandomNumber(generalAssembly.target);
+      tiebreaker = Number(await generalAssembly.tiebreaker());
+      console.log(tiebreaker)
   }
 
   console.log(`> Tiebreak number received: ${tiebreaker}`);
   console.log();
+
+  // Show the final votes results
+
+  console.log(`> It's time to checks results, it is: ${dateToShortDateTime(new Date())}`);
+  console.log();
+
+  for(let i = 0; i < resolutionCount; ++i) {
+
+    const resolution = await generalAssembly.getResolution(i);
+    const voteType = getVoteType(Number(resolution.voteType));
+
+    try {
+
+        const voteResult = await generalAssembly.getVoteResult(i);
+        const yesVoteShares = Number(voteResult.yesShares);
+        const noVoteShares = Number(voteResult.noShares);
+        const blankVoteShares = 10000 - (yesVoteShares + noVoteShares);
+        const totalVoteShares = yesVoteShares + noVoteShares + blankVoteShares;
+        const yesVoteCount = Number(voteResult.yesCount);
+        const noVoteCount = Number(voteResult.noCount);
+
+        console.log(`  - resolution #${i} '${resolution.title}' [${voteType}]`);
+        console.log();
+        console.log(`    * total shares: ${totalVoteShares}`);
+        console.log(`    * yes shares  : ${yesVoteShares}`);
+        console.log(`    * no shares   : ${noVoteShares}`);
+        console.log(`    * blank shares: ${blankVoteShares}`);
+        console.log(`    * yes count   : ${yesVoteCount}`);
+        console.log(`    * no count    : ${noVoteCount}`);
+        console.log(`    * equality    : ${voteResult.equality}`);
+        console.log(`    * tiebreaker  : ${voteResult.tiebreaker}`);
+        console.log(`    * approved    : ${voteResult.approved}`);
+
+        console.log();
+    }
+    catch (err) {
+
+        console.log(`  - resolution #${i} '${ resolution.title }' [${ voteType }] => ERROR: ${err}`);
+        console.log();
+    }
+
+  }
+
+
 
   // DO NOT REMOVE
   console.log();

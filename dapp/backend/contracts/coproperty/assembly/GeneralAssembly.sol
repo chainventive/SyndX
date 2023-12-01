@@ -63,7 +63,7 @@ contract GeneralAssembly is SyndxValidations, Ownable {
     event TiebreakerRequestSent (uint256 blocktime);
 
     // Emmitted when the tiebreaker is successfully fetched
-    event TiebreakerReceived (uint256 tiebreaker);
+    event TiebreakerFullfilled (uint256 tiebreaker);
 
     // Ensure tha the caller is the coproperty syndic
     modifier onlyCopropertySyndic {
@@ -251,9 +251,19 @@ contract GeneralAssembly is SyndxValidations, Ownable {
         emit TiebreakerRequestSent(block.timestamp);
     }
 
+    // Callback function to allow the syndx contract to provide the requested tiebreak number
+    function fullfillTiebreaker(uint256 _tiebreaker) public onlyOwner {
+
+        if (_tiebreaker <= 0) revert ("Tiebreak number cannot be zero");
+
+        tiebreaker = _tiebreaker;
+
+        emit TiebreakerFullfilled (tiebreaker);
+    }
+
     // Get the vote result of a given resolution
     // Every body can request vote results once the voting session has ended
-    function getVoteResult(uint256 _resolutionID) external onlyAfterVotingSession returns (SDX.VoteResult memory) {
+    function getVoteResult(uint256 _resolutionID) external view onlyAfterVotingSession returns (SDX.VoteResult memory) {
         
         if (_resolutionID >= resolutions.length) revert ("Unknown resolution ID");
 
@@ -375,24 +385,15 @@ contract GeneralAssembly is SyndxValidations, Ownable {
     }
 
     // function tie break equality with a random number
-    function _tiebreakVoteResult (SDX.VoteResult memory _voteResult) private returns (SDX.VoteResult memory) {
+    function _tiebreakVoteResult (SDX.VoteResult memory _voteResult) private view returns (SDX.VoteResult memory) {
 
-        // If the tibreaker number is not already fectched from the syndx contract, we try to request it
+        // If the tiebreaker number is not already fectched from the syndx contract, we try to request it
         // Note: Syndx contract manage to ensure that there will be one and only one unique random number request for each general assembly contract
         //       This means that if we accidentally fetch the random number twice, it will always be the same
-        if (tiebreaker <= 0) {
-
-            // Fetch the general assembly unique random number from the syndx contract
-            // If a tiebreaker number is provided we will not request it again
-            tiebreaker = syndx.getRequestedRandomNumber(address(this));
-
-            // If the syndx contract is not able to provide us the tiebreaker number we need to wait and try again later
-            if (tiebreaker <= 0) revert ("Tiebreaker request not fullfilled yet");
-
-            emit TiebreakerReceived (tiebreaker);
-        }
+        if (tiebreaker <= 0) revert ("Tiebreaker request not fullfilled yet");
 
         // To tie braek we just checks random tiebreaker number is odd or even 
+        _voteResult.tiebreaker = tiebreaker;
         _voteResult.approved = tiebreaker % 2 == 1;
 
         return _voteResult;

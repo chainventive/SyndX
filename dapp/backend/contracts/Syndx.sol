@@ -76,6 +76,8 @@ contract Syndx is SyndxValidations, Ownable {
         address generalAssemblyAddress = address(generalAssembly);
         contracts[generalAssemblyAddress] = SDX.ContractType.GeneralAssembly;
 
+        randomnessConsumers[generalAssemblyAddress].authorized = true;
+
         emit GeneralAssemblyContractCreated(generalAssemblyAddress, msg.sender);
 
         return generalAssemblyAddress;
@@ -84,11 +86,20 @@ contract Syndx is SyndxValidations, Ownable {
     // Ask for a random number (only authorized contracts are able to call)
     function requestRandomNumber() public onlyAuthorizedRandomnessConsumers {
 
-    }
+        uint256 randomNumber = 17;
 
-    // Get the random number requested by a consumer. Everybody can access this piece of information.
-    function getRequestedRandomNumber(address _consumer) public returns (uint256) {
+        // Retrieve the type of the consumer contract
+        SDX.ContractType contractType = contracts[msg.sender];
 
-        return 17;
+        if (contractType == SDX.ContractType.GeneralAssembly) {
+
+            // If the consumer is a GeneralAssembly contract, we provide the random number through its callback function
+            GeneralAssembly consumer = GeneralAssembly(msg.sender);
+            consumer.fullfillTiebreaker(randomNumber);
+        }
+        else {
+
+            revert ("Unknown consumer contract type");
+        }
     }
 }
