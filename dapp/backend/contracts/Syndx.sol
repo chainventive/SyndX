@@ -89,5 +89,6 @@ contract Syndx is SyndxValidations, Ownable {
     // Get the random number requested by a consumer. Everybody can access this piece of information.
     function getRequestedRandomNumber(address _consumer) public returns (uint256) {
 
+        return 17;
     }
 }

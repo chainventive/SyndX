@@ -59,6 +59,12 @@ contract GeneralAssembly is SyndxValidations, Ownable {
     // Emmitted when a new vote is submitted
     event Voted (address author, uint256 resolutionID, bool approved);
 
+    // Emmitted when a tiebreaker request is sent
+    event TiebreakerRequestSent (uint256 blocktime);
+
+    // Emmitted when the tiebreaker is successfully fetched
+    event TiebreakerReceived (uint256 tiebreaker);
+
     // Ensure tha the caller is the coproperty syndic
     modifier onlyCopropertySyndic {
         if (msg.sender != syndic) revert ("You are not the syndic of the coproperty");
@@ -241,9 +247,12 @@ contract GeneralAssembly is SyndxValidations, Ownable {
     function requestTiebreaker() public onlyAfterVotingSession onlyCopropertyMembers {
 
         syndx.requestRandomNumber();
+
+        emit TiebreakerRequestSent(block.timestamp);
     }
 
     // Get the vote result of a given resolution
+    // Every body can request vote results once the voting session has ended
     function getVoteResult(uint256 _resolutionID) external onlyAfterVotingSession returns (SDX.VoteResult memory) {
         
         if (_resolutionID >= resolutions.length) revert ("Unknown resolution ID");
@@ -379,6 +388,8 @@ contract GeneralAssembly is SyndxValidations, Ownable {
 
             // If the syndx contract is not able to provide us the tiebreaker number we need to wait and try again later
             if (tiebreaker <= 0) revert ("Tiebreaker request not fullfilled yet");
+
+            emit TiebreakerReceived (tiebreaker);
         }
 
         // To tie braek we just checks random tiebreaker number is odd or even 

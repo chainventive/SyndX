@@ -333,8 +333,44 @@ async function main() {
   await txElyes2.wait();
   console.log('    * elyes voted yes');
 
-  //
+  console.log();
+  console.log(`> All votes have been submitted !`);
+  console.log();
 
+  // Wait the end of the voting session
+
+  console.log(`> Wait the voting session end scheduled ${getTimestampDate(meetingTimeline.voteEnd)} ... `);
+  console.log();
+
+  latestBlockTimeStamp = 0;
+  while(latestBlockTimeStamp < Number(meetingTimeline.voteEnd))
+  {
+      if (hre.network.name == 'hardhat' || hre.network.name == 'localhost') await hre.network.provider.send("evm_mine");
+      latestBlockTimeStamp = (await ethers.provider.getBlock("latest")).timestamp;
+      console.log(`  - latest block time: ${getTimestampDate(Number(latestBlockTimeStamp))}`);
+  }
+
+  // Request a tibreaker number
+
+  console.log();
+  console.log(`> Asking for tiebreaker number through Chainlink VRF service ...`);
+  console.log();
+
+  await generalAssembly.requestTiebreaker();
+
+  let tiebreaker = 0;
+  while(tiebreaker <= 0)
+  {
+      console.log(`  - VRF request pending ...`);
+      console.log();
+
+      await wait(15); // wait approx. 1 block
+      
+      tiebreaker = await syndx.getRequestedRandomNumber(generalAssembly.target);
+  }
+
+  console.log(`> Tiebreak number received: ${tiebreaker}`);
+  console.log();
 
   // DO NOT REMOVE
   console.log();
