@@ -28,8 +28,8 @@ async function main() {
   // Create a coproperty contract for BATACOFT
 
   const copropertyName = "BATACOFT";
-  const copropertyTokenName = "synBATA";
-  const copropertyTokenSymbol = "SYN";
+  const copropertyTokenName = "syndxBATA";
+  const copropertyTokenSymbol = "synBATA";
 
   const txCoproperty = await syndx.createCoproperty(copropertyName, copropertyTokenName, copropertyTokenSymbol, _syndic.address);
   await txCoproperty.wait();
@@ -89,18 +89,11 @@ async function main() {
   console.log(`> Perform token distribution according to property owners shares ...`);
   console.log();
 
-  const txTransfer1 = await governanceToken.connect(_syndic).setWhitelist(_anigail.address, true);
-  const txTransfer2 = await governanceToken.connect(_syndic).setWhitelist(_bernard.address, true);
-  const txTransfer3 = await governanceToken.connect(_syndic).setWhitelist(_cynthia.address, true);
-  const txTransfer4 = await governanceToken.connect(_syndic).setWhitelist(_dounia.address, true);
-  const txTransfer5 = await governanceToken.connect(_syndic).setWhitelist(_elyes.address, true); 
-  await txTransfer5.wait(); 
-
-  const txTransfer6  = await governanceToken.connect(_syndic).transfer(_anigail.address, 2000);
-  const txTransfer7  = await governanceToken.connect(_syndic).transfer(_bernard.address, 2000);
-  const txTransfer8  = await governanceToken.connect(_syndic).transfer(_cynthia.address, 2000);
-  const txTransfer9  = await governanceToken.connect(_syndic).transfer(_dounia.address,  2000);
-  const txTransfer10 = await governanceToken.connect(_syndic).transfer(_elyes.address,  2000);
+  const txTransfer6  = await governanceToken.connect(_syndic).addPropertyOwner(_anigail.address, 2000);
+  const txTransfer7  = await governanceToken.connect(_syndic).addPropertyOwner(_bernard.address, 2000);
+  const txTransfer8  = await governanceToken.connect(_syndic).addPropertyOwner(_cynthia.address, 2000);
+  const txTransfer9  = await governanceToken.connect(_syndic).addPropertyOwner(_dounia.address,  2000);
+  const txTransfer10 = await governanceToken.connect(_syndic).addPropertyOwner(_elyes.address,  2000);
   await txTransfer10.wait();
 
   syndicGovernanceTokenBalance = await governanceToken.balanceOf(_syndic);
@@ -379,7 +372,7 @@ async function main() {
       
       tiebreaker = Number(await generalAssembly.tiebreaker());
   }
-  
+
   console.log();
   console.log(`> Tiebreak number received: ${tiebreaker}`);
   console.log();

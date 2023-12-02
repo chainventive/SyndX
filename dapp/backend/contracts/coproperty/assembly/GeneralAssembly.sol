@@ -9,25 +9,29 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 // Common imports
 import "../../common/SDX.sol";
-import "../../common/Validator.sol";
+import "../../common/constants/constants.sol";
+import "../../common/errors/CopropertyErrors.sol";
 
 // Interfaces imports
-import '../token/ICopropertyToken.sol';
+import './IGeneralAssembly.sol';
+import './token/IVoteToken.sol';
 
 // Contracts imports
-import "../../Syndx.sol";
-import "../Coproperty.sol";
+import "../../ISyndx.sol";
 
-contract GeneralAssembly is Validator, Ownable {
+/// @title General Assembly Contract for Syndx Coproperty Management
+/// @notice This contract manages the general assembly processes for a coproperty, including creating and voting on resolutions and amendments.
+/// @dev Inherits from IGeneralAssembly, Validator, and Ownable to manage assembly timelines, resolutions, and access control.
+contract GeneralAssembly is IGeneralAssembly, Ownable {
 
     // The syndx contract
-    Syndx private syndx;
+    ISyndx private syndx;
 
     // The syndic account in charge of this general assembly
     address syndic;
 
-    // The governance token of the coproperty
-    ICopropertyToken governanceToken;
+    // The vote token of the coproperty
+    IVoteToken voteToken;
 
     // The unique random number provided by the syndx contract if asked by this contract
     uint256 public tiebreaker;
@@ -63,57 +67,56 @@ contract GeneralAssembly is Validator, Ownable {
     event TiebreakerRequestSent (uint256 blocktime);
 
     // Emmitted when the tiebreaker is successfully fetched
-    event TiebreakerFullfilled (uint256 tiebreaker);
+    event TiebreakerFulfilled (uint256 tiebreaker);
 
     // Ensure tha the caller is the coproperty syndic
     modifier onlyCopropertySyndic {
-        if (msg.sender != syndic) revert ("You are not the syndic of the coproperty");
+        if (msg.sender != syndic) revert NotCopropertySyndic(msg.sender);
         _;
     }
 
-    // Ensure that the caller is a member of the coproperty (the syndic and the property share holders)
+    // Ensure that the caller is a member of the coproperty (the syndic and all the property owners)
     modifier onlyCopropertyMembers {
-        if (msg.sender != syndic && governanceToken.balanceOf(msg.sender) <= 0) revert ("You are not member of the coproperty");
+        if (msg.sender != syndic && voteToken.balanceOf(msg.sender) <= 0) revert NotCopropertyMember(msg.sender);
         _;
     }
 
-    // Ensure that the caller is a coproperty governance token holder
-    modifier onlyGovernanceTokenHolders {
-        if (governanceToken.balanceOf(msg.sender) <= 0) revert ("You are not a governance token holder");
+    // Ensure that the caller detains vote tokens
+    modifier onlyVoteTokenOwner {
+        if (voteToken.balanceOf(msg.sender) <= 0) revert NotPropertySharesOwner(msg.sender);
         _;
     }
 
     // Ensure the call was made before the start of lockup period
     modifier onlyBeforeLockup {
-        if (block.timestamp > lockup) revert ("Lockup period has started");
+        if (block.timestamp > lockup) revert LockupAlreadyStarted(block.timestamp, lockup);
         _;
     }
 
     // Ensure the call was made during the voting session
     modifier onlyDuringVotingSession {
-        if (block.timestamp < voteStart) revert ("Voting session not started yet");
-        if (block.timestamp > voteEnd) revert ("Voting session has ended");
+        if (block.timestamp < voteStart) revert VotingSessionNotStartedYet (block.timestamp, voteStart);
+        if (block.timestamp > voteEnd) revert VotingSessionAlreadyEnded (block.timestamp, voteEnd);
         _;
     }
 
     // Ensure the call was made after the voting session ended
     modifier onlyAfterVotingSession {
-        if (block.timestamp < voteEnd) revert ("Voting session not ended yet");
+        if (block.timestamp < voteEnd) revert VotingSessionNotEndedYet (block.timestamp, voteEnd);
         _;
     }
 
-    // This contract remain owned by Syndx
-    constructor(Syndx _syndx, Coproperty _coproperty, uint256 _voteStartTime) Ownable(msg.sender) {
+    constructor(ISyndx _syndx, address _syndic, IVoteToken _voteToken, uint256 _voteStartTime) Ownable(msg.sender) {
 
         syndx = _syndx;
-        syndic = _coproperty.syndic();
-        governanceToken = _coproperty.governanceToken();
+        syndic = _syndic;
+        voteToken = _voteToken;
 
-        _setMeetingTimeline(_voteStartTime);
+        _setTimeline(_voteStartTime);
     }
 
     // Set the general assembly timeline according to the expected start time
-    function _setMeetingTimeline(uint256 _voteStartTime) private {
+    function _setTimeline(uint256 _voteStartTime) private {
 
         // When the general assembly is created
         created = block.timestamp;
@@ -122,10 +125,10 @@ contract GeneralAssembly is Validator, Ownable {
         lockup = _voteStartTime - GENERAL_ASSEMBLY_LOCKUP_DURATION;
 
         // If the calculated lockup time occurs after the general assembly calculation we revert
-        if (created > lockup) revert ResolutionLockupTimeComeToEarly(created, lockup, _voteStartTime);
+        if (created > lockup) revert TooEarlyLockupTime(created, GENERAL_ASSEMBLY_MIN_DURATION_BEFORE_LOCKUP, lockup, _voteStartTime);
         
         // If the timespan between the creation time and the start of the lockup is to short we revert cause we havent enought time to handle resolution submission and a safe enough lockup period
-        if (lockup - created < GENERAL_ASSEMBLY_MIN_DURATION_BEFORE_LOCKUP) revert ResolutionLockupTimeComeToEarly(created, lockup, _voteStartTime);
+        if (lockup - created < GENERAL_ASSEMBLY_MIN_DURATION_BEFORE_LOCKUP) revert TooEarlyLockupTime(created, GENERAL_ASSEMBLY_MIN_DURATION_BEFORE_LOCKUP, lockup, _voteStartTime);
 
         // Set the vote start time
         voteStart = _voteStartTime;
@@ -134,14 +137,30 @@ contract GeneralAssembly is Validator, Ownable {
         voteEnd = _voteStartTime + GENERAL_ASSEMBLY_VOTING_SESSION_DURATION;
     }
 
-    // Returns the general assembly timeline
+    /// @notice Retrieves the timeline of the general assembly
+    /// @return The timeline including creation, lockup, vote start and vote end times
     function getTimeline() external view returns (SDX.GeneralAssemblyTimeline memory) {
 
         return SDX.GeneralAssemblyTimeline(created, lockup, voteStart, voteEnd);
     }
 
-    // Create a new resolution
-    function createResolution(string calldata _title, string calldata _description) external onlyCopropertyMembers onlyBeforeLockup validTitle(_title) validDescription(_description) returns (uint256) {
+    function getLockupTime() external view returns (uint256) {
+
+        return lockup;
+    }
+
+    /// @notice Creates a new resolution for the general assembly
+    /// @dev Emits a ResolutionCreated event upon success
+    /// @param _title The title of the resolution
+    /// @param _description The detailed description of the resolution
+    /// @return The ID of the newly created resolution
+    function createResolution(bytes calldata _title, bytes calldata _description) external onlyCopropertyMembers onlyBeforeLockup /*validTitle(_title) validDescription(_description)*/ returns (uint256) {
+
+        if (_title.length < TITLE_MIN_LENGHT) revert TitleTooShort (_title);
+        if (_title.length > TITLE_MAX_LENGHT) revert TitleTooLong (_title);
+
+        if (_description.length < DESCRIPTION_MIN_LENGHT) revert DescriptionTooShort(_description);
+        if (_description.length > DESCRIPTION_MAX_LENGHT) revert DescriptionTooLong(_description);
 
         SDX.Resolution memory resolution = SDX.createResolution(_title, _description, msg.sender);
 
@@ -155,9 +174,12 @@ contract GeneralAssembly is Validator, Ownable {
     }
 
     // Create a new amendment
-    function createAmendment(uint256 _resolutionID, string calldata _description) external onlyCopropertyMembers onlyBeforeLockup validDescription(_description) returns (uint256)  {
+    function createAmendment(uint256 _resolutionID, bytes calldata _description) external onlyCopropertyMembers onlyBeforeLockup returns (uint256)  {
 
-        if (_resolutionID >= resolutions.length) revert ("Unknown resolution ID");
+        if (_resolutionID >= resolutions.length) revert ResolutionNotFound(_resolutionID);
+
+        if (_description.length < DESCRIPTION_MIN_LENGHT) revert DescriptionTooShort(_description);
+        if (_description.length > DESCRIPTION_MAX_LENGHT) revert DescriptionTooLong(_description);
 
         SDX.Amendment memory amendement = SDX.createAmendment(_resolutionID, _description, msg.sender);
 
@@ -178,7 +200,7 @@ contract GeneralAssembly is Validator, Ownable {
     // Get a given resolution
     function getResolution(uint256 _id) external view returns (SDX.Resolution memory) {
         
-        if (_id >= resolutions.length) revert ("Unknown resolution ID");
+        if (_id >= resolutions.length) revert ResolutionNotFound(_id);
 
         return resolutions[_id];
     }
@@ -191,7 +213,7 @@ contract GeneralAssembly is Validator, Ownable {
     // Get a given amendment
     function getAmendment(uint256 _id) external view returns (SDX.Amendment memory) {
         
-        if (_id >= amendments.length) revert ("Unknown amendment ID");
+        if (_id >= amendments.length) revert AmendmentNotFound(_id);
 
         return amendments[_id];
     }
@@ -199,9 +221,9 @@ contract GeneralAssembly is Validator, Ownable {
     // Set a given resolution vote type
     function setResolutionVoteType(uint256 _id, SDX.VoteType _voteType) external onlyCopropertySyndic onlyBeforeLockup {
 
-        if (_id >= resolutions.length) revert ("Unknown resolution ID");
+        if (_id >= resolutions.length) revert ResolutionNotFound(_id);
 
-        if (_voteType == SDX.VoteType.Undefined) revert ("Unknown resolution ID");
+        if (_voteType == SDX.VoteType.Undefined) revert CannotSetResolutionVoteTypeToUndefined(_id);
 
         SDX.VoteType voteTypeBeforeChange = resolutions[_id].voteType;
 
@@ -210,15 +232,18 @@ contract GeneralAssembly is Validator, Ownable {
         emit ResolutionVoteTypeChanged(_id, voteTypeBeforeChange, _voteType);
     }
 
-    // Vote for a resolution
-    function vote(uint256 _resolutionID, bool _approve) external onlyCopropertyMembers onlyDuringVotingSession {
+    /// @notice Casts a vote for a specific resolution
+    /// @dev Requires the caller to be a property shares owner and within the voting session time frame
+    /// @param _resolutionID The ID of the resolution to vote on
+    /// @param _approve Boolean indicating approval (true) or disapproval (false) of the resolution
+    function vote(uint256 _resolutionID, bool _approve) external onlyVoteTokenOwner onlyDuringVotingSession {
 
-        if (_resolutionID >= resolutions.length) revert ("Unknown resolution ID");
-        if (hasVoted[_resolutionID][msg.sender] == true) revert ("You already voted for this resolution");
-        if (resolutions[_resolutionID].voteType == SDX.VoteType.Undefined) revert ("Resolution vote type undetermined");
+        if (_resolutionID >= resolutions.length) revert ResolutionNotFound(_resolutionID);
+        if (hasVoted[_resolutionID][msg.sender] == true) revert AlreadyVotedForResolution(_resolutionID, msg.sender);
+        if (resolutions[_resolutionID].voteType == SDX.VoteType.Undefined) revert CannotSetResolutionVoteTypeToUndefined(_resolutionID);
 
         // Get the voting power of the property owner
-        uint256 propertyShares = governanceToken.balanceOf(msg.sender);
+        uint32 propertyShares = uint32(voteToken.balanceOf(msg.sender));
 
         if (_approve) {
 
@@ -253,21 +278,21 @@ contract GeneralAssembly is Validator, Ownable {
 
     // Callback function to allow the syndx contract to provide the requested tiebreak number
     // We protect the contract against tiebreaker overwrites. This mean once the tiebreak number is set, it is forever
-    function fullfillTiebreaker(uint256 _tiebreaker) public onlyOwner {
+    function fulfillTiebreaker(uint256 _tiebreaker) external onlyOwner {
 
-        if (tiebreaker > 0) revert ("Tiebreaker already fullfilled");
-        if (_tiebreaker <= 0) revert ("Provided tiebreaker cannot be zero");
+        if (tiebreaker > 0) revert TiebreakerAlreadyFulfilled();
+        if (_tiebreaker <= 0) revert TiebreakerCannotBeFulfilledWithZero();
 
         tiebreaker = _tiebreaker;
 
-        emit TiebreakerFullfilled (tiebreaker);
+        emit TiebreakerFulfilled (tiebreaker);
     }
 
     // Get the vote result of a given resolution
     // Every body can request vote results once the voting session has ended
     function getVoteResult(uint256 _resolutionID) external view onlyAfterVotingSession returns (SDX.VoteResult memory) {
         
-        if (_resolutionID >= resolutions.length) revert ("Unknown resolution ID");
+        if (_resolutionID >= resolutions.length) revert ResolutionNotFound(_resolutionID);
 
         // Prepare an empty vote result that will be filled according to the resolution vote type
         SDX.VoteResult memory voteResult;
@@ -278,7 +303,7 @@ contract GeneralAssembly is Validator, Ownable {
         // Tally
         if (resolution.voteType == SDX.VoteType.Undefined) {
 
-            revert ("Resolution with an undefined vote type are not part of voting sesssion");
+            revert CannotVoteForResolutionWithUndefinedVoteType(_resolutionID);
         }
         else if (resolution.voteType == SDX.VoteType.Unanimity) {
 
@@ -298,7 +323,7 @@ contract GeneralAssembly is Validator, Ownable {
         }
         else {
             
-            revert ("Unexpected error: vote type tally not implemented");
+            revert UnexpectedResolutionVoteType(_resolutionID, resolution.voteType);
         }
 
         // Tiebreak equality if there is and if the tiebreaker number is available
@@ -392,7 +417,7 @@ contract GeneralAssembly is Validator, Ownable {
         // If the tiebreaker number is not already fectched from the syndx contract, we try to request it
         // Note: Syndx contract manage to ensure that there will be one and only one unique random number request for each general assembly contract
         //       This means that if we accidentally fetch the random number twice, it will always be the same
-        if (tiebreaker <= 0) revert ("Tiebreaker request not fullfilled yet");
+        if (tiebreaker <= 0) revert TiebreakerRequestNotFulfilled();
 
         // To tie braek we just checks random tiebreaker number is odd or even 
         _voteResult.tiebreaker = tiebreaker;

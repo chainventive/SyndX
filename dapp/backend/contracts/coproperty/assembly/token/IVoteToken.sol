@@ -7,9 +7,4 @@ pragma solidity 0.8.20;
 // OpenZippelin imports
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
-interface ICopropertyToken is IERC20 {
-
-    function setAdmin(address _address) external;
-
-    function setWhitelist(address _address, bool _allowed) external;
-}
+interface IVoteToken is IERC20 { }

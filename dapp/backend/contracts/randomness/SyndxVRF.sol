@@ -10,9 +10,11 @@ import "@chainlink/contracts/src/v0.8/vrf/VRFConsumerBaseV2.sol";
 
 // Common imports
 import "../common/SDX.sol";
+import "../common/constants/constants.sol";
+import "../common/errors/SyndxVRFErrors.sol";
 
 // Contracts imports
-import "../coproperty/assembly/GeneralAssembly.sol";
+import "../coproperty/assembly/IGeneralAssembly.sol";
 
 contract SyndxVRF is VRFConsumerBaseV2 {
 
@@ -64,13 +66,13 @@ contract SyndxVRF is VRFConsumerBaseV2 {
     function fulfillRandomWords(uint256 requestId, uint256[] memory randomWords) internal override {
 
         // Ensure randomWords are really provided
-        if (randomWords.length <= 0) revert ("Chainlink returned empty randomWords");
+        if (randomWords.length <= 0) revert EmptyChainlinkRandomWords ();
 
         // Checks if the consumer already gets random words
         uint256[] memory existingWords = consumerRequestResponses[requestId].randomWords;
 
         // If yes, revert as Syndx only admit one randomness primitives per consumer
-        if (existingWords.length > 0) revert RandomNumberRequestAlreadyFullfilled();
+        if (existingWords.length > 0) revert RequestAlreadyFullfilled ();
 
         // If not, store them
         consumerRequestResponses[requestId].randomWords = randomWords;
@@ -90,10 +92,10 @@ contract SyndxVRF is VRFConsumerBaseV2 {
         // If the consumer type is a general assembly contract, we provide the tiebreaker number directly through its dedicated callback function
         if (consumerType == SDX.ContractType.GeneralAssembly) {
 
-            GeneralAssembly consumer = GeneralAssembly(consumerAddress);
+            IGeneralAssembly consumer = IGeneralAssembly(consumerAddress);
             uint256[] memory randomWords = consumerRequestResponses[requestId].randomWords;
             uint256 tiebreaker = randomWords[0];
-            consumer.fullfillTiebreaker(tiebreaker);
+            consumer.fulfillTiebreaker(tiebreaker);
         }
     }
 }
