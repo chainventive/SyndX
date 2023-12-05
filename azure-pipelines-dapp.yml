@@ -24,9 +24,15 @@ steps:
   # Create the backend environnement variables
   - script: |
       touch .env
-      echo "ALCHEMY_API_KEY=$(ALCHEMY_API_KEY)" >> .env
+      echo "ALCHEMY_SEPOLIA_API_KEY=$(ALCHEMY_API_KEY)" >> .env
       echo "ETHERSCAN_API_KEY=$(ETHERSCAN_API_KEY)" >> .env
-      echo "SEPOLIA_PRIVATE_KEY=$(SEPOLIA_PRIVATE_KEY)" >> .env
+      echo "PRIVATE_KEY_ADMIN=$(PRIVATE_KEY_ADMIN)" >> .env
+      echo "PRIVATE_KEY_SYNDIC=$(PRIVATE_KEY_SYNDIC)" >> .env
+      echo "PRIVATE_KEY_ANIGAIL=$(PRIVATE_KEY_ANIGAIL)" >> .env
+      echo "PRIVATE_KEY_BERNARD=$(PRIVATE_KEY_BERNARD)" >> .env
+      echo "PRIVATE_KEY_CYNTHIA=$(PRIVATE_KEY_CYNTHIA)" >> .env
+      echo "PRIVATE_KEY_ELYES=$(PRIVATE_KEY_ELYES)" >> .env
+      echo "PRIVATE_KEY_DOUNIA=$(PRIVATE_KEY_DOUNIA)" >> .env
     displayName: 'Creating backend environnement variables'
     workingDirectory: ./dapp/frontend
 
@@ -63,7 +69,7 @@ steps:
   # Create the frontend environnement variables
   - script: |
       touch .env
-      echo "NEXT_PUBLIC_ALCHEMY_API_KEY=$(ALCHEMY_API_KEY)" >> .env
+      echo "NEXT_PUBLIC_ALCHEMY_API_KEY=$(ALCHEMY_SEPOLIA_API_KEY)" >> .env
       echo "NEXT_PUBLIC_WALLET_CONNECT_PROJECT_NAME=$(WALLET_CONNECT_PROJECT_NAME)" >> .env
       echo "NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID=$(WALLET_CONNECT_PROJECT_ID)" >> .env
       echo "NEXT_PUBLIC_CONTRACT_ADDRESS=$(CONTRACT_ADDRESS)" >> .env
