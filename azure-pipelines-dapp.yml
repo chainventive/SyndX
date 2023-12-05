@@ -33,6 +33,7 @@ steps:
       echo "PRIVATE_KEY_CYNTHIA=$(PRIVATE_KEY_CYNTHIA)" >> .env
       echo "PRIVATE_KEY_ELYES=$(PRIVATE_KEY_ELYES)" >> .env
       echo "PRIVATE_KEY_DOUNIA=$(PRIVATE_KEY_DOUNIA)" >> .env
+      cat .env
     displayName: 'Creating backend environnement variables'
     workingDirectory: ./dapp/frontend
 
