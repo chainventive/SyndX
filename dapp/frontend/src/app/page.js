@@ -18,9 +18,6 @@ import { backend } from "@/backend"
 // Contexts
 import useSyndx from "@/app/contexts/syndx/hooks/useSyndx";
 
-// Helpers
-import { formatAddress, copyToClipboard } from "@/helpers/index";
-
 export default function Home() {
 
   const { isUserConnected, userAddress, isSyndxAdmin } = useSyndx();
@@ -62,19 +59,33 @@ export default function Home() {
 
     <main>
 
-      <ConnectButton />
+      <div style={{ border: '1px solid black', padding: '1rem', margin: '1rem' }}>
+        <ConnectButton />
+      </div>
 
-      <p>connected: { isUserConnected ? 'yes' : 'no' }</p>
-      <p>user address: { userAddress }</p>
-      <p>is syndx admin: { isSyndxAdmin ? 'yes' : 'no' }</p>
+      {
+        isUserConnected && isSyndxAdmin && (
 
-      <input type="text" value={copropertyName} onChange={e => setCopropertyName(e.target.value)} placeholder="coproperty name"></input>
-      <input type="text" value={copropertyTokenISO} onChange={e => setCopropertyTokenISO(e.target.value)} placeholder="token iso"></input>
-      <input type="text" value={copropertySyndicAddress} onChange={e => setCopropertySyndicAddress(e.target.value)} placeholder="syndic address"></input>
+          <div style={{ border: '1px solid black', padding: '1rem', margin: '1rem' }}>
 
-      <br></br>
+            <h3>CREATE COPROPERTY</h3>
 
-      <button onClick={ () => createCoproperty() }>create coproperty</button>
+            <p>connected: { isUserConnected ? 'yes' : 'no' }</p>
+            <p>user address: { userAddress }</p>
+            <p>is syndx admin: { isSyndxAdmin ? 'yes' : 'no' }</p>
+
+            <input type="text" value={copropertyName} onChange={e => setCopropertyName(e.target.value)} placeholder="coproperty name"></input>
+            <input type="text" value={copropertyTokenISO} onChange={e => setCopropertyTokenISO(e.target.value)} placeholder="token iso"></input>
+            <input type="text" value={copropertySyndicAddress} onChange={e => setCopropertySyndicAddress(e.target.value)} placeholder="syndic address"></input>
+
+            <br></br>
+
+            <button onClick={ () => createCoproperty() }>create coproperty</button>
+
+          </div>
+          
+        )
+      }
 
     </main>
     

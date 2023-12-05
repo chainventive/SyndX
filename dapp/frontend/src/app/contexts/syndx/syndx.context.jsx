@@ -48,9 +48,7 @@ const SyndxContextProvider = ({ children }) => {
     }, [isConnected, address]);
 
     useEffect(() => {
-
-        console.log(backend.contracts.syndx.abi);
-
+        
         if (isConnected) {
             retrieveUserProfile();
         }
