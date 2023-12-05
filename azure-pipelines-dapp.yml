@@ -24,7 +24,7 @@ steps:
   # Create the backend environnement variables
   - script: |
       touch .env
-      echo "ALCHEMY_SEPOLIA_API_KEY=$(ALCHEMY_API_KEY)" >> .env
+      echo "ALCHEMY_SEPOLIA_API_KEY=$(ALCHEMY_SEPOLIA_API_KEY)" >> .env
       echo "ETHERSCAN_API_KEY=$(ETHERSCAN_API_KEY)" >> .env
       echo "PRIVATE_KEY_ADMIN=$(PRIVATE_KEY_ADMIN)" >> .env
       echo "PRIVATE_KEY_SYNDIC=$(PRIVATE_KEY_SYNDIC)" >> .env
