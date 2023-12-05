@@ -8,15 +8,15 @@ pragma solidity 0.8.20;
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 // Common imports
-import "../common/SDX.sol";
-import "../common/constants/constants.sol";
-import "../common/errors/CopropertyErrors.sol";
-import "../common/errors/AddressErrors.sol";
+import "../_common/SDX.sol";
+import "../_common/constants.sol";
+import "../_common/errors/coproperty.sol";
+import "../_common/errors/addresses.sol";
 
 // Interface imports
 import "./ICoproperty.sol";
-import "./token/IGovernanceToken.sol";
-import "./assembly/IGeneralAssembly.sol";
+import "../tokens/governance/IGovernanceToken.sol";
+import "../assembly/IGeneralAssembly.sol";
 
 // Contracts imports
 import "../ISyndx.sol";
@@ -24,10 +24,10 @@ import "../ISyndx.sol";
 contract Coproperty is ICoproperty, Ownable {
 
     // The syndx contract
-    ISyndx private syndx;
+    ISyndx public syndx;
 
     // The name of the coproperty
-    bytes public name;
+    string public name;
 
     // Syndic address which administrate the coproperty
     address public syndic;
@@ -39,7 +39,7 @@ contract Coproperty is ICoproperty, Ownable {
     IGeneralAssembly[] public generalAssemblies;
 
     // Emitted when a new general assembly contract is created
-    event GeneralAssemblyContractCreated(uint256 id, address generalAssembly);
+    event GeneralAssemblyContractCreated(uint256 id, address generalAssemblyContract);
 
     // Ensure the caller is the syndic of the coproperty
     modifier onlySyndic {
@@ -49,17 +49,17 @@ contract Coproperty is ICoproperty, Ownable {
 
     // Syndx remain the owner of the contract;
     // This contract is administrated by a syndic;
-    constructor (bytes memory _name, address _syndic, IGovernanceToken _governanceToken) Ownable (msg.sender) {
+    constructor (string memory _name, address _syndic, address _governanceTokenAddress) Ownable (msg.sender) {
         
         if (_syndic == address(0)) revert AddressZeroNotAllowed();
 
-        if (_name.length <= COPROPERTY_NAME_MIN_LENGHT) revert CopropertyNameTooShort (_name);
-        if (_name.length > COPROPERTY_NAME_MAX_LENGHT) revert CopropertyNameTooLong (_name);
+        if (bytes(_name).length <= COPROPERTY_NAME_MIN_LENGHT) revert CopropertyNameTooShort ();
+        if (bytes(_name).length > COPROPERTY_NAME_MAX_LENGHT) revert CopropertyNameTooLong ();
 
         name   = _name;
         syndic = _syndic;
         syndx  = ISyndx(msg.sender);
-        governanceToken = _governanceToken;
+        governanceToken = IGovernanceToken(_governanceTokenAddress);
     }
 
     // Get the address of the syndic in charge of the coproperty contract

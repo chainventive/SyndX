@@ -5,7 +5,7 @@ pragma solidity 0.8.20;
 // import "hardhat/console.sol";
 
 // Interfaces imports
-import "./token/IGovernanceToken.sol";
+import "../tokens/governance/IGovernanceToken.sol";
 
 interface ICoproperty {
 

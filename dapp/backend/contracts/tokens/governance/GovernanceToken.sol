@@ -9,17 +9,17 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 // Common imports
-import "../../common/SDX.sol";
-import "../../common/constants/constants.sol";
-import "../../common/errors/TokenErrors.sol";
-import "../../common/errors/AddressErrors.sol";
+import "../../_common/SDX.sol";
+import "../../_common/constants.sol";
+import "../../_common/errors/tokenFactory.sol";
+import "../../_common/errors/addresses.sol";
 
 // Interfaces imports
 import "./IGovernanceToken.sol";
 
 contract GovernanceToken is IGovernanceToken, ERC20, Ownable {
 
-    bytes public iso;
+    string private iso;
 
     // The token administrator
     address public administrator;
@@ -28,9 +28,9 @@ contract GovernanceToken is IGovernanceToken, ERC20, Ownable {
     mapping (address => bool) public whitelist;
 
     // Ensure the caller is the administrator
-    modifier onlyAdmininistrator
+    modifier onlyAdministrator
     {
-        if (msg.sender != administrator) revert NotTokenAdministrator (msg.sender);
+        if (msg.sender != administrator) revert NotTokenAdministrator (administrator, msg.sender);
         _;
     }
 
@@ -43,15 +43,17 @@ contract GovernanceToken is IGovernanceToken, ERC20, Ownable {
     // Emitted when a property owner is removed
     event PropertyOwnerRemoved(address propertyOwner, uint256 shares);
 
-    // Emitted when a property shares are transfered from one to another property owner
-    event PropertySharesTransfered(address propertyOwnerFrom, address propertyOwnerTo, uint256 shares);
-
     // The owner of this contract is Syndx in order to keep control of this contract
     // The administrator receive all the token supply and will be in charge to distribute them then
     // Property shares are transfered in bulk as they represent all the tantiems of a property
     // The property shares cannot be transfered directly between property owners and they always pass through the administrator's account
-    constructor(bytes memory _iso, bytes memory _name, bytes memory _symbol, address _administrator) ERC20(string(_name), string(_symbol)) Ownable(msg.sender) /*validTokenISO(_iso)*/ {
+    constructor(string memory _iso, string memory _name, string memory _symbol, address _administrator, address _owner) ERC20(string(_name), string(_symbol)) Ownable(_owner) {
         
+        if (_administrator == address(0)) revert AddressZeroNotAllowed();
+
+        if (bytes(_iso).length < TOKEN_ISO_MIN_LENGHT) revert TokenISOTooShort();
+        if (bytes(_iso).length > TOKEN_ISO_MAX_LENGHT) revert TokenISOTooLong(); 
+
         iso = _iso;
 
         administrator = _administrator;
@@ -67,12 +69,14 @@ contract GovernanceToken is IGovernanceToken, ERC20, Ownable {
     }
 
     // Get if an address is whitelisted
-    function isWhitelisted(address _address) external view returns(bool) {
+    function isWhitelistedAddress(address _address) external view returns(bool) {
+
         return whitelist[_address];
     }
 
     // Get the token ISO
-    function getTokenISO() external view returns(bytes memory) {
+    function getTokenISO() external view returns(string memory) {
+        
         return iso;
     }
 
@@ -81,12 +85,12 @@ contract GovernanceToken is IGovernanceToken, ERC20, Ownable {
 
         // The 'super' keyword is mandatory to call the parent hook
         super._update(from, to, amount);
-        
-        // The only addresses allowed to send tokens are the administrator and the address zero (at minting time)
-        if (from != address(0) && from != administrator) revert NotAuthorizedToSendTokens (from);
 
-        // The only addresses allowed to receive tokens are the administrator and whitelisted property owners
-        if (to != administrator && whitelist[to] == false) revert NotAuthorizedToReceiveTokens (to);
+        // The only addresses allowed to receive tokens are the property share owners and the administrator
+        if (to != administrator && whitelist[to] == false) revert NotAuthorizedToReceiveTokens (from, to);
+
+        // The administrator is the only account able to perform transfer between other authorized accounts
+        if (whitelist[from] && whitelist[to]) revert TokenTransferUnauthorized (from, to);
     }
 
     // Set which account is allowed to manage the coproperty governance token contract 
@@ -94,13 +98,15 @@ contract GovernanceToken is IGovernanceToken, ERC20, Ownable {
 
         if (_address == address(0)) revert AddressZeroNotAllowed();
 
+        address previousAdministratorAddress = administrator;
+
         administrator = _address;
 
-        emit AdministratorSet (address(0), _address);
+        emit AdministratorSet (previousAdministratorAddress, _address);
     }
 
     // Add a property owner and its property shares
-    function addPropertyOwner(address _address, uint256 _propertyShares) external onlyAdmininistrator {
+    function addPropertyOwner(address _address, uint256 _propertyShares) external onlyAdministrator {
         
         if (_address == address(0)) revert AddressZeroNotAllowed();
 
@@ -112,7 +118,7 @@ contract GovernanceToken is IGovernanceToken, ERC20, Ownable {
     }
 
     // Remove a property owner and its property shares
-    function removePropertyOwner(address _address) external onlyAdmininistrator {
+    function removePropertyOwner(address _address) external onlyAdministrator {
 
         if (_address == address(0)) revert AddressZeroNotAllowed();
 
@@ -123,19 +129,5 @@ contract GovernanceToken is IGovernanceToken, ERC20, Ownable {
         whitelist[_address] = false;
 
         emit PropertyOwnerRemoved(_address, propertyShares);
-    }
-
-    // Transfer the shares of a property owner to another
-    function transfertPropertyShares(address _from, address _to) external onlyAdmininistrator {
-
-        if (_from == address(0) || _to == address(0)) revert AddressZeroNotAllowed();
-        
-        uint256 propertyShares = balanceOf(_from);
-
-        this.removePropertyOwner(_from);
-
-        this.addPropertyOwner(_to, propertyShares);
-
-        emit PropertySharesTransfered(_from, _to, propertyShares);
     }
 }

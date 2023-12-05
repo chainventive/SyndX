@@ -8,26 +8,28 @@ pragma solidity 0.8.20;
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 // Common imports
-import "./common/SDX.sol";
-import "./common/errors/SyndxErrors.sol";
+import "./_common/SDX.sol";
+import "./_common/errors/syndx.sol";
+
+// Interfaces imports
+import "./ISyndx.sol";
+import "./tokens/ITokenFactory.sol";
 
 // Contracts imports
-import "./ISyndx.sol";
 import "./randomness/SyndxVRF.sol";
 import "./coproperty/Coproperty.sol";
-import "./coproperty/token/GovernanceToken.sol";
-import "./coproperty/assembly/GeneralAssembly.sol";
-import "./coproperty/assembly/token/VoteToken.sol";
-
-// Events
+import "./assembly/GeneralAssembly.sol";
 
 contract Syndx is ISyndx, Ownable, SyndxVRF {
+
+    // The syndx token factory
+    ITokenFactory public tokenFactory;
 
     // Keep track of created contract
     mapping (address => SDX.ContractType) public contracts;
 
     // Keep track of created coproperty contracts
-    mapping (bytes => address) public coproperties;
+    mapping (string => address) public coproperties;
 
     // Ensure the caller is registered as randomnessConsumer
     modifier onlyAuthorizedRandomnessConsumers () {
@@ -41,68 +43,63 @@ contract Syndx is ISyndx, Ownable, SyndxVRF {
         _;
     }
 
-    // Emitted when a new coproperty contract is created
-    event CopropertyContractCreated(bytes name, address syndic, address copropertyContract);
-
-    // Emitted when a new general assembly contract is created
+    event CopropertyContractCreated(string copropertyName, address copropertyContract);
+    event GovernanceTokenContractCreated(address tokenContract, address copropertyContract);
     event GeneralAssemblyContractCreated(address generalAssembly, address copropertyContract);
-
-    // Emitted when a new general assembly contract is created
-    event VoteTokenContractCreated(address voteToken, address generalAssembly, address copropertyContract);
-
-    // Emitted when a randomness number request is reset for a given consumer (in order to keep tracks of what happened)
-    event RandomnessRequestReset(uint256 requestID, address consumer);
+    event VoteTokenContractCreated(address tokenContract, address generalAssemblyContract);
+    event RandomNumberRequestReset(uint256 requestID, address consumer);
+    event RandomNumberRequested(address consumer);
+    event TokenFactorySet(address beforeChange, address afterChange);
 
     // Syndx contract is owned by its deployer
-    constructor() Ownable (msg.sender) {}
+    constructor(address _chainlinkVrfCoordinator, uint64 _chainlinkVrfSubscriptionID) SyndxVRF(_chainlinkVrfCoordinator, _chainlinkVrfSubscriptionID) Ownable (msg.sender) {}
+
+    function setTokenFactory(address _address) external onlyOwner {
+
+        address initialTokenFactory = address(tokenFactory);
+
+        tokenFactory = ITokenFactory(_address);
+
+        emit TokenFactorySet(initialTokenFactory, _address);
+    }
 
     // Create a new coproperty contract (only the owner of Syndx can create a coproperty)
-    function createCoproperty(bytes memory _name, bytes memory _tokenISO, address _syndic) external onlyOwner {
+    function createCoproperty(string memory _name, string memory _tokenISO, address _syndic) external onlyOwner {
 
-        if (coproperties[_name] != address(0)) revert ("Coproperty contract already created");
+        if (coproperties[_name] != address(0)) revert CopropertyAlreadyCreated(_name);
 
-        if (_name.length <= 3) revert CopropertyNameTooShort (_name);
-        if (_name.length > 15) revert CopropertyNameTooLong (_name);
+        if (bytes(_name).length <= COPROPERTY_NAME_MIN_LENGHT) revert CopropertyNameTooShort ();
+        if (bytes(_name).length > COPROPERTY_NAME_MAX_LENGHT) revert CopropertyNameTooLong ();
 
-        if (_tokenISO.length < TOKEN_ISO_MIN_LENGHT) revert TokenISOTooShort(_tokenISO);
-        if (_tokenISO.length > TOKEN_ISO_MAX_LENGHT) revert TokenISOTooLong(_tokenISO); 
-
-        bytes memory tokenName   = abi.encodePacked("SyndX Governance", " ", _tokenISO);
-        bytes memory tokenSymbol = abi.encodePacked("syn", _tokenISO);
-
-        GovernanceToken governanceToken = new GovernanceToken(_tokenISO, tokenName, tokenSymbol, _syndic);
-        address governanceTokenAddress = address(governanceToken);
+        address governanceTokenAddress = tokenFactory.createGovernanceToken(_tokenISO, _syndic, owner());
         contracts[governanceTokenAddress] = SDX.ContractType.GovernanceToken;
 
-        Coproperty coproperty = new Coproperty(_name, _syndic, governanceToken);
+        Coproperty coproperty = new Coproperty(_name, _syndic, governanceTokenAddress);
         address copropertyAddress = address(coproperty);
         coproperties[_name] = copropertyAddress;
         contracts[copropertyAddress] = SDX.ContractType.Coproperty;
 
-        emit CopropertyContractCreated(_name, _syndic, coproperties[_name]);
+        emit CopropertyContractCreated(_name, copropertyAddress);
+        emit GovernanceTokenContractCreated(governanceTokenAddress, copropertyAddress);
     }
 
     // Create a new general assembly contract (only knowns coproperty contracts can call this function)
     function createGeneralAssembly(uint256 _voteStartTime) external onlyCopropertyContract returns (address) {
         
         // Retrieve the coproperty which ask for a new general assembly and its governance token
-    
+
         ICoproperty coproperty = ICoproperty(msg.sender);
         IGovernanceToken governanceToken = coproperty.getGovernanceToken();
-
+    
         // Create the vote token for new general assembly
 
-        uint256 generalAssemblyIndex = coproperty.getGeneralAssemblyCount() - 1;
-
-        bytes memory tokenISO  = coproperty.getGovernanceToken().getTokenISO();
-        bytes  memory tokenName = abi.encodePacked("SyndX Vote", " ", tokenISO, "-", generalAssemblyIndex);
-        bytes  memory tokenSymbol = abi.encodePacked("vote", tokenISO, "-", generalAssemblyIndex);
-
-        VoteToken voteToken = new VoteToken(governanceToken, coproperty.getSyndic(), tokenName, tokenSymbol);
+        address copropertySyndicAddress = coproperty.getSyndic();
+        uint256 generalAssemblyID = coproperty.getGeneralAssemblyCount(); // We do not -1 cause the general assembly is created then
+        address voteTokenAddress = tokenFactory.createVoteToken(governanceToken.getTokenISO(), generalAssemblyID, copropertySyndicAddress, address(governanceToken));
 
         // Create a new general assembly contract
 
-        GeneralAssembly generalAssembly = new GeneralAssembly(ISyndx(this), coproperty.getSyndic(), voteToken, _voteStartTime);
+        GeneralAssembly generalAssembly = new GeneralAssembly(ISyndx(this), copropertySyndicAddress, address(governanceToken), voteTokenAddress, _voteStartTime);
 
         address generalAssemblyAddress = address(generalAssembly);
         contracts[generalAssemblyAddress] = SDX.ContractType.GeneralAssembly;
@@ -110,14 +107,15 @@ contract Syndx is ISyndx, Ownable, SyndxVRF {
         consumerRequests[generalAssemblyAddress].authorized = true;
         consumerRequests[generalAssemblyAddress].consumerType = SDX.ContractType.GeneralAssembly;
 
-        // Setup the vote token luckup time
+        // Setup vote token lockupt time according to general assembly timeline
 
-        voteToken.setLockupTime(generalAssembly.getLockupTime());
+        uint256 generalAssemblyLockuptTime = generalAssembly.getLockupTime();
+        IVoteToken(voteTokenAddress).setLockupTime(generalAssemblyLockuptTime);
 
         // Emit events
 
         emit GeneralAssemblyContractCreated(generalAssemblyAddress, msg.sender);
-        emit VoteTokenContractCreated(address(voteToken), generalAssemblyAddress, msg.sender);
+        emit VoteTokenContractCreated(voteTokenAddress, generalAssemblyAddress);
 
         return generalAssemblyAddress;
     }
@@ -127,7 +125,7 @@ contract Syndx is ISyndx, Ownable, SyndxVRF {
     // If consumer request was already fullfilled the consumer request cannot be reseted
     function resetRandomNumberRequest(address _consumer) external onlyOwner {
 
-        // Consomuer cannot be address zero
+        // Consumer cannot be address zero
         if (_consumer == address(0)) revert AddressZeroNotAllowed();
 
         // The provided consumer must be an authorized randmness consumer
@@ -143,15 +141,14 @@ contract Syndx is ISyndx, Ownable, SyndxVRF {
         if (consumerRequestResponses[currentRequestID].randomWords.length > 0) revert ConsumerRequestAlreadyFulfilled(_consumer, currentRequestID);
 
         // To be reset the current request must be older enough to prevent againt Syndx manipulation
-        uint256 lockupEndBlockNumber = consumerRequests[_consumer].requesBlockNumber + RANDMNESS_REQUEST_BLOCKS_LOCKUP_BEFORE_RETRY;
+        uint256 lockupEndBlockNumber = consumerRequests[_consumer].requestBlockNumber + RANDMNESS_REQUEST_BLOCKS_LOCKUP_BEFORE_RETRY;
         if (block.number < lockupEndBlockNumber) revert RandomNumberRequestLockupNotEndedYet(block.number, lockupEndBlockNumber);
 
         // Reset the consumer request
         consumerRequests[_consumer] = SDX.createAuthorizedConsumerRequest(contracts[_consumer]);
 
-        emit RandomnessRequestReset(currentRequestID, _consumer);
+        emit RandomNumberRequestReset(currentRequestID, _consumer);
     }
-
 
     // Ask for a random number (only authorized contracts are able to call)
     function requestRandomNumber() external onlyAuthorizedRandomnessConsumers {
@@ -160,7 +157,14 @@ contract Syndx is ISyndx, Ownable, SyndxVRF {
         uint256 requestID = consumerRequests[msg.sender].requestID;
         if (requestID > 0) revert RandomNumberRequestAlreadyMade(requestID);
 
+        emit RandomNumberRequested(msg.sender);
+
         // Perform the request for the caller consumer
         requestRandomWords(msg.sender);
+    }
+
+    // Returns the state of a random number request
+    function getConsumerRandomNumberRequest(address _consumer) external view returns (SDX.ConsumerRequest memory) {
+        return consumerRequests[_consumer];
     }
 }

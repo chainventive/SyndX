@@ -11,7 +11,7 @@ async function main() {
   console.log();
   // DO NOT REMOVE
 
-  const contracts = ["Syndx", "SyndxVRF", "Coproperty", "GovernanceToken", "GeneralAssembly", "VoteToken"];
+  const contracts = ["Syndx", "SyndxVRF", "Coproperty", "GeneralAssembly", "TokenFactory", "GovernanceToken", "VoteToken"];
 
   for(let contract of contracts) {
 
@@ -19,7 +19,8 @@ async function main() {
     const bytecode = ContractFactory.bytecode;
     const size = bytecode.length / 2 - 1;
 
-    console.log(`> '${contract}' bytecode size: ${size} octets`);
+    console.log(`> '${contract}' bytecode size: ${size}/24576 octets`);
+    console.log();
   }
 
   // DO NOT REMOVE

@@ -4,8 +4,9 @@ pragma solidity 0.8.20;
 // Uncomment this line to use console.log
 // import "hardhat/console.sol";
 
-error TokenISOTooShort (bytes iso);
-error TokenISOTooLong (bytes iso);
+error CopropertyAlreadyCreated(string name);
+error TokenISOTooShort (string iso);
+error TokenISOTooLong (string iso);
 error UnauthorizedRandomnessConsumer (address consumer);
 error UnknownCopropertyContract (address contractAddress);
 error ConsumerRequestNotFound (address consumer);

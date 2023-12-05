@@ -13,17 +13,16 @@ const getVoteType = (value) => value === 0 ? "Undetermined" : value === 1 ? "Una
 async function main() {
   console.log();
   // DO NOT REMOVE
+ 
+  const EXISTING_SYNDX_CONTRACT_ADDRESS = "";
 
-  const [ _admin, _syndic, _anigail, _bernard, _cynthia, _dounia, _elyes ] = await ethers.getSigners();
+  /* Acquire existing Syndx contract */
 
-  /* Deploy Syndx */
+  const syndx = await hre.ethers.getContractAt("Syndx", syndxContract);
 
-  const syndx = await hre.ethers.deployContract("Syndx");
-  await syndx.waitForDeployment();
+  console.log(`[1/3] Successfully acquired existing syndx contract at address -> ${ syndx.target }`);
 
-  console.log(`[1/3] Syndx contract deployed at address -> ${ syndx.target }`);
-
-  /* Deploy TokenFactory */
+  /* Deploy the new TokenFactory contract */
 
   const tokenFactory = await hre.ethers.deployContract("TokenFactory", [syndx.target]);
   await tokenFactory.waitForDeployment();
@@ -35,7 +34,7 @@ async function main() {
   const txSetTokenFactory = await syndx.setTokenFactory(tokenFactory.target);
   await txSetTokenFactory.wait();
 
-  console.log(`[3/3] TokenFactory successfully linked with Syndx contract !`);
+  console.log(`[3/3] New TokenFactory contractbsuccessfully linked with Syndx contract !`);
 
   // DO NOT REMOVE
   console.log();

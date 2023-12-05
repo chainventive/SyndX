@@ -2,22 +2,23 @@
 pragma solidity 0.8.20;
 
 // Uncomment this line to use console.log
-// import "hardhat/console.sol";
+import "hardhat/console.sol";
 
 // OpenZippelin imports
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 // Common imports
-import "../../common/SDX.sol";
-import "../../common/constants/constants.sol";
-import "../../common/errors/CopropertyErrors.sol";
+import "../_common/SDX.sol";
+import "../_common/constants.sol";
+import "../_common/errors/coproperty.sol";
 
 // Interfaces imports
 import './IGeneralAssembly.sol';
-import './token/IVoteToken.sol';
+import '../tokens/vote/IVoteToken.sol';
+import '../tokens/governance/IGovernanceToken.sol';
 
 // Contracts imports
-import "../../ISyndx.sol";
+import "../ISyndx.sol";
 
 /// @title General Assembly Contract for Syndx Coproperty Management
 /// @notice This contract manages the general assembly processes for a coproperty, including creating and voting on resolutions and amendments.
@@ -28,10 +29,13 @@ contract GeneralAssembly is IGeneralAssembly, Ownable {
     ISyndx private syndx;
 
     // The syndic account in charge of this general assembly
-    address syndic;
+    address public syndic;
+
+    // The governance token of the coproperty
+    IGovernanceToken public governanceToken;
 
     // The vote token of the coproperty
-    IVoteToken voteToken;
+    IVoteToken public voteToken;
 
     // The unique random number provided by the syndx contract if asked by this contract
     uint256 public tiebreaker;
@@ -43,13 +47,13 @@ contract GeneralAssembly is IGeneralAssembly, Ownable {
     uint256 public voteEnd;     // When the voting session ends
 
     // The resolutions to be voted
-    SDX.Resolution[] resolutions;
+    SDX.Resolution[] private resolutions;
 
     // The amendments committed to resolutions
-    SDX.Amendment[] amendments;
+    SDX.Amendment[] private amendments;
 
     // Keep track of who has voted for each resolution
-    mapping (uint256 => mapping (address => bool)) hasVoted;
+    mapping (uint256 => mapping (address => bool)) public hasVoted;
 
     // Emmitted when a new resolution is created
     event ResolutionCreated(uint256 id, address author);
@@ -58,13 +62,13 @@ contract GeneralAssembly is IGeneralAssembly, Ownable {
     event AmendmentCreated(uint256 id, uint256 resolutionID, address author);
 
     // Emitted when a resolution vote type has changed
-    event ResolutionVoteTypeChanged(uint256 id, SDX.VoteType typeBefore, SDX.VoteType typeAfter);
+    event ResolutionVoteTypeSet(uint256 id, SDX.VoteType previousType, SDX.VoteType newType);
 
     // Emmitted when a new vote is submitted
-    event Voted (address author, uint256 resolutionID, bool approved);
+    event VoteCast (address author, uint256 resolutionID, bool ballotChoice);
 
     // Emmitted when a tiebreaker request is sent
-    event TiebreakerRequestSent (uint256 blocktime);
+    event TiebreakerRequested (uint256 blocktime);
 
     // Emmitted when the tiebreaker is successfully fetched
     event TiebreakerFulfilled (uint256 tiebreaker);
@@ -77,7 +81,7 @@ contract GeneralAssembly is IGeneralAssembly, Ownable {
 
     // Ensure that the caller is a member of the coproperty (the syndic and all the property owners)
     modifier onlyCopropertyMembers {
-        if (msg.sender != syndic && voteToken.balanceOf(msg.sender) <= 0) revert NotCopropertyMember(msg.sender);
+        if (msg.sender != syndic && governanceToken.balanceOf(msg.sender) <= 0) revert NotCopropertyMember(msg.sender);
         _;
     }
 
@@ -106,11 +110,12 @@ contract GeneralAssembly is IGeneralAssembly, Ownable {
         _;
     }
 
-    constructor(ISyndx _syndx, address _syndic, IVoteToken _voteToken, uint256 _voteStartTime) Ownable(msg.sender) {
+    constructor(ISyndx _syndx, address _syndic, address _governanceTokenAddress, address _voteTokenAddress, uint256 _voteStartTime) Ownable(msg.sender) {
 
         syndx = _syndx;
         syndic = _syndic;
-        voteToken = _voteToken;
+        voteToken = IVoteToken(_voteTokenAddress);
+        governanceToken = IGovernanceToken(_governanceTokenAddress);
 
         _setTimeline(_voteStartTime);
     }
@@ -154,13 +159,13 @@ contract GeneralAssembly is IGeneralAssembly, Ownable {
     /// @param _title The title of the resolution
     /// @param _description The detailed description of the resolution
     /// @return The ID of the newly created resolution
-    function createResolution(bytes calldata _title, bytes calldata _description) external onlyCopropertyMembers onlyBeforeLockup /*validTitle(_title) validDescription(_description)*/ returns (uint256) {
+    function createResolution(string calldata _title, string calldata _description) external onlyCopropertyMembers onlyBeforeLockup returns (uint256) {
 
-        if (_title.length < TITLE_MIN_LENGHT) revert TitleTooShort (_title);
-        if (_title.length > TITLE_MAX_LENGHT) revert TitleTooLong (_title);
+        if (bytes(_title).length < TITLE_MIN_LENGHT) revert TitleTooShort ();
+        if (bytes(_title).length > TITLE_MAX_LENGHT) revert TitleTooLong ();
 
-        if (_description.length < DESCRIPTION_MIN_LENGHT) revert DescriptionTooShort(_description);
-        if (_description.length > DESCRIPTION_MAX_LENGHT) revert DescriptionTooLong(_description);
+        if (bytes(_description).length < DESCRIPTION_MIN_LENGHT) revert DescriptionTooShort();
+        if (bytes(_description).length > DESCRIPTION_MAX_LENGHT) revert DescriptionTooLong();
 
         SDX.Resolution memory resolution = SDX.createResolution(_title, _description, msg.sender);
 
@@ -174,12 +179,12 @@ contract GeneralAssembly is IGeneralAssembly, Ownable {
     }
 
     // Create a new amendment
-    function createAmendment(uint256 _resolutionID, bytes calldata _description) external onlyCopropertyMembers onlyBeforeLockup returns (uint256)  {
+    function createAmendment(uint256 _resolutionID, string calldata _description) external onlyCopropertyMembers onlyBeforeLockup returns (uint256)  {
 
         if (_resolutionID >= resolutions.length) revert ResolutionNotFound(_resolutionID);
 
-        if (_description.length < DESCRIPTION_MIN_LENGHT) revert DescriptionTooShort(_description);
-        if (_description.length > DESCRIPTION_MAX_LENGHT) revert DescriptionTooLong(_description);
+        if (bytes(_description).length < DESCRIPTION_MIN_LENGHT) revert DescriptionTooShort();
+        if (bytes(_description).length > DESCRIPTION_MAX_LENGHT) revert DescriptionTooLong();
 
         SDX.Amendment memory amendement = SDX.createAmendment(_resolutionID, _description, msg.sender);
 
@@ -229,23 +234,23 @@ contract GeneralAssembly is IGeneralAssembly, Ownable {
 
         resolutions[_id].voteType = _voteType;
 
-        emit ResolutionVoteTypeChanged(_id, voteTypeBeforeChange, _voteType);
+        emit ResolutionVoteTypeSet(_id, voteTypeBeforeChange, _voteType);
     }
 
     /// @notice Casts a vote for a specific resolution
     /// @dev Requires the caller to be a property shares owner and within the voting session time frame
     /// @param _resolutionID The ID of the resolution to vote on
-    /// @param _approve Boolean indicating approval (true) or disapproval (false) of the resolution
-    function vote(uint256 _resolutionID, bool _approve) external onlyVoteTokenOwner onlyDuringVotingSession {
+    /// @param _ballotChoice Boolean indicating approval (true) or disapproval (false) of the resolution
+    function vote(uint256 _resolutionID, bool _ballotChoice) external onlyVoteTokenOwner onlyDuringVotingSession {
 
         if (_resolutionID >= resolutions.length) revert ResolutionNotFound(_resolutionID);
         if (hasVoted[_resolutionID][msg.sender] == true) revert AlreadyVotedForResolution(_resolutionID, msg.sender);
-        if (resolutions[_resolutionID].voteType == SDX.VoteType.Undefined) revert CannotSetResolutionVoteTypeToUndefined(_resolutionID);
+        if (resolutions[_resolutionID].voteType == SDX.VoteType.Undefined) revert CannotVoteForResolutionWithUndefinedVoteType(_resolutionID);
 
         // Get the voting power of the property owner
         uint32 propertyShares = uint32(voteToken.balanceOf(msg.sender));
 
-        if (_approve) {
+        if (_ballotChoice) {
 
             // Increase the weight of YES votes with the property owner voting power
             resolutions[_resolutionID].yesShares += propertyShares;
@@ -264,7 +269,7 @@ contract GeneralAssembly is IGeneralAssembly, Ownable {
 
         hasVoted[_resolutionID][msg.sender] = true;
 
-        emit Voted (msg.sender, _resolutionID, _approve);
+        emit VoteCast (msg.sender, _resolutionID, _ballotChoice);
     }
 
     // Request for a tibreaker number
@@ -273,7 +278,7 @@ contract GeneralAssembly is IGeneralAssembly, Ownable {
 
         syndx.requestRandomNumber();
 
-        emit TiebreakerRequestSent(block.timestamp);
+        emit TiebreakerRequested(block.timestamp);
     }
 
     // Callback function to allow the syndx contract to provide the requested tiebreak number
@@ -301,11 +306,8 @@ contract GeneralAssembly is IGeneralAssembly, Ownable {
         SDX.Resolution memory resolution = resolutions[_resolutionID];
 
         // Tally
-        if (resolution.voteType == SDX.VoteType.Undefined) {
 
-            revert CannotVoteForResolutionWithUndefinedVoteType(_resolutionID);
-        }
-        else if (resolution.voteType == SDX.VoteType.Unanimity) {
+        if (resolution.voteType == SDX.VoteType.Unanimity) {
 
             voteResult = _unanimityTally(_resolutionID, resolution);
         }
@@ -320,10 +322,6 @@ contract GeneralAssembly is IGeneralAssembly, Ownable {
         else if (resolution.voteType == SDX.VoteType.DoubleMajority) {
 
             voteResult = _doubleMajorityTally(_resolutionID, resolution);
-        }
-        else {
-            
-            revert UnexpectedResolutionVoteType(_resolutionID, resolution.voteType);
         }
 
         // Tiebreak equality if there is and if the tiebreaker number is available
@@ -403,10 +401,10 @@ contract GeneralAssembly is IGeneralAssembly, Ownable {
         // The amount of property shares to be be exceeded to gain the first majority
         uint256 threshold1 = (scaledYesShares + scaledNoShares) / 2;
 
-        // The amount of yes vote count to be exceeded to gain the first majority
+        // The amount of yes vote count to be exceeded to gain the second majority
         uint256 threshold2 = (scaledYesCount + scaledNoCount) / 2;
 
-        voteResult.approved = (scaledYesShares > threshold1 && scaledYesCount > threshold2);
+        voteResult.approved = (scaledYesShares > threshold1) && (scaledYesCount > threshold2);
 
         return voteResult;
     }

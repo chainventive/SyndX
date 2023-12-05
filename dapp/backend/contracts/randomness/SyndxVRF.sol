@@ -9,16 +9,19 @@ import "@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol";
 import "@chainlink/contracts/src/v0.8/vrf/VRFConsumerBaseV2.sol";
 
 // Common imports
-import "../common/SDX.sol";
-import "../common/constants/constants.sol";
-import "../common/errors/SyndxVRFErrors.sol";
+import "../_common/SDX.sol";
+import "../_common/constants.sol";
+import "../_common/errors/syndxVRF.sol";
 
 // Contracts imports
-import "../coproperty/assembly/IGeneralAssembly.sol";
+import "../assembly/IGeneralAssembly.sol";
 
 contract SyndxVRF is VRFConsumerBaseV2 {
 
     VRFCoordinatorV2Interface private COORDINATOR;
+
+    // Chainlink subscription ID
+    uint64 public chainlinkVrfSubscriptionID;
 
     // The suscription owner of the chainlink VRF account
     address private subscriptionOwner;
@@ -29,26 +32,25 @@ contract SyndxVRF is VRFConsumerBaseV2 {
     // Keep tracks of the random words of each consumer request
     mapping(uint256 => SDX.ConsumerResponse) internal consumerRequestResponses;
 
-    // Ensure that the caller is the chainlink VRF subscription owner
-    modifier onlySubscriptionOwner() {
-        require(msg.sender == subscriptionOwner);
-        _;
-    }
+    event RandomWordsRequested(uint256 requestId);
+    event RandomWordsFulfilled(uint256 requestId);
 
-    constructor() VRFConsumerBaseV2(CHAINLINK_VRF_COORDINATOR) {
-        COORDINATOR = VRFCoordinatorV2Interface(CHAINLINK_VRF_COORDINATOR);
-        subscriptionOwner = msg.sender; // The chainlink VRF subscription is owned by the syndx contract owner
+    // The chainlink VRF subscription is owned by the syndx contract owner
+    constructor(address _chainlinkVrfCoordinator, uint64 _chainlinkVrfSubscriptionID) VRFConsumerBaseV2(_chainlinkVrfCoordinator) {
+        COORDINATOR = VRFCoordinatorV2Interface(_chainlinkVrfCoordinator);
+        chainlinkVrfSubscriptionID = _chainlinkVrfSubscriptionID;
+        subscriptionOwner = msg.sender;
     }
 
     // Send a request to chainlink VRF service
     // Assumes the subscription is funded sufficiently
-    function requestRandomWords(address _consumer) internal /*onlySubscriptionOwner*/ {
+    function requestRandomWords(address _consumer) internal {
 
         // Will revert if subscription is not set and funded.
         uint256 requestID = COORDINATOR.requestRandomWords(
 
             CHAINLINK_VRF_GASLANE_KEYHASH,
-            CHAINLINK_VRF_SUBSCRIPTION_ID,
+            chainlinkVrfSubscriptionID,
             CHAINLINK_VRF_REQUEST_CONFIRMATIONS,
             CHAINLINK_VRF_CALLBACK_GAS_LIMIT,
             CHAINLINK_VRF_WORDCOUNT_PER_REQUEST
@@ -56,10 +58,12 @@ contract SyndxVRF is VRFConsumerBaseV2 {
 
         // Assign the chainlink VRF requestID to the consumer
         consumerRequests[_consumer].requestID = requestID;
-        consumerRequests[_consumer].requesBlockNumber = block.number;
+        consumerRequests[_consumer].requestBlockNumber = block.number;
 
         // Assign the consumer address to the request ID
         consumerRequestResponses[requestID].consumer = _consumer;
+
+        emit RandomWordsRequested(requestID);
     }
 
     // Callback function used by Chainlink to provide the requested random words
@@ -76,6 +80,8 @@ contract SyndxVRF is VRFConsumerBaseV2 {
 
         // If not, store them
         consumerRequestResponses[requestId].randomWords = randomWords;
+
+        emit RandomWordsFulfilled(requestId);
 
         // Invoke consumer callback function if there is an existing one
         _invokeConsumerCallback(requestId);

@@ -26,8 +26,8 @@ library SDX {
     /* STRUCTS */
 
     struct Resolution {
-        bytes title;
-        bytes description;
+        string title;
+        string description;
         address author;
         VoteType voteType;
         uint32 yesShares;
@@ -38,14 +38,14 @@ library SDX {
 
     struct Amendment {
         uint256 resolutionID;
-        bytes  description;
+        string  description;
         address author;
     }
 
     struct ConsumerRequest {
         bool authorized;
         uint256 requestID;
-        uint256 requesBlockNumber;
+        uint256 requestBlockNumber;
         SDX.ContractType consumerType;
     }
 
@@ -63,23 +63,23 @@ library SDX {
 
     struct VoteResult {
         uint256 resolutionID;
-        uint32 yesShares;  // Amount of property shares allocated to YES
-        uint32 noShares;   // Amount of property shares allocated to NO
-        uint32 yesCount;   // Number of YES votes
-        uint32 noCount;    // Number of NO votes
-        uint256 tiebreaker; // Optional random number used to tie break equality
-        bool equality;      // If YES/NO votes are at equality
-        bool approved;      // State of the resolution approval
+        uint32 yesShares;    // Amount of property shares allocated to YES
+        uint32 noShares;     // Amount of property shares allocated to NO
+        uint32 yesCount;     // Number of YES votes
+        uint32 noCount;      // Number of NO votes
+        uint256 tiebreaker;  // Optional random number used to tie break equality
+        bool equality;       // If YES/NO votes are at equality
+        bool approved;       // State of the resolution approval
     }
     
     /* HELPERS */
 
-    function createResolution(bytes memory _title, bytes memory _description, address _author) internal pure returns (Resolution memory) {
+    function createResolution(string memory _title, string memory _description, address _author) internal pure returns (Resolution memory) {
         
         return Resolution(_title, _description, _author, VoteType.Undefined, 0, 0, 0, 0);
     }
 
-    function createAmendment(uint256 _resolutionID, bytes memory _description, address _author) internal pure returns (Amendment memory) {
+    function createAmendment(uint256 _resolutionID, string memory _description, address _author) internal pure returns (Amendment memory) {
         
         return Amendment(_resolutionID, _description, _author);
     }
