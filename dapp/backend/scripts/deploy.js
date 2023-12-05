@@ -153,6 +153,12 @@ async function main() {
   console.log(`    - arg1 (syndx contract address): ${_context.contracts.syndx.target}`);
   console.log();
 
+  /* Output data for Azure DevOps Environnement Variables */
+  console.log(`##vso[task.setvariable variable=SYNDX_CONTRACT_ADDRESS;]${_context.contracts.syndx.target}`);
+  console.log(`##vso[task.setvariable variable=SYNDX_VRF_COORDINATOR_ADDRESS;]${_context.chainlink.vrf.coordinatorAddress}`);
+  console.log(`##vso[task.setvariable variable=SYNDX_VRF_SUBSCRIPTION_ID;]${_context.chainlink.vrf.subscriptionID}`);
+  console.log(`##vso[task.setvariable variable=TOKEN_FACTORY_CONTRACT_ADDRESS;]${_context.contracts.tokenFactory.target}`);
+
   // DO NOT REMOVE
   console.log();
 }
