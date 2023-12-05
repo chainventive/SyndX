@@ -2,7 +2,7 @@ require("@nomicfoundation/hardhat-toolbox");
 require('dotenv').config()
 
 // Load etherscan api key from dotenv
-const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY || '';
+const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY;
 
 // Load alchemy networks API key from dotenv
 const ALCHEMY_SEPOLIA_API_KEY = process.env.ALCHEMY_SEPOLIA_API_KEY;
@@ -44,6 +44,7 @@ module.exports = {
         PRIVATE_KEY_DOUNIA,
       ]
     },
+    /*
     mumbai: {
       url: `https://polygon-mumbai.g.alchemy.com/v2/${ALCHEMY_MUMBAI_API_KEY}`,
       accounts: [
@@ -56,6 +57,7 @@ module.exports = {
         PRIVATE_KEY_DOUNIA,
       ],           
     }
+    */
   },
 
   etherscan: {
