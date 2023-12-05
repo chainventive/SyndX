@@ -6,7 +6,7 @@ const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY;
 
 // Load alchemy networks API key from dotenv
 const ALCHEMY_SEPOLIA_API_KEY = process.env.ALCHEMY_SEPOLIA_API_KEY;
-const ALCHEMY_MUMBAI_API_KEY = process.env.ALCHEMY_MUMBAI_API_KEY;
+//const ALCHEMY_MUMBAI_API_KEY = process.env.ALCHEMY_MUMBAI_API_KEY;
 
 // Load testing accounts private keys from dotenv
 const PRIVATE_KEY_ADMIN   = process.env.PRIVATE_KEY_ADMIN;
