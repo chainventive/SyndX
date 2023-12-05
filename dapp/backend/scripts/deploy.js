@@ -6,6 +6,7 @@
 // global scope, and execute the script.
 const hre = require("hardhat");
 require("@nomicfoundation/hardhat-toolbox");
+const { writeOutputFile } = require('../helpers/fileOutput');
 
 const _config = {
   chainlink : {
@@ -148,16 +149,42 @@ async function main() {
   const tokenFactory = await hre.ethers.deployContract("TokenFactory", [_context.contracts.syndx.target]);
   await tokenFactory.waitForDeployment();
   _context.contracts.tokenFactory = tokenFactory;
-  console.log(`  > TokenFactory contract deployed and linked with Syndx contract at address ${ _context.contracts.tokenFactory.target }`);
+  console.log(`  > TokenFactory contract deployed at address ${ _context.contracts.tokenFactory.target }`);
   console.log();
   console.log(`    - arg1 (syndx contract address): ${_context.contracts.syndx.target}`);
   console.log();
 
-  /* Output data for Azure DevOps Environnement Variables */
-  console.log(`##vso[task.setvariable variable=SYNDX_CONTRACT_ADDRESS;]${_context.contracts.syndx.target}`);
-  console.log(`##vso[task.setvariable variable=SYNDX_VRF_COORDINATOR_ADDRESS;]${_context.chainlink.vrf.coordinatorAddress}`);
-  console.log(`##vso[task.setvariable variable=SYNDX_VRF_SUBSCRIPTION_ID;]${_context.chainlink.vrf.subscriptionID}`);
-  console.log(`##vso[task.setvariable variable=TOKEN_FACTORY_CONTRACT_ADDRESS;]${_context.contracts.tokenFactory.target}`);
+  /* Attach TokenFactory to Syndx */
+  const tx = await _context.contracts.syndx.setTokenFactory(_context.contracts.tokenFactory.target);
+  await tx.wait(1);
+  console.log(`  > TokenFactory successfully attached to Syndx`);
+  console.log();
+
+  /* Write output file */
+  const output = {
+    network: hre.network.name == 'localhost' ? 'hardhat' : hre.network.name,
+    contracts: {
+      chainlink: {
+        vrf: {
+          subscriptionId: Number(_context.chainlink.vrf.subscriptionID),
+          coordinatorAddress: _context.chainlink.vrf.coordinatorAddress
+        }
+      },
+      syndx: { 
+        address: _context.contracts.syndx.target 
+      },
+      tokenFactory: { 
+        address: _context.contracts.tokenFactory.target 
+      }
+    },
+  };
+
+  const paths = [
+    './scripts/outputs',
+    '../frontend/src/backend/outputs'
+  ]
+
+  writeOutputFile(paths, 'deployOutput.js', output);
 
   // DO NOT REMOVE
   console.log();
@@ -170,3 +197,5 @@ main().catch((error) => {
   console.error(error);
   process.exitCode = 1;
 });
+
+
