@@ -9,12 +9,19 @@ const inter = Inter({ subsets: ['latin'] })
 import '@rainbow-me/rainbowkit/styles.css';
 import { getDefaultWallets, RainbowKitProvider } from '@rainbow-me/rainbowkit';
 import { configureChains, createConfig, WagmiConfig } from 'wagmi';
-import { hardhat, sepolia, polygon } from 'wagmi/chains';
+import { hardhat, sepolia } from 'wagmi/chains';
 import { alchemyProvider } from 'wagmi/providers/alchemy';
 import { publicProvider } from 'wagmi/providers/public';
 
+// Backend
+import { backend } from "@/backend";
+
+// Contexts
+
+import { SyndxContextProvider } from '@/app/contexts/syndx/syndx.context.jsx';
+
 const { chains, publicClient } = configureChains (
-  [ hardhat /* sepolia polygon */ ],
+  [ backend.network == 'hardhat' ? hardhat : sepolia ],
   [ alchemyProvider({ apiKey: process.env.NEXT_PUBLIC_ALCHEMY_API_KEY }), publicProvider() ]
 );
 
@@ -38,7 +45,9 @@ export default function RootLayout({ children }) {
       <body className={inter.className}>
         <WagmiConfig config={wagmiConfig}>
           <RainbowKitProvider chains={chains}>
-            {children}
+            <SyndxContextProvider>
+              {children}
+            </SyndxContextProvider>
           </RainbowKitProvider>
         </WagmiConfig>
       </body>
