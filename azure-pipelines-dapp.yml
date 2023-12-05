@@ -53,9 +53,9 @@ steps:
   #  workingDirectory: ./dapp/backend/
 
   # Deploy dApp smart-contracts on hardhat chain
-  #- script: npx hardhat run scripts/deploy.js --network localhost
-  #  displayName: 'Deploy contracts'
-  #  workingDirectory: ./dapp/backend/
+  - script: npx hardhat run scripts/deploy.js --network sepolia
+    displayName: 'Deploy contracts'
+    workingDirectory: ./dapp/backend/
 
 
   ### PREPARE FRONTEND ###
@@ -73,11 +73,16 @@ steps:
       echo "NEXT_PUBLIC_ALCHEMY_API_KEY=$(ALCHEMY_SEPOLIA_API_KEY)" >> .env
       echo "NEXT_PUBLIC_WALLET_CONNECT_PROJECT_NAME=$(WALLET_CONNECT_PROJECT_NAME)" >> .env
       echo "NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID=$(WALLET_CONNECT_PROJECT_ID)" >> .env
-      echo "NEXT_PUBLIC_CONTRACT_ADDRESS=$(CONTRACT_ADDRESS)" >> .env
-      echo "NEXT_PUBLIC_CONTRACT_NETWORK=$(CONTRACT_NETWORK)" >> .env
-      echo "NEXT_PUBLIC_CONTRACT_BLOCK_NUMBER=$(CONTRACT_BLOCK_NUMBER)" >> .env
+    #echo "NEXT_PUBLIC_CONTRACT_ADDRESS=$(CONTRACT_ADDRESS)" >> .env
+    #echo "NEXT_PUBLIC_CONTRACT_NETWORK=$(CONTRACT_NETWORK)" >> .env
+    #echo "NEXT_PUBLIC_CONTRACT_BLOCK_NUMBER=$(CONTRACT_BLOCK_NUMBER)" >> .env
     displayName: 'Creating frontend environnement variables'
     workingDirectory: ./dapp/frontend
+  
+  - script: |
+      cat deployOutput.js
+    displayName: 'Creating frontend environnement variables'
+    workingDirectory: ./dapp/frontend/src/backend/outputs
 
   # Build the dApp docker image
   - script: |
