@@ -163,6 +163,7 @@ async function main() {
   /* Write output file */
   const output = {
     network: hre.network.name == 'localhost' ? 'hardhat' : hre.network.name,
+    blocknumber: Number((await ethers.provider.getBlock("latest")).number),
     contracts: {
       chainlink: {
         vrf: {
