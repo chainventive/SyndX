@@ -136,7 +136,12 @@ async function main() {
   }
   else {
 
-    console.log(`    - /!\\ please add syndx contract ${ _context.contracts.syndx.target } as Chainlink VRF consumer in your subscription #${ _context.chainlink.vrf.subscriptionID } (${ _context.network.name }) /!\\`);
+    const vrfCoordinatorV2 = await hre.ethers.getContractAt("VRFCoordinatorV2", _context.chainlink.vrf.coordinatorAddress);
+    transaction = await vrfCoordinatorV2.connect(_context.deployer).addConsumer(_context.chainlink.vrf.subscriptionID, _context.contracts.syndx.target);
+    transactionReceipt = await transaction.wait(1);
+    console.log(`    - /!\\ syndx contract added as VRFCoordinatorV2 consumer`);
+    console.log(`    - /!\\ please verify that syndx contract ${ _context.contracts.syndx.target } as been successfully added as Chainlink VRF consumer in your subscription #${ _context.chainlink.vrf.subscriptionID } (${ _context.network.name }) /!\\`);
+  
   }
 
   console.log();

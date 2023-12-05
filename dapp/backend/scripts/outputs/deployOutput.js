@@ -1,6 +1,6 @@
 module.exports = {
   "network": "sepolia",
-  "blocknumber": 4830027,
+  "blocknumber": 4830233,
   "contracts": {
     "chainlink": {
       "vrf": {
@@ -9,10 +9,10 @@ module.exports = {
       }
     },
     "syndx": {
-      "address": "0xc76f0847d3dBA70FBe43Bd5651604776649DB6FA"
+      "address": "0xCe7921dD52477258bE2af758591E0Ca1F7BDF6Ef"
     },
     "tokenFactory": {
-      "address": "0xE566C42D47A0f744f7f90ca59e5083d55B626BE5"
+      "address": "0x970A0C9993333Caa1dAd63ff8490A4965539D471"
     }
   }
 };
