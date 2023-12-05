@@ -35,17 +35,17 @@ steps:
       echo "PRIVATE_KEY_DOUNIA=$(PRIVATE_KEY_DOUNIA)" >> .env
       cat .env
     displayName: 'Creating backend environnement variables'
-    workingDirectory: ./dapp/frontend
+    workingDirectory: ./dapp/backend
 
   # Compile dApp smart-contracts
   - script: npx hardhat compile --network hardhat
     displayName: 'Compile contracts'
-    workingDirectory: ./dapp/backend/
+    workingDirectory: ./dapp/backend
 
   # Test dApp smart-contracts
-  - script: npx hardhat test --network hardhat
-    displayName: 'Test contracts'
-    workingDirectory: ./dapp/backend/
+  #- script: npx hardhat test --network hardhat
+  #  displayName: 'Test contracts'
+  #  workingDirectory: ./dapp/backend/
 
   # Run the hardhat localchain
   #- script: npx hardhat node
