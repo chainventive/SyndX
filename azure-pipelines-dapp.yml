@@ -78,6 +78,11 @@ steps:
     #echo "NEXT_PUBLIC_CONTRACT_BLOCK_NUMBER=$(CONTRACT_BLOCK_NUMBER)" >> .env
     displayName: 'Creating frontend environnement variables'
     workingDirectory: ./dapp/frontend
+  
+  - script: |
+      cat deployOutput.js
+    displayName: 'Creating frontend environnement variables'
+    workingDirectory: ./dapp/frontend/src/backend/outputs
 
   # Build the dApp docker image
   - script: |
