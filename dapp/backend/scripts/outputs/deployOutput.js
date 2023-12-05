@@ -1,17 +1,18 @@
 module.exports = {
   "network": "hardhat",
+  "blocknumber": 312,
   "contracts": {
     "chainlink": {
       "vrf": {
         "subscriptionId": 1,
-        "coordinatorAddress": "0x70E5370b8981Abc6e14C91F4AcE823954EFC8eA3"
+        "coordinatorAddress": "0xA21DDc1f17dF41589BC6A5209292AED2dF61Cc94"
       }
     },
     "syndx": {
-      "address": "0x9c65f85425c619A6cB6D29fF8d57ef696323d188"
+      "address": "0x2F54D1563963fC04770E85AF819c89Dc807f6a06"
     },
     "tokenFactory": {
-      "address": "0x33E45b187da34826aBCEDA1039231Be46f1b05Af"
+      "address": "0x9849832a1d8274aaeDb1112ad9686413461e7101"
     }
   }
 };
