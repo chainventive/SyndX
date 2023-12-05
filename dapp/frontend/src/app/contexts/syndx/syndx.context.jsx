@@ -34,6 +34,33 @@ const SyndxContextProvider = ({ children }) => {
         setIsSyndxAdmin(address == owner);
     }
 
+    // listen to all events of the smart contract
+
+    const listenToAllEvents = async () => {
+
+        try {
+
+            const allEvents = await viemPublicClient.getContractEvents({
+                address: backend.contracts.syndx.address,
+                abi: backend.contracts.syndx.abi,
+                fromBlock: BigInt(backend.blocknumber),
+                toBlock: 'latest'
+            });
+
+            /*
+            dispatchFromEventsAction({
+                type: VOTING_EVENTS_UPDATE_ACTION,
+                payload: { userAddress: address, logs: allEvents }
+            });
+            */
+        }
+        catch (err) {
+
+            console.error("Error while fetching events", error);
+        }
+
+    }
+
     // Component lifecycle
 
     useEffect(() => {
@@ -48,7 +75,7 @@ const SyndxContextProvider = ({ children }) => {
     }, [isConnected, address]);
 
     useEffect(() => {
-        
+
         if (isConnected) {
             retrieveUserProfile();
         }
