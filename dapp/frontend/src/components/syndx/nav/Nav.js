@@ -11,7 +11,7 @@ import useSyndx from '@/app/contexts/syndx/hooks/useSyndx';
 
 const Nav = ({ onSelectCoproperty }) => {
 
-    const { coproperties } = useSyndx();
+    const { coproperties, selectedCoproperty } = useSyndx();
 
     return (
 
@@ -23,7 +23,7 @@ const Nav = ({ onSelectCoproperty }) => {
 
                     coproperties.map(coproperty => {
                             
-                        return <button key={ coproperty.name } onClick={ () => onSelectCoproperty(coproperty) }>{ coproperty.name } - { coproperty.contract }</button>
+                        return <button style={{ color: selectedCoproperty?.name == coproperty.name ? 'blue' : 'black' }} key={ coproperty.name } onClick={ () => onSelectCoproperty(coproperty) }>{ coproperty.name } - { coproperty.contract }</button>
 
                     })
 

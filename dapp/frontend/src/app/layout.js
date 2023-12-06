@@ -17,7 +17,6 @@ import { publicProvider } from 'wagmi/providers/public';
 import { backend } from "@/backend";
 
 // Contexts
-
 import { SyndxContextProvider } from '@/app/contexts/syndx/syndx.context.jsx';
 
 const { chains, publicClient } = configureChains (

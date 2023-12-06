@@ -865,6 +865,18 @@ describe("SyndX", function () {
 
             });
 
+            it("Prevent the Syndic to Add Property Owners and Allocate Tokens Twice", async function () {
+
+                const { governanceToken, _syndic, _anigail } = await loadFixture(deployCopropertyWithGovernanceToken);
+
+                await governanceToken.connect(_syndic).addPropertyOwner(_anigail.address, 2000);
+
+                await expect(
+                    governanceToken.connect(_syndic).addPropertyOwner(_anigail.address, 2000)
+                ).to.be.revertedWithCustomError(governanceToken, "PropertyOwnerAlreadyAdded").withArgs(_anigail.address);
+
+            });
+
             it("Trigger 'PropertyOwnerAdded' Event on Addition of a Property Owner", async function () {
 
                 const { governanceToken, _syndic, _anigail } = await loadFixture(deployCopropertyWithGovernanceToken);
