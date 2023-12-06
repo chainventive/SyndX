@@ -7,9 +7,9 @@ import OwnerSpace from '@/components/syndx/spaces/user/owner/OwnerSpace';
 // Contexts
 import useSyndx from '@/app/contexts/syndx/hooks/useSyndx';
 
-const UserSpace = ({ coproperty, syndicAddress }) => {
+const UserSpace = () => {
     
-    const { userAddress } = useSyndx();
+    const { selectedCoproperty, isUserSelectedCopropertySyndic } = useSyndx();
 
     return (
 
@@ -17,7 +17,7 @@ const UserSpace = ({ coproperty, syndicAddress }) => {
             <div style={{ border: '1px solid black', padding: '1rem', margin: '1rem' }}>
 
                 {
-                    coproperty == null ? (
+                    selectedCoproperty == null ? (
 
                         <>
                             <p>Please select a coproperty</p>
@@ -27,13 +27,13 @@ const UserSpace = ({ coproperty, syndicAddress }) => {
 
                         <>
                             { 
-                                syndicAddress === userAddress ? (
+                                isUserSelectedCopropertySyndic ? (
 
-                                    <SyndicSpace coproperty={coproperty} />
+                                    <SyndicSpace />
 
                                 ) : (
                                     
-                                    <OwnerSpace coproperty={coproperty} />
+                                    <OwnerSpace />
                                 )
                             }
                         </>

@@ -1,15 +1,15 @@
 module.exports = {
   "network": "hardhat",
-  "blocknumber": 447,
+  "blocknumber": 460,
   "contracts": {
     "chainlink": {
       "vrf": {
         "subscriptionId": 1,
-        "coordinatorAddress": "0x7036124464A2d2447516309169322c8498ac51e3"
+        "coordinatorAddress": "0x3de00f44ce68FC56DB0e0E33aD4015C6e78eCB39"
       }
     },
     "syndx": {
-      "address": "0x3949c97925e5Aa13e34ddb18EAbf0B70ABB0C7d4",
+      "address": "0x92A00fc48Ad3dD4A8b5266a8F467a52Ac784fC83",
       "abi": [
         {
           "inputs": [
@@ -583,7 +583,7 @@ module.exports = {
       ]
     },
     "tokenFactory": {
-      "address": "0x0724F18B2aA7D6413D3fDcF6c0c27458a8170Dd9",
+      "address": "0x21915b79E1d334499272521a3508061354D13FF0",
       "abi": [
         {
           "inputs": [
@@ -1257,6 +1257,17 @@ module.exports = {
             }
           ],
           "name": "OwnableUnauthorizedAccount",
+          "type": "error"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "propertyOwner",
+              "type": "address"
+            }
+          ],
+          "name": "PropertyOwnerAlreadyAdded",
           "type": "error"
         },
         {

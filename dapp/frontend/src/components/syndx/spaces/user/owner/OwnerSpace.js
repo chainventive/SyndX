@@ -1,6 +1,11 @@
 'use client'
 
-const OwnerSpace = ({ coproperty }) => {
+// Contexts
+import useSyndx from '@/app/contexts/syndx/hooks/useSyndx';
+
+const OwnerSpace = () => {
+
+    const { selectedCoproperty } = useSyndx();
 
     return (
 
@@ -9,7 +14,7 @@ const OwnerSpace = ({ coproperty }) => {
 
                 OWNER SPACE
 
-                <p>You selected: { coproperty.name } - { coproperty.contract }</p>
+                <p>You selected: { selectedCoproperty.name } - { selectedCoproperty.contract }</p>
 
             </div>
         </>
