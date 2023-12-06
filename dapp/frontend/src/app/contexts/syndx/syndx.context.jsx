@@ -3,9 +3,12 @@
 const { createContext } = require("react");
 
 import { backend } from '@/backend/index';
-import { useState, useEffect } from 'react';
+
+import { useEffect, useReducer } from 'react';
 import { readContract, watchContractEvent } from '@wagmi/core';
 import { useAccount, usePublicClient } from 'wagmi';
+
+import syndxContextReducer, { ON_USER_CHANGE, ON_NEW_SYNDX_CONTRACT_EVENTS, ON_SYNDX_CONTRACT_OWNER_FETCHED } from '@/app/contexts/syndx/syndx.reducer';
 
 const SyndxContext = createContext(null);
 
@@ -15,109 +18,84 @@ const SyndxContextProvider = ({ children }) => {
 
     const viemClient = usePublicClient();
 
-    // context state
-    
+    // hooks
+
     const { address, isConnected } = useAccount();
 
-    const [ isSyndxAdmin, setIsSyndxAdmin ] = useState(false);
+    // context state
+    
+    const [ reducerState, dispatchToReducerAction ] = useReducer(syndxContextReducer, {
+        userAddress: null,
+        isUserSyndxOwner: false,
+        isUserConnected: false,
+        coproperties: [],
+    });
 
-    const [ contractEvents, setContractEvents ] = useState([]);
+    // functions
 
-    // checks who is the connected user
+    const checkUser = async () => {
 
-    const retrieveUserProfile = async () => {
+        dispatchToReducerAction({ type: ON_USER_CHANGE, payload: { isConnected, address } });
 
-        const owner = await readContract({
+    }
+
+    const fetchSyndxContractOwner = async () => {
+
+        const contractOwner = await readContract({
             address: backend.contracts.syndx.address,
             abi: backend.contracts.syndx.abi,
             functionName: 'owner'
         });
 
-        setIsSyndxAdmin(address == owner);
+        dispatchToReducerAction({ type: ON_SYNDX_CONTRACT_OWNER_FETCHED, payload: contractOwner });
     }
-
-    // listen past smart contract past events
 
     const fetchPastContractEvents = async () => {
 
-        try {
+        let pastEvents = await viemClient.getContractEvents({
+            address: backend.contracts.syndx.address,
+            abi: backend.contracts.syndx.abi,
+            fromBlock: BigInt(backend.blocknumber),
+            toBlock: 'latest'
+        });
 
-            let pastEvents = await viemClient.getContractEvents({
-                address: backend.contracts.syndx.address,
-                abi: backend.contracts.syndx.abi,
-                fromBlock: BigInt(backend.blocknumber),
-                toBlock: 'latest'
-            });
-
-            pastEvents = pastEvents.map((event, index) => ({
-                index: index,
-                blocknumber: Number(event.blockNumber),
-                name: event.eventName,
-                args: event.args
-            }));
-
-            //console.log(pastEvents);
-
-            setContractEvents(pastEvents);
-        }
-        catch (error) {
-            console.error("Error while fetching events", error);
-        }
-
+        dispatchToReducerAction({ type: ON_NEW_SYNDX_CONTRACT_EVENTS, payload: pastEvents });
     }
 
-    const eventWatcher = watchContractEvent({
+    const eventWatcher = async () => {
+
+        const watcher = watchContractEvent({
+
             abi: backend.contracts.syndx.abi,
             address: backend.contracts.syndx.address,
             eventName: 'allEvents',
-        },
-        (newEvents) => {
 
-            newEvents = newEvents.map((event, index) => ({
-                index: index,
-                blocknumber: event.blockNumber,
-                name: event.eventName,
-                args: event.args
-            }));
-
-            const arr = contractEvents.concat(newEvents);
-            setContractEvents(arr.filter((event, index) => arr.indexOf(event) === index));
-            //console.log(newEvents);
-
-            /*
-            dispatchFromEventsAction({
-                type: VOTING_EVENTS_UPDATE_ACTION,
-                payload: { userAddress: address, logs }
-            });
-            */
-        },
-    );
-
+            }, (newEvents) => dispatchToReducerAction({ type: ON_NEW_SYNDX_CONTRACT_EVENTS, payload: newEvents })
+        );
+        
+        return () => watcher.stop();
+    }
     
 
     // Component lifecycle
 
     useEffect(() => {
 
-        if (isConnected) {
-            retrieveUserProfile();
-        }
-        else {
-            setIsSyndxAdmin(false);
-        }
+        checkUser();
+
+        if (isConnected) fetchSyndxContractOwner();
 
     }, [isConnected, address]);
 
     useEffect(() => {
 
+        checkUser();
+
+        if (isConnected) fetchSyndxContractOwner();
+
         fetchPastContractEvents();
 
-        if (isConnected) {
-            retrieveUserProfile();
-        }
-        else {
-            setIsSyndxAdmin(false);
-        }
+        eventWatcher();
 
     }, []);
 
@@ -126,10 +104,10 @@ const SyndxContextProvider = ({ children }) => {
     return (
 
         <SyndxContext.Provider value={{
-            isUserConnected: isConnected,
-            userAddress: address,
-            isSyndxAdmin: isSyndxAdmin,
-            contractEvents: contractEvents
+            userAddress      : reducerState.userAddress,
+            isUserSyndxOwner : reducerState.isUserSyndxOwner,
+            isUserConnected  : reducerState.isUserConnected,
+            coproperties     : reducerState.coproperties
         }}>
             { children }
         </SyndxContext.Provider>
