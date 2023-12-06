@@ -7,6 +7,7 @@
 const hre = require("hardhat");
 require("@nomicfoundation/hardhat-toolbox");
 const { writeOutputFile } = require('../helpers/fileOutput');
+const { extractArtifactABI } = require('../helpers/artifactAbiExtractor');
 
 const _config = {
   chainlink : {
@@ -177,10 +178,12 @@ async function main() {
         }
       },
       syndx: { 
-        address: _context.contracts.syndx.target 
+        address: _context.contracts.syndx.target,
+        abi: extractArtifactABI('./artifacts/contracts/Syndx.sol/Syndx.json'),
       },
       tokenFactory: { 
-        address: _context.contracts.tokenFactory.target 
+        address: _context.contracts.tokenFactory.target,
+        abi: extractArtifactABI('./artifacts/contracts/tokens/TokenFactory.sol/TokenFactory.json'),
       }
     },
   };
