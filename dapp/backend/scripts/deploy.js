@@ -184,7 +184,19 @@ async function main() {
       tokenFactory: { 
         address: _context.contracts.tokenFactory.target,
         abi: extractArtifactABI('./artifacts/contracts/tokens/TokenFactory.sol/TokenFactory.json'),
-      }
+      },
+      coproperty: {
+        abi: extractArtifactABI('./artifacts/contracts/coproperty/Coproperty.sol/Coproperty.json'),
+      },
+      governanceToken: {
+        abi: extractArtifactABI('./artifacts/contracts/tokens/governance/GovernanceToken.sol/GovernanceToken.json'),
+      },
+      generalAssembly: {
+        abi: extractArtifactABI('./artifacts/contracts/assembly/GeneralAssembly.sol/GeneralAssembly.json'),
+      },
+      voteToken: {
+        abi: extractArtifactABI('./artifacts/contracts/tokens/vote/VoteToken.sol/VoteToken.json'),
+      },
     },
   };
 
