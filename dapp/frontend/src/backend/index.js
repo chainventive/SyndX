@@ -19,5 +19,17 @@ export const backend = {
             abi: deployOutput.contracts.syndx.abi,
             address: deployOutput.contracts.tokenFactory.address,
         },
+
+        coproperty: {
+            abi: deployOutput.contracts.coproperty.abi,
+        },
+
+        governanceToken: {
+            abi: deployOutput.contracts.governanceToken.abi,
+        },
+
+        voteToken: {
+            abi: deployOutput.contracts.voteToken.abi,
+        },
     }
 }
