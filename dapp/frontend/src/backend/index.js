@@ -12,7 +12,7 @@ export const backend = {
 
     network: deployOutput.network,
 
-    blocknumber: process.env.NEXT_PUBLIC_CONTRACT_BLOCK_NUMBER,
+    blocknumber: deployOutput.blocknumber,
 
     contracts: {
 
