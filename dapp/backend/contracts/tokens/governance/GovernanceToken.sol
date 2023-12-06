@@ -112,6 +112,10 @@ contract GovernanceToken is IGovernanceToken, ERC20, Ownable {
 
         whitelist[_address] = true;
 
+        uint256 propertyShares = balanceOf(_address);
+
+        if (propertyShares > 0) revert PropertyOwnerAlreadyAdded(_address);
+
         _transfer(msg.sender, _address, _propertyShares);
 
         emit PropertyOwnerAdded(_address, _propertyShares);

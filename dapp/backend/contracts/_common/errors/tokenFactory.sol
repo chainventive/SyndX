@@ -17,3 +17,4 @@ error PropertySharesBalanceIsZero (address caller);
 error VoteTokenLockedUp (uint256 lockupTime);
 error TokenTransferUnauthorized (address sender, address recipient);
 error NotAuthorized();
+error PropertyOwnerAlreadyAdded(address propertyOwner);
