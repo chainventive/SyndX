@@ -4,7 +4,7 @@ const { createContext } = require("react");
 
 import { backend } from '@/backend/index';
 import { useState, useEffect } from 'react';
-import { readContract } from '@wagmi/core';
+import { readContract, watchContractEvent } from '@wagmi/core';
 import { useAccount, usePublicClient } from 'wagmi';
 
 const SyndxContext = createContext(null);
@@ -21,6 +21,8 @@ const SyndxContextProvider = ({ children }) => {
 
     const [ isSyndxAdmin, setIsSyndxAdmin ] = useState(false);
 
+    const [ contractEvents, setContractEvents ] = useState([]);
+
     // checks who is the connected user
 
     const retrieveUserProfile = async () => {
@@ -34,32 +36,64 @@ const SyndxContextProvider = ({ children }) => {
         setIsSyndxAdmin(address == owner);
     }
 
-    // listen to all events of the smart contract
+    // listen past smart contract past events
 
-    const listenToAllEvents = async () => {
+    const fetchPastContractEvents = async () => {
 
         try {
 
-            const allEvents = await viemPublicClient.getContractEvents({
+            let pastEvents = await viemClient.getContractEvents({
                 address: backend.contracts.syndx.address,
                 abi: backend.contracts.syndx.abi,
                 fromBlock: BigInt(backend.blocknumber),
                 toBlock: 'latest'
             });
 
-            /*
-            dispatchFromEventsAction({
-                type: VOTING_EVENTS_UPDATE_ACTION,
-                payload: { userAddress: address, logs: allEvents }
-            });
-            */
-        }
-        catch (err) {
+            pastEvents = pastEvents.map((event, index) => ({
+                index: index,
+                blocknumber: Number(event.blockNumber),
+                name: event.eventName,
+                args: event.args
+            }));
 
+            //console.log(pastEvents);
+
+            setContractEvents(pastEvents);
+        }
+        catch (error) {
             console.error("Error while fetching events", error);
         }
 
     }
+
+    const eventWatcher = watchContractEvent({
+            abi: backend.contracts.syndx.abi,
+            address: backend.contracts.syndx.address,
+            eventName: 'allEvents',
+        },
+        (newEvents) => {
+
+            newEvents = newEvents.map((event, index) => ({
+                index: index,
+                blocknumber: event.blockNumber,
+                name: event.eventName,
+                args: event.args
+            }));
+
+            const arr = contractEvents.concat(newEvents);
+            setContractEvents(arr.filter((event, index) => arr.indexOf(event) === index));
+            //console.log(newEvents);
+
+            /*
+            dispatchFromEventsAction({
+                type: VOTING_EVENTS_UPDATE_ACTION,
+                payload: { userAddress: address, logs }
+            });
+            */
+        },
+    );
+
+    
 
     // Component lifecycle
 
@@ -75,6 +109,8 @@ const SyndxContextProvider = ({ children }) => {
     }, [isConnected, address]);
 
     useEffect(() => {
+
+        fetchPastContractEvents();
 
         if (isConnected) {
             retrieveUserProfile();
@@ -92,7 +128,8 @@ const SyndxContextProvider = ({ children }) => {
         <SyndxContext.Provider value={{
             isUserConnected: isConnected,
             userAddress: address,
-            isSyndxAdmin: isSyndxAdmin
+            isSyndxAdmin: isSyndxAdmin,
+            contractEvents: contractEvents
         }}>
             { children }
         </SyndxContext.Provider>

@@ -20,7 +20,7 @@ import useSyndx from "@/app/contexts/syndx/hooks/useSyndx";
 
 export default function Home() {
 
-  const { isUserConnected, userAddress, isSyndxAdmin } = useSyndx();
+  const { isUserConnected, userAddress, isSyndxAdmin, contractEvents } = useSyndx();
 
   const [copropertyName, setCopropertyName] = useState('');
   const [copropertyTokenISO, setCopropertyTokenISO] = useState('');
@@ -37,11 +37,15 @@ export default function Home() {
         args: [copropertyName, copropertyTokenISO, copropertySyndicAddress]
       });
 
-      await writeContract(request);
-      await waitForTransaction({hash: hash});
+      const { txHash } = await writeContract(request);
+      await waitForTransaction({hash: txHash});
 
       setCopropertyName('');
+      setCopropertyTokenISO('');
+      setCopropertySyndicAddress('');
 
+      return txHash;
+      
     } catch (err) {
 
       if( err instanceof ContractFunctionExecutionError) { 
@@ -66,24 +70,61 @@ export default function Home() {
       {
         isUserConnected && isSyndxAdmin && (
 
-          <div style={{ border: '1px solid black', padding: '1rem', margin: '1rem' }}>
+          <>
 
-            <h3>CREATE COPROPERTY</h3>
+            <div style={{ border: '1px solid black', padding: '1rem', margin: '1rem' }}>
 
-            <p>connected: { isUserConnected ? 'yes' : 'no' }</p>
-            <p>user address: { userAddress }</p>
-            <p>is syndx admin: { isSyndxAdmin ? 'yes' : 'no' }</p>
+              <h3>CONNECTED USER</h3>
 
-            <input type="text" value={copropertyName} onChange={e => setCopropertyName(e.target.value)} placeholder="coproperty name"></input>
-            <input type="text" value={copropertyTokenISO} onChange={e => setCopropertyTokenISO(e.target.value)} placeholder="token iso"></input>
-            <input type="text" value={copropertySyndicAddress} onChange={e => setCopropertySyndicAddress(e.target.value)} placeholder="syndic address"></input>
+              <p>connected: { isUserConnected ? 'yes' : 'no' }</p>
+              <p>user address: { userAddress }</p>
+              <p>is syndx admin: { isSyndxAdmin ? 'yes' : 'no' }</p>
 
-            <br></br>
+            </div>
 
-            <button onClick={ () => createCoproperty() }>create coproperty</button>
+            <div style={{ border: '1px solid black', padding: '1rem', margin: '1rem' }}>
 
-          </div>
-          
+              <h3>REGISTER A NEW COPROPERTY</h3>
+
+              <p>connected: { isUserConnected ? 'yes' : 'no' }</p>
+              <p>user address: { userAddress }</p>
+              <p>is syndx admin: { isSyndxAdmin ? 'yes' : 'no' }</p>
+
+              <input style={{ marginRight: '0.5rem' }} type="text" value={copropertyName} onChange={e => setCopropertyName(e.target.value)} placeholder="coproperty name"></input>
+              <input style={{ marginRight: '0.5rem' }} type="text" value={copropertyTokenISO} onChange={e => setCopropertyTokenISO(e.target.value)} placeholder="token iso"></input>
+              <input style={{ marginRight: '0.5rem' }} type="text" value={copropertySyndicAddress} onChange={e => setCopropertySyndicAddress(e.target.value)} placeholder="syndic address"></input>
+
+              <br></br>
+              <br></br>
+
+              <button onClick={ () => createCoproperty() }>register</button>
+
+            </div>
+
+            <div style={{ border: '1px solid black', padding: '1rem', margin: '1rem' }}>
+
+              <h3>REGISTERED COPROPERTIES</h3>
+
+              {
+                contractEvents.length > 0 ? (
+
+                  contractEvents.filter(event => event.name == 'CopropertyContractCreated').map(event => {
+                    
+                    return <p key={ event.index }>{ event.args.copropertyName }</p>
+
+                  })
+
+                ) : (
+
+                  <p>No contract events yet</p>
+
+                )
+              }
+
+            </div>
+
+          </>
+
         )
       }
 
