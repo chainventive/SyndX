@@ -1,13 +1,18 @@
 'use client'
 
+import Assembly from '@/components/syndx/spaces/user/syndic/features/assembly/participate/assembly';
+import Assemblies from '@/components/syndx/spaces/user/syndic/features/assembly/select/selectAssembly';
+import RegisterOwner from '@/components/syndx/spaces/user/syndic/features/owners/register/registerOwner';
+import CreateAssembly from '@/components/syndx/spaces/user/syndic/features/assembly/create/createAssembly';
+import CopropertyOwners from '@/components/syndx/spaces/user/syndic/features/owners/manage/copropertyOwners';
+
 // Contexts
-import useSyndx from '@/app/contexts/syndx/hooks/useSyndx';
-import RegisterOwner from './features/owners/register/registerOwner';
-import CopropertyOwners from './features/owners/manage/copropertyOwners';
+import useCoproperty from '@/app/contexts/coproperty/hook/useCoproperty';
+import { AssemblyContextProvider } from '@/app/contexts/assembly/assembly.context.jsx';
 
 const SyndicSpace = () => {
 
-    const { selectedCoproperty } = useSyndx();
+    const { setSelectedAssembly, selectedAssembly } = useCoproperty();
 
     return (
 
@@ -18,6 +23,17 @@ const SyndicSpace = () => {
                 
                 <CopropertyOwners/>
                 <RegisterOwner/>
+                <CreateAssembly/>
+                <Assemblies onSelectAssembly={ setSelectedAssembly } />
+
+                {
+                    selectedAssembly && (
+
+                        <AssemblyContextProvider>
+                            <Assembly/>
+                        </AssemblyContextProvider>
+                    )
+                }
 
             </div>
         </>
