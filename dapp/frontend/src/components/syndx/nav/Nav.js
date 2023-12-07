@@ -21,11 +21,11 @@ const Nav = ({ onSelectCoproperty }) => {
                 {
                     coproperties.length > 0 ? (
 
-                    coproperties.map(coproperty => {
-                            
-                        return <button style={{ color: selectedCoproperty?.name == coproperty.name ? 'blue' : 'black' }} key={ coproperty.name } onClick={ () => onSelectCoproperty(coproperty) }>{ coproperty.name } - { coproperty.contract }</button>
+                        coproperties.map(coproperty => {
+                                
+                            return <button style={{ color: selectedCoproperty?.name == coproperty.name ? 'blue' : 'black' }} key={ coproperty.name } onClick={ () => onSelectCoproperty(coproperty) }>{ coproperty.name } - { coproperty.contract }</button>
 
-                    })
+                        })
 
                     ) : (
 

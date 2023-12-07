@@ -1,13 +1,9 @@
 'use client'
 
-//ReactJS
-import { useState, useEffect } from 'react'
-
 // Viem
 import { ContractFunctionExecutionError } from 'viem';
 
 // Wagmi
-import { readContract } from '@wagmi/core';
 import { prepareWriteContract, writeContract,waitForTransaction } from '@wagmi/core';
 
 // Backend
@@ -18,7 +14,7 @@ import useCoproperty from '@/app/contexts/coproperty/hook/useCoproperty';
 
 const CopropertyOwners = () => {
 
-    const { owners, tokenName, tokenSymbol, tokenTotalSupply, distributedTokens, tokenContract } = useCoproperty();
+    const { owners, tokenName, tokenSymbol, tokenTotalSupply, distributedTokens, tokenContract, syndicBalance } = useCoproperty();
 
     const removeOwner = async (owner) => {
 
@@ -38,7 +34,7 @@ const CopropertyOwners = () => {
             
           } catch (err) {
       
-            if( err instanceof ContractFunctionExecutionError) { 
+            if (err instanceof ContractFunctionExecutionError) { 
               console.log(err);
               return;
             }
@@ -59,7 +55,8 @@ const CopropertyOwners = () => {
                 <p>Name : { tokenName }</p>
                 <p>Symbol : { tokenSymbol }</p>
                 <p>Total Supply: { tokenTotalSupply }</p>
-                <p>Distributed: { distributedTokens }</p>
+                <p>Distributed Supply: { distributedTokens }</p>
+                <p>Syndic Balance: { syndicBalance }</p>
                 <p>Contract : { tokenContract }</p>
 
                 <h3>REGISTERED OWNERS</h3>

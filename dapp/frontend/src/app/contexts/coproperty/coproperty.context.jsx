@@ -16,9 +16,12 @@ import { backend } from '@/backend/index';
 import useSyndx from '@/app/contexts/syndx/hooks/useSyndx';
 
 import copropertyContextReducer, {
+    ON_TOKEN_DETAILS_FETCHED,
+    ON_COPROPERTY_COUNT_FETCHED,
+    ON_COPROPERTY_ASSEMBLY_SELECTED,
+    ON_COPROPERTY_ASSEMBLIES_FETCHED,
     ON_NEW_COPROPERTY_CONTRACT_EVENTS,
     ON_COPROPERTY_TOKEN_ADDRESS_FETCHED,
-    ON_TOKEN_DETAILS_FETCHED
 } from '@/app/contexts/coproperty/coproperty.reducer';
 
 const CopropertyContext = createContext(null);
@@ -31,7 +34,7 @@ const CopropertyContextProvider = ({ children }) => {
 
     // hooks
 
-    const { selectedCoproperty } = useSyndx();
+    const { selectedCoproperty, selectedCopropertySyndic } = useSyndx();
 
     // context state
     
@@ -42,9 +45,13 @@ const CopropertyContextProvider = ({ children }) => {
         tokenTotalSupply: 0,
         distributedTokens: 0,
         tokenContract: null,
+        syndicBalance: 0,
+        assemblyCount: 0,
+        assemblies: [],
+        selectedAssembly: null,
     });
 
-    // internal functions
+    // external setters
 
     const fetchGovernanceTokenContract = async () => {
 
@@ -55,6 +62,49 @@ const CopropertyContextProvider = ({ children }) => {
         });
 
         dispatchToReducerAction({ type: ON_COPROPERTY_TOKEN_ADDRESS_FETCHED, payload: tokenContract });
+    }
+
+    const setSelectedAssembly = (assembly) => {
+
+        dispatchToReducerAction({ type: ON_COPROPERTY_ASSEMBLY_SELECTED, payload: assembly });
+    }
+
+    // internal functions
+
+    const fetchAssemblies = async () => {
+
+        let assemblies = [];
+
+        for (let i = reducerState.assemblies.length; i < reducerState.assemblyCount; i++) {
+
+            const assemblyContract = await readContract({
+                address: selectedCoproperty.contract,
+                abi: backend.contracts.coproperty.abi,
+                functionName: 'generalAssemblies',
+                args: [i]
+            });
+
+            const voteStartTime = await readContract({
+                address: assemblyContract,
+                abi: backend.contracts.generalAssembly.abi,
+                functionName: 'voteStart'
+            });
+
+            assemblies.push({ contract: assemblyContract, voteStartTime: Number(voteStartTime) });
+        }
+
+        dispatchToReducerAction({ type: ON_COPROPERTY_ASSEMBLIES_FETCHED, payload: assemblies });
+    }
+
+    const fetchAssemblyCount = async () => {
+
+        const count = await readContract({
+            address: selectedCoproperty.contract,
+            abi: backend.contracts.coproperty.abi,
+            functionName: 'getGeneralAssemblyCount'
+        });
+
+        dispatchToReducerAction({ type: ON_COPROPERTY_COUNT_FETCHED, payload: count });
     }
 
     const fetchTokenDetails = async () => {
@@ -77,7 +127,18 @@ const CopropertyContextProvider = ({ children }) => {
             functionName: 'totalSupply'
         });
 
-        dispatchToReducerAction({ type: ON_TOKEN_DETAILS_FETCHED, payload: { tokenName, tokenSymbol, tokenTotalSupply } });
+        let syndicBalance = 0;
+        if (selectedCopropertySyndic != null) {
+
+            syndicBalance = await readContract({
+                address: reducerState.tokenContract,
+                abi: backend.contracts.governanceToken.abi,
+                functionName: 'balanceOf',
+                args: [`${selectedCopropertySyndic}`]
+            });
+        }
+
+        dispatchToReducerAction({ type: ON_TOKEN_DETAILS_FETCHED, payload: { tokenName, tokenSymbol, tokenTotalSupply, syndicBalance } });
     }
 
     const fetchPastContractEvents = async () => {
@@ -111,8 +172,8 @@ const CopropertyContextProvider = ({ children }) => {
     useEffect(() => {
 
         if (reducerState.tokenContract != null) {
-            fetchTokenDetails();
             fetchPastContractEvents();
+            fetchTokenDetails();
             eventWatcher();
         }
 
@@ -120,13 +181,27 @@ const CopropertyContextProvider = ({ children }) => {
 
     useEffect(() => {
 
-        if (selectedCoproperty != null) fetchGovernanceTokenContract();
+        if (reducerState.assemblies.length < reducerState.assemblyCount) { 
+            fetchAssemblies();
+        }
+
+    }, [reducerState.assemblyCount]);
+
+    useEffect(() => {
+
+        if (selectedCoproperty != null) { 
+            fetchGovernanceTokenContract();
+            fetchAssemblyCount();
+        }
 
     }, [selectedCoproperty]);
 
     useEffect(() => {
 
-        if (selectedCoproperty != null) fetchGovernanceTokenContract();
+        if (selectedCoproperty != null) {
+            fetchGovernanceTokenContract();
+            fetchAssemblyCount();
+        }
 
     }, []);
 
@@ -135,12 +210,18 @@ const CopropertyContextProvider = ({ children }) => {
     return (
 
         <CopropertyContext.Provider value={{
-            owners: reducerState.owners,
-            tokenName: reducerState.tokenName,
-            tokenSymbol: reducerState.tokenSymbol,
-            tokenTotalSupply: reducerState.tokenTotalSupply,
-            tokenContract: reducerState.tokenContract,
-            distributedTokens: reducerState.distributedTokens,
+            owners              : reducerState.owners,
+            tokenName           : reducerState.tokenName,
+            tokenSymbol         : reducerState.tokenSymbol,
+            tokenTotalSupply    : reducerState.tokenTotalSupply,
+            tokenContract       : reducerState.tokenContract,
+            distributedTokens   : reducerState.distributedTokens,
+            syndicBalance       : reducerState.syndicBalance,
+            assemblyCount       : reducerState.assemblyCount,
+            assemblies          : reducerState.assemblies,
+            selectedAssembly    : reducerState.selectedAssembly,
+            fetchAssemblyCount  : fetchAssemblyCount,
+            setSelectedAssembly : setSelectedAssembly,
         }}>
             { children }
         </CopropertyContext.Provider>

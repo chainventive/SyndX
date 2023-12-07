@@ -42,21 +42,22 @@ const RegisterOwner = () => {
     
           const { txHash } = await writeContract(request);
           await waitForTransaction({hash: txHash});
-    
-          setOwnerAddress('');
-          setOwnerShares(0);
-    
+
           return txHash;
           
         } catch (err) {
     
-          if( err instanceof ContractFunctionExecutionError) { 
+          if (err instanceof ContractFunctionExecutionError) { 
             console.log(err);
             return;
           }
     
           console.log(err);
-    
+
+        } finally {
+            
+            setOwnerAddress('');
+            setOwnerShares(0);
         }
     
     };

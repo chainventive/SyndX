@@ -28,6 +28,10 @@ export const backend = {
             abi: deployOutput.contracts.governanceToken.abi,
         },
 
+        generalAssembly: {
+            abi: deployOutput.contracts.generalAssembly.abi,
+        },
+
         voteToken: {
             abi: deployOutput.contracts.voteToken.abi,
         },

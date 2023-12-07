@@ -1,6 +1,9 @@
-export const ON_NEW_COPROPERTY_CONTRACT_EVENTS = 'coproperty/events/newbatch';
-export const ON_COPROPERTY_TOKEN_ADDRESS_FETCHED = 'coproperty/token/address/fetched';
 export const ON_TOKEN_DETAILS_FETCHED = 'coproperty/token/details/fetched';
+export const ON_COPROPERTY_ASSEMBLY_SELECTED = 'coproperty/assembly/selected';
+export const ON_NEW_COPROPERTY_CONTRACT_EVENTS = 'coproperty/events/newbatch';
+export const ON_COPROPERTY_ASSEMBLIES_FETCHED = 'coproperty/assemblies/fetched';
+export const ON_COPROPERTY_COUNT_FETCHED = 'coproperty/assemblies/count/fetched';
+export const ON_COPROPERTY_TOKEN_ADDRESS_FETCHED = 'coproperty/token/address/fetched';
 
 import { easeContractEvent } from '@/helpers/transformer/index';
 
@@ -50,14 +53,24 @@ const copropertyContextReducer = (reducerState, action) => {
         }
     }
 
+    if (action.type == ON_COPROPERTY_ASSEMBLIES_FETCHED) {
+
+        const fetchedAssemblies = action.payload;
+
+        return {
+            ...reducerState,
+            assemblies: reducerState.assemblies.concat(fetchedAssemblies)
+        }
+    }
+
     if (action.type == ON_TOKEN_DETAILS_FETCHED) {
 
         return {
             ...reducerState,
             tokenName: action.payload.tokenName,
             tokenSymbol: action.payload.tokenSymbol,
-            tokenTotalSupply: action.payload.tokenTotalSupply,
-            tokenSupply: 10000,
+            tokenTotalSupply: Number(action.payload.tokenTotalSupply),
+            syndicBalance: Number(action.payload.syndicBalance),
         }
     }
 
@@ -66,6 +79,22 @@ const copropertyContextReducer = (reducerState, action) => {
         return {
             ...reducerState,
             tokenContract: action.payload
+        }
+    }
+
+    if (action.type == ON_COPROPERTY_COUNT_FETCHED) {
+
+        return {
+            ...reducerState,
+            assemblyCount: action.payload
+        }
+    }
+
+    if (action.type == ON_COPROPERTY_ASSEMBLY_SELECTED) {
+        
+        return {
+            ...reducerState,
+            selectedAssembly: action.payload
         }
     }
 

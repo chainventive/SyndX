@@ -1,0 +1,1 @@
+export const copyToClipboard = (address) => navigator.clipboard.writeText(address);
