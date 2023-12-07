@@ -4,8 +4,9 @@
 import { getTimestampDate, getDateTimestamp } from "@/helpers/time/index";
 
 // Components
-import CreateResolution from "@/components/syndx/spaces/user/syndic/features/assembly/create/createResolution";
-import Resolution from "@/components/syndx/spaces/user/syndic/features/assembly/resolution/Resolution";
+import CreateResolution from "@/components/syndx/assembly/createResolution";
+import Resolution from "@/components/syndx/assembly/resolution/Resolution";
+import ClaimVote from "@/components/syndx/assembly/vote/ClaimVote";
 
 // Contexts
 import useCoproperty from '@/app/contexts/coproperty/hook/useCoproperty';
@@ -13,8 +14,9 @@ import useAssembly from '@/app/contexts/assembly/hook/useAssembly';
 
 // ReactJS
 import { useEffect, useState } from "react";
+import VoteToken from "./vote/VoteToken";
 
-const Assembly = () => {
+const   Assembly = () => {
 
     const { selectedAssembly } = useCoproperty();
     const { tiebreaker, created, lockup, voteEnd, resolutions, amendments, isSyndicUser } = useAssembly();
@@ -78,6 +80,21 @@ const Assembly = () => {
 
                 <br></br>
 
+                
+                {
+                    isSyndicUser ? (
+
+                        <VoteToken/>
+
+                    ) : (
+
+                        <ClaimVote now={now} lockup={lockup}/>
+                    )
+                }
+                
+
+                <br></br>
+
                 <h4>RESOLUTIONS</h4>
 
                 {
@@ -107,4 +124,4 @@ const Assembly = () => {
     )
 }
 
-export default Assembly
+export default Assembly  

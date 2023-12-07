@@ -1,10 +1,10 @@
 'use client'
 
-import Assembly from '@/components/syndx/spaces/user/syndic/features/assembly/participate/assembly';
-import Assemblies from '@/components/syndx/spaces/user/syndic/features/assembly/select/selectAssembly';
-import RegisterOwner from '@/components/syndx/spaces/user/syndic/features/owners/register/registerOwner';
-import CreateAssembly from '@/components/syndx/spaces/user/syndic/features/assembly/create/createAssembly';
-import CopropertyOwners from '@/components/syndx/spaces/user/syndic/features/owners/manage/copropertyOwners';
+import Assembly from '@/components/syndx/assembly/manageAssembly';
+import Assemblies from '@/components/syndx/assembly/selectAssembly';
+import RegisterOwner from '@/components/syndx/coproperty/registerOwner';
+import CreateAssembly from '@/components/syndx/assembly/createAssembly';
+import CopropertyOwners from '@/components/syndx/coproperty/manageOwners';
 
 // Contexts
 import useCoproperty from '@/app/contexts/coproperty/hook/useCoproperty';
@@ -19,7 +19,7 @@ const SyndicSpace = () => {
         <>
             <div style={{ border: '1px solid black', padding: '1rem', margin: '1rem' }}>
 
-                SYNDIC SPACE
+                <h3>SYNDIC SPACE</h3>
                 
                 <CopropertyOwners/>
                 <RegisterOwner/>

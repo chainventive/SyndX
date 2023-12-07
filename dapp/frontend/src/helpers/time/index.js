@@ -19,3 +19,18 @@ export const dateToShortDateTime = (date) => {
 export const getDateTimestamp = (date) => Math.round(date / 1000);
   
 export const getTimestampDate = (timestamp) => dateToShortDateTime(new Date(Number(timestamp) * 1000));
+
+export function formatTimeSpan(startTime, endTime) {
+
+  let difference = endTime - startTime;
+
+  let hours = Math.floor(difference / 3600000);
+  let minutes = Math.floor((difference % 3600000) / 60000);
+  let seconds = Math.floor((difference % 60000) / 1000);
+
+  hours = hours.toString().padStart(2, '0');
+  minutes = minutes.toString().padStart(2, '0');
+  seconds = seconds.toString().padStart(2, '0');
+
+  return `${hours}:${minutes}:${seconds}`;
+}

@@ -52,7 +52,6 @@ const AssemblyContextProvider = ({ children }) => {
         resolutions: [],
         amendments: [],
         votes: [],
-        tiebreakerRequested: false,
     });
 
     // internal functions

@@ -1,8 +1,8 @@
 'use client'
 
 // Components
-import SyndicSpace from '@/components/syndx/spaces/user/syndic/SyndicSpace';
-import OwnerSpace from '@/components/syndx/spaces/user/owner/OwnerSpace';
+import SyndicSpace from '@/components/syndx/spaces/users/SyndicSpace';
+import OwnerSpace from '@/components/syndx/spaces/users/OwnerSpace';
 
 // Contexts
 import useSyndx from '@/app/contexts/syndx/hooks/useSyndx';
