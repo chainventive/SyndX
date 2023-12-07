@@ -12,7 +12,6 @@ import { prepareWriteContract, writeContract,waitForTransaction } from '@wagmi/c
 
 // Backend
 import { backend } from "@/backend";
-import useSyndx from '@/app/contexts/syndx/hooks/useSyndx';
 
 const Resolution = ({ assembly, resolution, amendments, isSyndicUser, now, lockup }) => {
 
@@ -92,13 +91,37 @@ const Resolution = ({ assembly, resolution, amendments, isSyndicUser, now, locku
             }
     
             console.log(err);
-    
         }
     }
 
-    const vote = () => {
+    const vote = async (ballot) => {
 
-        console.log("Not implemented yet !")
+        if (voteType <= 0) return;
+
+        try {
+
+            const { request } = await prepareWriteContract({
+                address: assembly.contract,
+                abi: backend.contracts.generalAssembly.abi,
+                functionName: "vote",
+                args: [resolution.id, ballot]
+            });
+    
+            const { txHash } = await writeContract(request);
+            await waitForTransaction({hash: txHash});
+
+            return txHash;
+          
+        } catch (err) {
+    
+            if (err instanceof ContractFunctionExecutionError) { 
+                console.log(err);
+                return;
+            }
+    
+            console.log(err);
+        }
+
     }
 
     useEffect(() => {
@@ -154,7 +177,13 @@ const Resolution = ({ assembly, resolution, amendments, isSyndicUser, now, locku
             }
 
             {
-                !isSyndicUser && (<button onClick={ () => vote() }>vote</button>)
+                !isSyndicUser && 
+                (   
+                    <>
+                        <button onClick={ () => vote(false) }>no vote</button>
+                        <button onClick={ () => vote(true)  }>yes vote</button>
+                    </>
+                )
             }
             
         </div>

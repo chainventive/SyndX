@@ -1264,15 +1264,24 @@ describe("SyndX", function () {
                 ).to.be.revertedWithCustomError(voteToken, "PropertySharesBalanceIsZero").withArgs(_admin.address);
             });
 
-            it(`Enable the Syndic to Burn Lost Tokens and Prevent Reclaiming`, async function () {
+            it(`Allow anyone to verify if an account claimed his vote tokens`, async function () {
+
+                const { voteToken, _anigail } = await loadFixture(createGeneralAssemblyWithVoteToken);
+
+                const hasClaimed = await voteToken.hasClaimed(_anigail.address);
+
+                await expect(hasClaimed).to.be.false;
+            });
+
+            it(`Enable the Syndic to Burn Lost Tokens, Prevent Reclaiming Again and Remove Account From Property Owners`, async function () {
 
                 const { governanceToken, voteToken, _syndic, _anigail } = await loadFixture(createGeneralAssemblyWithVoteToken);
 
-                const anigailGovernanceTokenBalance = await governanceToken.balanceOf(_anigail.address);
+                const anigailGovernanceTokenBalanceBefore = await governanceToken.balanceOf(_anigail.address);
 
                 await voteToken.connect(_anigail).claimVoteTokens();
                 const anigailBalanceAfterClaim = await voteToken.balanceOf(_anigail.address);
-                expect (anigailBalanceAfterClaim).to.be.equal(anigailGovernanceTokenBalance);
+                expect (anigailBalanceAfterClaim).to.be.equal(anigailGovernanceTokenBalanceBefore);
 
                 await voteToken.connect(_syndic).burnLostToken(_anigail.address);
 
@@ -1282,7 +1291,6 @@ describe("SyndX", function () {
                 await expect(
                     voteToken.connect(_anigail).claimVoteTokens()
                 ).to.be.revertedWithCustomError(voteToken, "VoteTokensAlreadyClaimed").withArgs(_anigail.address);
-
             });
 
             it(`Emit 'LostTokensBurned' Event on Token Burning by Administrator`, async function () {

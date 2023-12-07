@@ -2,17 +2,19 @@
 
 // Components
 import Nav from '@/components/syndx/nav/Nav';
-import UserSpace from '@/components/syndx/spaces/user/userSpace';
-import AdminSpace from '@/components/syndx/spaces/admin/AdminSpace';
+import OwnerSpace from '@/components/syndx/spaces/users/OwnerSpace';
+import AdminSpace from '@/components/syndx/spaces/AdminSpace';
+import SyndicSpace from '@/components/syndx/spaces/users/SyndicSpace';
 import Disconnected from '@/components/syndx/disconnected/Disconnected';
 
 // Contexts
 import useSyndx from '@/app/contexts/syndx/hooks/useSyndx';
 import { CopropertyContextProvider } from '@/app/contexts/coproperty/coproperty.context.jsx';
+import UserSpace from './spaces/UserSpace';
 
 const Syndx = () => {
 
-    const { isUserSyndxOwner, isUserConnected, selectedCoproperty, setSelectedCoproperty } = useSyndx();
+    const { isUserSyndxOwner, isUserConnected, selectedCoproperty, setSelectedCoproperty, isUserSelectedCopropertySyndic } = useSyndx();
 
     return (
 
@@ -25,9 +27,18 @@ const Syndx = () => {
                         <Nav onSelectCoproperty={setSelectedCoproperty} />
 
                         <CopropertyContextProvider>
+
                             {
-                                isUserSyndxOwner ? <AdminSpace coproperty={selectedCoproperty}/> : <UserSpace />
+                                isUserSyndxOwner ? 
+                                (
+                                    <AdminSpace coproperty={selectedCoproperty}/>
+
+                                ) : (
+
+                                    <UserSpace />
+                                )
                             } 
+
                         </CopropertyContextProvider>
 
                     </>

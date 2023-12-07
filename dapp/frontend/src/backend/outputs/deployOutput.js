@@ -1,15 +1,15 @@
 module.exports = {
   "network": "hardhat",
-  "blocknumber": 460,
+  "blocknumber": 532,
   "contracts": {
     "chainlink": {
       "vrf": {
         "subscriptionId": 1,
-        "coordinatorAddress": "0x3de00f44ce68FC56DB0e0E33aD4015C6e78eCB39"
+        "coordinatorAddress": "0x4ea0Be853219be8C9cE27200Bdeee36881612FF2"
       }
     },
     "syndx": {
-      "address": "0x92A00fc48Ad3dD4A8b5266a8F467a52Ac784fC83",
+      "address": "0xfB12F7170FF298CDed84C793dAb9aBBEcc01E798",
       "abi": [
         {
           "inputs": [
@@ -583,7 +583,7 @@ module.exports = {
       ]
     },
     "tokenFactory": {
-      "address": "0x21915b79E1d334499272521a3508061354D13FF0",
+      "address": "0xC220Ed128102d888af857d137a54b9B7573A41b2",
       "abi": [
         {
           "inputs": [
@@ -3095,6 +3095,25 @@ module.exports = {
               "internalType": "contract IGovernanceToken",
               "name": "",
               "type": "address"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "",
+              "type": "address"
+            }
+          ],
+          "name": "hasClaimed",
+          "outputs": [
+            {
+              "internalType": "bool",
+              "name": "",
+              "type": "bool"
             }
           ],
           "stateMutability": "view",

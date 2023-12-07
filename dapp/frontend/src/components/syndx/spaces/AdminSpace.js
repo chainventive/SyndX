@@ -1,6 +1,6 @@
 'use client'
 
-import CreateCoproperty from '@/components/syndx/spaces/admin/features/coproperty/create/createCoproperty';
+import CreateCoproperty from '@/components/syndx/coproperty/createCoproperty';
 
 // Contexts
 import useSyndx from '@/app/contexts/syndx/hooks/useSyndx';

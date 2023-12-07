@@ -52,7 +52,6 @@ const AssemblyContextProvider = ({ children }) => {
         resolutions: [],
         amendments: [],
         votes: [],
-        tiebreakerRequested: false,
     });
 
     // internal functions
@@ -70,6 +69,8 @@ const AssemblyContextProvider = ({ children }) => {
             abi: backend.contracts.generalAssembly.abi,
             functionName: 'tiebreaker'
         });
+
+        console.log(tiebreaker)
 
         const timeline = await readContract({
             address: selectedAssembly.contract,

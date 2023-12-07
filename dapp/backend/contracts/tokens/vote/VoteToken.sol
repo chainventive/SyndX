@@ -24,7 +24,7 @@ contract VoteToken is IVoteToken, ERC20, Ownable {
 
     uint256 public lockupTime;
 
-    mapping (address => bool) private hasClaimed;
+    mapping (address => bool) public hasClaimed;
 
     modifier onlyAdmininistrator {
         if (msg.sender != administrator) revert NotTokenAdministrator (administrator, msg.sender);
