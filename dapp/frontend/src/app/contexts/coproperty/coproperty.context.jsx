@@ -90,7 +90,13 @@ const CopropertyContextProvider = ({ children }) => {
                 functionName: 'voteStart'
             });
 
-            assemblies.push({ contract: assemblyContract, voteStartTime: Number(voteStartTime) });
+            const voteTokenContract = await readContract({
+                address: assemblyContract,
+                abi: backend.contracts.generalAssembly.abi,
+                functionName: 'voteToken'
+            });
+
+            assemblies.push({ contract: assemblyContract, voteStartTime: Number(voteStartTime), voteToken: voteTokenContract });
         }
 
         dispatchToReducerAction({ type: ON_COPROPERTY_ASSEMBLIES_FETCHED, payload: assemblies });
