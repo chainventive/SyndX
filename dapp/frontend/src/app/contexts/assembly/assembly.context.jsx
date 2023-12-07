@@ -70,6 +70,8 @@ const AssemblyContextProvider = ({ children }) => {
             functionName: 'tiebreaker'
         });
 
+        console.log(tiebreaker)
+
         const timeline = await readContract({
             address: selectedAssembly.contract,
             abi: backend.contracts.generalAssembly.abi,

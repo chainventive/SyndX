@@ -87,7 +87,7 @@ const assemblyContextReducer = (reducerState, action) => {
                 }
             }
             else if (event.name == 'TiebreakerFulfilled') {
-                tiebreaker
+
                 return {
                     ...reducerState,
                     tiebreaker: Number(event.args.tiebreaker)

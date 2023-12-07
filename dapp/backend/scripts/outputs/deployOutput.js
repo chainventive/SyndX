@@ -1,15 +1,15 @@
 module.exports = {
   "network": "hardhat",
-  "blocknumber": 501,
+  "blocknumber": 532,
   "contracts": {
     "chainlink": {
       "vrf": {
         "subscriptionId": 1,
-        "coordinatorAddress": "0x0bF7dE8d71820840063D4B8653Fd3F0618986faF"
+        "coordinatorAddress": "0x4ea0Be853219be8C9cE27200Bdeee36881612FF2"
       }
     },
     "syndx": {
-      "address": "0x97fd63D049089cd70D9D139ccf9338c81372DE68",
+      "address": "0xfB12F7170FF298CDed84C793dAb9aBBEcc01E798",
       "abi": [
         {
           "inputs": [
@@ -583,7 +583,7 @@ module.exports = {
       ]
     },
     "tokenFactory": {
-      "address": "0x43cA9bAe8dF108684E5EAaA720C25e1b32B0A075",
+      "address": "0xC220Ed128102d888af857d137a54b9B7573A41b2",
       "abi": [
         {
           "inputs": [

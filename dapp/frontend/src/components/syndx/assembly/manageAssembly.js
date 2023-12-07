@@ -3,6 +3,16 @@
 // Helpers
 import { getTimestampDate, getDateTimestamp } from "@/helpers/time/index";
 
+// Viem
+import { ContractFunctionExecutionError } from 'viem';
+
+// Wagmi
+import { readContract } from '@wagmi/core';
+import { prepareWriteContract, writeContract,waitForTransaction } from '@wagmi/core';
+
+// Backend
+import { backend } from "@/backend";
+
 // Components
 import CreateResolution from "@/components/syndx/assembly/createResolution";
 import Resolution from "@/components/syndx/assembly/resolution/Resolution";
@@ -26,7 +36,7 @@ const   Assembly = () => {
     const tiebreak = async () => {
 
         try {
-
+            console.log(backend.contracts.generalAssembly.abi)
             const { request } = await prepareWriteContract({
                 address: selectedAssembly.contract,
                 abi: backend.contracts.generalAssembly.abi,
