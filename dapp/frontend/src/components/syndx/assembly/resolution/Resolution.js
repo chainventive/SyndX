@@ -13,10 +13,11 @@ import { prepareWriteContract, writeContract,waitForTransaction } from '@wagmi/c
 // Backend
 import { backend } from "@/backend";
 
-const Resolution = ({ assembly, resolution, amendments, isSyndicUser, now, lockup }) => {
+const Resolution = ({ assembly, resolution, amendments, isSyndicUser, now, lockup, voteEnd }) => {
 
     const [ description, setDescription ] = useState('');
     const [ voteType, setVoteType ] = useState(0);
+    const [ voteResult, setVoteResult ] = useState(null);
 
     const getVoteTypeName = (value) => {
 
@@ -48,6 +49,8 @@ const Resolution = ({ assembly, resolution, amendments, isSyndicUser, now, locku
             const { txHash } = await writeContract(request);
             await waitForTransaction({hash: txHash});
 
+            setDescription('');
+
             return txHash;
           
         } catch (err) {
@@ -58,10 +61,6 @@ const Resolution = ({ assembly, resolution, amendments, isSyndicUser, now, locku
             }
     
             console.log(err);
-    
-        } finally {
-            
-            setDescription('');
         }
     };
 
@@ -124,6 +123,31 @@ const Resolution = ({ assembly, resolution, amendments, isSyndicUser, now, locku
 
     }
 
+    const getVoteResult = async () => {
+
+        try {
+
+            const voteResult = await readContract({
+                address: assembly.contract,
+                abi: backend.contracts.generalAssembly.abi,
+                functionName: 'getVoteResult',
+                args: [resolution.id]
+            });
+
+            setVoteResult(voteResult);
+          
+        } catch (err) {
+    
+            if (err instanceof ContractFunctionExecutionError) { 
+                console.log(err);
+                return;
+            }
+    
+            console.log(err);
+
+        }
+    }
+
     useEffect(() => {
         
         setVoteType(resolution.voteType);
@@ -177,12 +201,34 @@ const Resolution = ({ assembly, resolution, amendments, isSyndicUser, now, locku
             }
 
             {
-                !isSyndicUser && 
+                !isSyndicUser && now > assembly.voteStartTime && now <= voteEnd &&
                 (   
                     <>
                         <button onClick={ () => vote(false) }>no vote</button>
                         <button onClick={ () => vote(true)  }>yes vote</button>
                     </>
+                )
+            }
+
+            {
+                now > voteEnd && 
+                (
+                    voteResult == null ? (
+
+                        <button onClick={ () => getVoteResult() }>result</button>
+
+                    ) : (
+
+                        <>
+                            <p>Yes Shares: { voteResult.yesShares }</p>
+                            <p>No Shares: { voteResult.noShares }</p>
+                            <p>Yes Count: { voteResult.yesCount }</p>
+                            <p>No Count: { voteResult.noCount }</p>
+                            <p>Tiebreaker: { Number(voteResult.tiebreaker) <= 0 ? '-' : Number(voteResult.tiebreaker) }</p>
+                            <p>Equality: { voteResult.equality ? 'yes' : 'no' }</p>
+                            <p>Approved: { voteResult.approved ? 'yes' : 'no' }</p>
+                        </>
+                    )
                 )
             }
             
