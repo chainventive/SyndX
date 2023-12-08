@@ -13,8 +13,7 @@ import { readContract } from '@wagmi/core';
 import { prepareWriteContract, writeContract,waitForTransaction } from '@wagmi/core';
 
 // Chakra
-import { Text, Button, Flex, Select, Box, Spacer, Badge, VStack, Input, Textarea, Step, StepIndicator, StepStatus, StepSeparator, StepTitle, StepDescription, Center} from '@chakra-ui/react';
-import { StepIcon, ChevronRightIcon, ChevronDownIcon } from '@chakra-ui/icons';
+import { Text, Button, Flex, Select, Box, Spacer, Badge, VStack, Textarea, Center} from '@chakra-ui/react';
 
 // Backend
 import { backend } from "@/backend";

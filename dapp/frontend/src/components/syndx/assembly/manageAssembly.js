@@ -15,8 +15,8 @@ import { prepareWriteContract, writeContract,waitForTransaction } from '@wagmi/c
 import { backend } from "@/backend";
 
 // Chakra
-import { Text, Button, Flex, Heading, Box, Spacer, Badge, VStack, Stepper, StepNumber, Step, StepIndicator, StepStatus, StepSeparator, StepTitle, StepDescription, Center} from '@chakra-ui/react';
-import { StepIcon, ChevronRightIcon, ChevronDownIcon } from '@chakra-ui/icons';
+import { Text, Button, Flex, Heading, Box, Spacer, Badge, VStack, Stepper, StepNumber, Step, StepIcon, StepIndicator, StepStatus, StepSeparator, StepTitle, StepDescription, Center} from '@chakra-ui/react';
+import { ChevronRightIcon, ChevronDownIcon } from '@chakra-ui/icons';
 
 import {
     Menu,
@@ -51,19 +51,20 @@ const   Assembly = () => {
     const { tiebreaker, created, lockup, voteEnd, resolutions, amendments, isSyndicUser } = useAssembly();
 
     const [ now, setNow ] = useState(0);
+    const [ currentStep, setCurrentStep ] = useState(1);
 
     let steps = [
         { title: 'created',      description: `${getTimestampDate(created)}` },
         { title: 'lockup',       description: `${getTimestampDate(lockup)}` },
-        { title: 'vote', description: `${getTimestampDate(selectedAssembly.voteStartTime)}` },
-        { title: 'tally',   description: `${getTimestampDate(voteEnd)}` },
+        { title: 'vote',         description: `${getTimestampDate(selectedAssembly.voteStartTime)}` },
+        { title: 'tally',        description: `${getTimestampDate(voteEnd)}` },
     ]
 
     const getCurrentStep = () => {
-        //if (now <= lockup) return 0;
-        //if (now <= selectedAssembly.voteStartTime) return 1;
-        //if (now <= voteEnd) return 2; 
-        return 0;
+        if (now <= lockup) return 1;
+        if (now <= selectedAssembly.voteStartTime) return 2;
+        if (now <= voteEnd) return 3; 
+        return 4;
     };
 
     const tiebreak = async () => {
@@ -91,6 +92,10 @@ const   Assembly = () => {
             console.log(err);
         }
     }
+
+    useEffect(() => {
+        setCurrentStep(getCurrentStep());
+    }, [now]);
 
     useEffect(() => {
         setNow(getDateTimestamp(Date.now())); 
@@ -142,7 +147,7 @@ const   Assembly = () => {
                 </Flex>
 
                 <Flex marginBottom='2rem' paddingBottom='1rem' borderBottom='1px solid #eee'>
-                    <Stepper size='sm' index={getCurrentStep}>
+                    <Stepper size='sm' index={currentStep}>
                         {steps.map((step, index) => (
                             <Step key={index} gap="12">
                                 <StepIndicator>
@@ -174,7 +179,7 @@ const   Assembly = () => {
                     <Box>
                         { 
                             now > voteEnd && tiebreaker <= 0 && (
-                                <Button colorScheme='messenger' size='sm'>request tiebreak</Button>
+                                <Button colorScheme='messenger' size='sm' onClick={() => tiebreak()}>request tiebreak</Button>
                             )
                         }
                     </Box>

@@ -44,6 +44,8 @@ const CreateAssembly = () => {
             const { txHash } = await writeContract(request);
             await waitForTransaction({hash: txHash});
 
+            setDate('');
+
             return txHash;
           
         } catch (err) {
@@ -57,7 +59,6 @@ const CreateAssembly = () => {
     
         } finally {
             
-            setDate('');
             fetchAssemblyCount();
         }
     

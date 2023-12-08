@@ -37,6 +37,9 @@ const CreateResolution = ({ assembly }) => {
             const { txHash } = await writeContract(request);
             await waitForTransaction({hash: txHash});
 
+            setTitle('');
+            setDescription('');
+
             return txHash;
           
         } catch (err) {
@@ -48,10 +51,6 @@ const CreateResolution = ({ assembly }) => {
     
             console.log(err);
     
-        } finally {
-            
-            setTitle('');
-            setDescription('');
         }
     
     };
