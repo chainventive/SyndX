@@ -17,6 +17,7 @@ import useSyndx from '@/app/contexts/syndx/hooks/useSyndx';
 
 import copropertyContextReducer, {
     ON_TOKEN_DETAILS_FETCHED,
+    ON_RESET_FETCHED_ASSEMBLIES,
     ON_COPROPERTY_COUNT_FETCHED,
     ON_COPROPERTY_ASSEMBLY_SELECTED,
     ON_COPROPERTY_ASSEMBLIES_FETCHED,
@@ -159,6 +160,10 @@ const CopropertyContextProvider = ({ children }) => {
         dispatchToReducerAction({ type: ON_NEW_COPROPERTY_CONTRACT_EVENTS, payload: pastEvents });
     }
 
+    const resetFetchedAssemblies = () => {
+        dispatchToReducerAction({ type: ON_RESET_FETCHED_ASSEMBLIES });
+    }
+
     const eventWatcher = async () => {
 
         const watcher = watchContractEvent({
@@ -195,7 +200,11 @@ const CopropertyContextProvider = ({ children }) => {
 
     useEffect(() => {
 
-        if (selectedCoproperty != null) { 
+        setSelectedAssembly(null);
+        resetFetchedAssemblies();
+        
+        if (selectedCoproperty != null) {
+            
             fetchGovernanceTokenContract();
             fetchAssemblyCount();
         }

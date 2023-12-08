@@ -4,6 +4,7 @@ export const ON_NEW_COPROPERTY_CONTRACT_EVENTS = 'coproperty/events/newbatch';
 export const ON_COPROPERTY_ASSEMBLIES_FETCHED = 'coproperty/assemblies/fetched';
 export const ON_COPROPERTY_COUNT_FETCHED = 'coproperty/assemblies/count/fetched';
 export const ON_COPROPERTY_TOKEN_ADDRESS_FETCHED = 'coproperty/token/address/fetched';
+export const ON_RESET_FETCHED_ASSEMBLIES = 'coproperty/assemblies/reset';
 
 import { easeContractEvent } from '@/helpers/transformer/index';
 
@@ -95,6 +96,14 @@ const copropertyContextReducer = (reducerState, action) => {
         return {
             ...reducerState,
             selectedAssembly: action.payload
+        }
+    }
+
+    if (action.type == ON_RESET_FETCHED_ASSEMBLIES) {
+
+        return {
+            ...reducerState,
+            assemblies: []
         }
     }
 

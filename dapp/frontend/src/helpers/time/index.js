@@ -14,11 +14,25 @@ export const dateToShortDateTime = (date) => {
     seconds = seconds < 10 ? '0' + seconds : seconds;
   
     return day + '/' + month + '/' + year + ' ' + hours + ':' + minutes + ':' + seconds;
-  }
+}
+
+export const dateToShortDate = (date) => {
+
+  let day = date.getDate();
+  let month = date.getMonth() + 1;
+  let year = date.getFullYear();
+
+  day = day < 10 ? '0' + day : day;
+  month = month < 10 ? '0' + month : month;
+
+  return day + '/' + month + '/' + year;
+}
   
 export const getDateTimestamp = (date) => Math.round(date / 1000);
   
 export const getTimestampDate = (timestamp) => dateToShortDateTime(new Date(Number(timestamp) * 1000));
+
+export const getTimestampShortDate = (timestamp) => dateToShortDate(new Date(Number(timestamp) * 1000));
 
 export function formatTimeSpan(startTime, endTime) {
 

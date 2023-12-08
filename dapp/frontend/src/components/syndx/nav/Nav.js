@@ -1,5 +1,9 @@
 'use client'
 
+// Chakra
+import { Flex, Spacer, Box, Heading, Link, VStack, Badge, Center, Text, Button } from '@chakra-ui/react';
+import { ChevronRightIcon, DragHandleIcon } from '@chakra-ui/icons'
+
 //ReactJS
 import { useState } from 'react'
 
@@ -16,14 +20,28 @@ const Nav = ({ onSelectCoproperty }) => {
     return (
 
         <>
-            <div style={{ border: '1px solid black', padding: '1rem', margin: '1rem' }}>
+            <VStack align='stretch' spacing={0} textAlign='left' p='1.5rem' paddingTop='1.5rem' borderRight='1px solid #eee' h='100%'>
 
                 {
                     coproperties.length > 0 ? (
 
                         coproperties.map(coproperty => {
                                 
-                            return <button style={{ color: selectedCoproperty?.name == coproperty.name ? 'blue' : 'black' }} key={ coproperty.name } onClick={ () => onSelectCoproperty(coproperty) }>{ coproperty.name } - { coproperty.contract }</button>
+                            return (
+                                
+                                <Button variant='ghost'
+                                        borderRadius='1rem'
+                                        m='0.5rem 0.1rem'
+                                        bg='#f0f4ff'
+                                        color={selectedCoproperty?.name == coproperty.name ? 'blue' : 'black'}
+                                        key={ coproperty.name } onClick={ () => onSelectCoproperty(coproperty) }>
+                                    
+                                    <Text fontSize='sm'><DragHandleIcon marginRight='0.5rem'/></Text>
+                                    <Text as='abbr' w='100%' fontSize='md' textAlign='left' paddingTop='0.2rem'>{ coproperty.name }</Text>
+                                    <Text><ChevronRightIcon/></Text>
+
+                                </Button>
+                            )
 
                         })
 
@@ -34,7 +52,7 @@ const Nav = ({ onSelectCoproperty }) => {
                     )
                 }
 
-            </div>
+            </VStack>
         </>
 
     )
