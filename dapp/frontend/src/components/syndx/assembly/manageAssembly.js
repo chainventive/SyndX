@@ -36,7 +36,7 @@ const   Assembly = () => {
     const tiebreak = async () => {
 
         try {
-            console.log(backend.contracts.generalAssembly.abi)
+            
             const { request } = await prepareWriteContract({
                 address: selectedAssembly.contract,
                 abi: backend.contracts.generalAssembly.abi,
@@ -118,7 +118,7 @@ const   Assembly = () => {
 
                         resolutions.map((resolution, index) => (
 
-                            <Resolution key={index} isSyndicUser={ isSyndicUser } now={ now } assembly={ selectedAssembly } lockup={ lockup } resolution={ resolution } amendments={ amendments.filter(amendment => amendment.resolutionID == resolution.id) }/>
+                            <Resolution key={index} isSyndicUser={ isSyndicUser } now={ now } assembly={ selectedAssembly } lockup={ lockup } voteEnd={ voteEnd } resolution={ resolution } amendments={ amendments.filter(amendment => amendment.resolutionID == resolution.id) }/>
                         ))
 
                     ) : (

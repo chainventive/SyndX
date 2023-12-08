@@ -273,7 +273,7 @@ contract GeneralAssembly is IGeneralAssembly, Ownable {
     }
 
     // Request for a tibreaker number
-    // As requesting a tiebreaker number my incur costs (ex: with chainlink VRF randmness startegy) we rstrict the use of this function to the coproperty memebers
+    // As requesting a tiebreaker number my incur costs (ex: with chainlink VRF randmness startegy) we restrict the use of this function to the coproperty memebers
     function requestTiebreaker() public onlyAfterVotingSession onlyCopropertyMembers {
 
         syndx.requestRandomNumber();
