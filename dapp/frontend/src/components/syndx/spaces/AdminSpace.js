@@ -2,6 +2,14 @@
 
 import CreateCoproperty from '@/components/syndx/coproperty/createCoproperty';
 
+// Helpers
+import { copyToClipboard } from "@/helpers/utils/index";
+import { formatBlockchainAddress } from "@/helpers/formatter/index";
+
+// Chakra
+import { VStack, Box, Text, TableContainer, Table, Tbody, Tr, Td } from '@chakra-ui/react';
+import { CopyIcon, ChatIcon } from '@chakra-ui/icons';
+
 // Contexts
 import useSyndx from '@/app/contexts/syndx/hooks/useSyndx';
 
@@ -11,23 +19,40 @@ const AdminSpace = () => {
     
     return (
 
-        <>
-            <div style={{ border: '1px solid black', padding: '1rem', margin: '1rem' }}>
+        <VStack w='100%' p='2rem'>
 
-                ADMIN SPACE
-
+            <Box w='100%'>
                 {
-                    selectedCoproperty && (
-                        <div>
-                            <p>You selected: { selectedCoproperty.name } - { selectedCoproperty.contract }</p>
-                        </div>
+                    selectedCoproperty ? (
+
+                        <Box w='100%' marginBottom='1.25rem' fontSize='xl'>
+
+                            <Text fontSize='2xl' as='b' >{ selectedCoproperty.name }</Text>
+
+                            <TableContainer marginTop='2rem'>
+                                <Table size='sm'>
+                                    <Tbody>
+                                    <Tr borderTop='1px solid #eee'>
+                                        <Td>contract</Td>
+                                        <Td>
+                                            { formatBlockchainAddress(selectedCoproperty.contract) }
+                                            <CopyIcon style={{ cursor: 'pointer' }} onClick={ () => copyToClipboard(selectedCoproperty.contract) } marginLeft='0.25rem'/>
+                                        </Td>
+                                    </Tr>
+                                    </Tbody>
+                                </Table>
+                            </TableContainer>
+                        
+                        </Box>
+
+                    ) : (
+                        
+                        <Text fontSize='xl' ><ChatIcon marginRight='0.75rem'/>please select a coproperty.</Text>
                     )
                 }
+            </Box>
 
-                <CreateCoproperty/>
-
-            </div>
-        </>
+        </VStack>
 
     )
 }

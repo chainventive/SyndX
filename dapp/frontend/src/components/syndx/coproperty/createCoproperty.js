@@ -1,5 +1,9 @@
 'use client'
 
+// Chakra
+import { Flex, Box, Button, Spacer, Input, Text, Center } from '@chakra-ui/react';
+import { AddIcon } from '@chakra-ui/icons';
+
 //ReactJS
 import { useState } from 'react'
 
@@ -59,20 +63,39 @@ const CreateCoproperty = () => {
     return (
 
         <>
-            <div style={{ border: '1px solid black', padding: '1rem', margin: '1rem' }}>
+            <Box p='1.5rem' w='100%' bg='#1a202c' color='white'>
 
-                <h3>REGISTER A NEW COPROPERTY</h3>
+              <Flex w='100%'>
 
-                <input style={{ marginRight: '0.5rem' }} type="text" value={copropertyName} onChange={e => setCopropertyName(e.target.value)} placeholder="coproperty name"></input>
-                <input style={{ marginRight: '0.5rem' }} type="text" value={copropertyTokenISO} onChange={e => setCopropertyTokenISO(e.target.value)} placeholder="token iso"></input>
-                <input style={{ marginRight: '0.5rem' }} type="text" value={copropertySyndicAddress} onChange={e => setCopropertySyndicAddress(e.target.value)} placeholder="syndic address"></input>
+                <Box>
+                  <Center>
+                    <Text paddingTop='0.3rem' as='b' fontSize='sm'><AddIcon marginRight='0.5rem' />create new coproperty</Text>
+                  </Center>
+                </Box>
 
-                <br></br>
-                <br></br>
+                <Spacer/>
 
-                <button onClick={ () => createCoproperty() }>register</button>
+                <Box paddingRight='2rem'>
+                  <Input size='sm' bg='#2f2d2d' borderRadius='0.5rem' marginRight='1rem' type="text" value={copropertyName} onChange={e => setCopropertyName(e.target.value)} placeholder="name"></Input>
+                </Box>
 
-            </div>
+                <Box paddingRight='2rem'>
+                  <Input size='sm' bg='#2f2d2d' borderRadius='0.5rem' marginRight='1rem' type="text" value={copropertyTokenISO} onChange={e => setCopropertyTokenISO(e.target.value)} placeholder="token iso"></Input>
+                </Box>
+
+                <Box paddingRight='2rem'>
+                  <Input size='sm' bg='#2f2d2d' borderRadius='0.5rem' marginRight='1rem' type="text" value={copropertySyndicAddress} onChange={e => setCopropertySyndicAddress(e.target.value)} placeholder="syndic address"></Input>
+                </Box>
+
+                <Spacer/>
+
+                <Box>
+                  <Button size='sm' onClick={ () => createCoproperty() }>register</Button>
+                </Box>
+
+              </Flex>
+
+            </Box>
         </>
 
     )

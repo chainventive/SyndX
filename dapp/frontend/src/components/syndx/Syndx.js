@@ -1,5 +1,8 @@
 'use client'
 
+// Chakra
+import { Flex, Spacer, Box, Heading, Link, VStack, Badge, Center, Text } from '@chakra-ui/react';
+
 // Components
 import Nav from '@/components/syndx/nav/Nav';
 import OwnerSpace from '@/components/syndx/spaces/users/OwnerSpace';
@@ -24,10 +27,12 @@ const Syndx = () => {
                 isUserConnected ? ( 
 
                     <>
-                        <Nav onSelectCoproperty={setSelectedCoproperty} />
+                        <Box w='16rem'>
+                            <Nav onSelectCoproperty={setSelectedCoproperty} />
+                        </Box>
 
-                        <CopropertyContextProvider>
-
+                        <Box flexGrow='1' h='100vw'>
+                            <CopropertyContextProvider>
                             {
                                 isUserSyndxOwner ? 
                                 (
@@ -38,9 +43,9 @@ const Syndx = () => {
                                     <UserSpace />
                                 )
                             } 
-
-                        </CopropertyContextProvider>
-
+                            </CopropertyContextProvider>
+                        </Box>  
+                        
                     </>
 
                 ) : (

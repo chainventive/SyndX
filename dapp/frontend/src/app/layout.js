@@ -4,8 +4,10 @@ require('dotenv').config();
 import { Inter } from 'next/font/google'
 const inter = Inter({ subsets: ['latin'] })
 
-// RainbowKit / Wagmi
+// Chakra UI
+import { ChakraProvider } from '@chakra-ui/react'
 
+// RainbowKit / Wagmi
 import '@rainbow-me/rainbowkit/styles.css';
 import { getDefaultWallets, RainbowKitProvider } from '@rainbow-me/rainbowkit';
 import { configureChains, createConfig, WagmiConfig } from 'wagmi';
@@ -45,7 +47,9 @@ export default function RootLayout({ children }) {
         <WagmiConfig config={wagmiConfig}>
           <RainbowKitProvider chains={chains}>
             <SyndxContextProvider>
-              {children}
+              <ChakraProvider>
+                {children}
+              </ChakraProvider>
             </SyndxContextProvider>
           </RainbowKitProvider>
         </WagmiConfig>
