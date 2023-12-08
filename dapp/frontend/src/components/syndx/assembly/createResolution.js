@@ -10,6 +10,11 @@ import { ContractFunctionExecutionError } from 'viem';
 import { readContract } from '@wagmi/core';
 import { prepareWriteContract, writeContract,waitForTransaction } from '@wagmi/core';
 
+// Chakra
+import { Input, Text, Button, Flex, Heading, Box, Spacer, Badge, VStack, Textarea, StepNumber, Step, StepIndicator, StepStatus, StepSeparator, StepTitle, StepDescription, Center} from '@chakra-ui/react';
+import { AddIcon, ChevronRightIcon, ChevronDownIcon } from '@chakra-ui/icons';
+
+
 // Backend
 import { backend } from "@/backend";
 
@@ -53,21 +58,25 @@ const CreateResolution = ({ assembly }) => {
 
     return (
 
-        <>
-            <div style={{ border: '1px solid black', padding: '1rem', margin: '1rem' }}>
-
-                <h4>CREATE RESOLUTION</h4>
-
-                <input style={{ marginRight: '0.5rem' }} type="text" value={title} onChange={e => setTitle(e.target.value)} placeholder="title"></input>
-                <input style={{ marginRight: '0.5rem' }} type="text" value={description} onChange={e => setDescription(e.target.value)} placeholder="description"></input>
-
-                <br></br>
-                <br></br>
-
-                <button onClick={ () => createResolution() }>create</button>
-
-            </div>
-        </>
+        <Flex w='100%'>
+            <VStack w='100%'>
+                <Flex w='100%'>
+                    <Text as='b'><AddIcon marginRight='0.5rem'/>New resolution</Text>
+                </Flex>
+                <Flex w='100%' marginTop='1rem'>
+                    <VStack w='100%'>
+                        <Input style={{ marginRight: '0.5rem' }} type="text" value={title} onChange={e => setTitle(e.target.value)} placeholder="title"></Input>
+                        <Textarea style={{ marginRight: '0.5rem' }} type="text" value={description} onChange={e => setDescription(e.target.value)} placeholder="description"></Textarea>
+                    </VStack>
+                </Flex>
+                <Flex w='100%'>
+                    <Spacer></Spacer>
+                    <Box marginTop='1rem'>
+                        <Button size='sm' colorScheme='messenger' onClick={ () => createResolution() }>submit resolution</Button>
+                    </Box>
+                </Flex>
+            </VStack>
+        </Flex>
 
     )
 }

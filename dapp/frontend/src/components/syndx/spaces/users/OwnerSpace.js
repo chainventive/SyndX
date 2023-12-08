@@ -4,33 +4,38 @@
 import Assembly from '@/components/syndx/assembly/manageAssembly';
 import Assemblies from '@/components/syndx/assembly/selectAssembly';
 
+// Chakra
+import { Text, Button, Flex, Heading, Box, Spacer, Badge, VStack, Stepper, StepNumber, Step, StepIndicator, StepStatus, StepSeparator, StepTitle, StepDescription, Center} from '@chakra-ui/react';
+import { StepIcon, ChevronRightIcon, ChevronDownIcon } from '@chakra-ui/icons';
+
 // Contexts
+import useSyndx from '@/app/contexts/syndx/hooks/useSyndx';
 import useCoproperty from '@/app/contexts/coproperty/hook/useCoproperty';
 import { AssemblyContextProvider } from '@/app/contexts/assembly/assembly.context.jsx';
 
 const OwnerSpace = () => {
 
+    const { selectedCoproperty } = useSyndx();
     const { setSelectedAssembly, selectedAssembly } = useCoproperty();
 
     return (
 
         <>
-            <div style={{ border: '1px solid black', padding: '1rem', margin: '1rem' }}>
+            <Flex w='100%' borderBottom='1px solid #eee' paddingTop='0.5rem' paddingBottom='0.5rem'>
+                <Text fontSize='2xl' as='b' >{ selectedCoproperty.name }</Text>
+            </Flex>
 
-                <h3>OWNER SPACE</h3> 
+            <Assemblies onSelectAssembly={ setSelectedAssembly } />
 
-                <Assemblies onSelectAssembly={ setSelectedAssembly } />
+            {
+                selectedAssembly && (
 
-                {
-                    selectedAssembly && (
+                    <AssemblyContextProvider>
+                        <Assembly/>
+                    </AssemblyContextProvider>
+                )
+            }
 
-                        <AssemblyContextProvider>
-                            <Assembly/>
-                        </AssemblyContextProvider>
-                    )
-                }
-
-            </div>
         </>
 
     )

@@ -4,6 +4,10 @@
 import SyndicSpace from '@/components/syndx/spaces/users/SyndicSpace';
 import OwnerSpace from '@/components/syndx/spaces/users/OwnerSpace';
 
+// Chakra
+import { VStack, Box, Text, TableContainer, Table, Tbody, Tr, Td } from '@chakra-ui/react';
+import { CopyIcon, ChatIcon } from '@chakra-ui/icons';
+
 // Contexts
 import useSyndx from '@/app/contexts/syndx/hooks/useSyndx';
 
@@ -13,35 +17,31 @@ const UserSpace = () => {
 
     return (
 
-        <>
-            <div style={{ border: '1px solid black', padding: '1rem', margin: '1rem' }}>
+        <Box w='100%' p='2rem'>
 
-                {
-                    selectedCoproperty == null ? (
+            {
+                selectedCoproperty == null ? (
 
-                        <>
-                            <p>Please select a coproperty</p>
-                        </>
+                    <Text fontSize='xl' ><ChatIcon marginRight='0.75rem'/>please select a coproperty.</Text>
 
-                    ) : (
+                ) : (
 
-                        <>
-                            { 
-                                isUserSelectedCopropertySyndic ? (
+                    <>
+                        { 
+                            isUserSelectedCopropertySyndic ? (
 
-                                    <SyndicSpace />
+                                <SyndicSpace />
 
-                                ) : (
-                                    
-                                    <OwnerSpace />
-                                )
-                            }
-                        </>
-                    )
-                }
+                            ) : (
+                                            
+                                <OwnerSpace />
+                            )
+                        }
+                    </>
+                )
+            }
 
-            </div>
-        </>
+        </Box>
 
     )
 }

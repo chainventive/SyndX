@@ -10,6 +10,11 @@ import { ContractFunctionExecutionError } from 'viem';
 import { readContract } from '@wagmi/core';
 import { prepareWriteContract, writeContract, waitForTransaction } from '@wagmi/core';
 
+// Chakra
+import { Text, Button, Flex, Heading, Box, Spacer, Badge, VStack, Stepper, StepNumber, Step, StepIndicator, StepStatus, StepSeparator, StepTitle, StepDescription, Center} from '@chakra-ui/react';
+import { StepIcon, ChevronRightIcon, ChevronDownIcon } from '@chakra-ui/icons';
+
+
 // Backend
 import { backend } from "@/backend";
 
@@ -103,22 +108,19 @@ const ClaimVote = ({ now, lockup }) => {
     return (
 
         <>
-            <div style={{ border: '1px solid black', padding: '1rem', margin: '1rem' }}>
-
-                <h4>VOTING POWER</h4>
-
-                <p>Vote tokens balance: { `${ balance }` }</p>
-
+            <Flex w='100%'>
+                <Box>
+                    <Text as='b'>Vote tokens balance: <span style={{ color:'#3e83de' }}>{ `${ balance }` }</span></Text>
+                </Box>
+                <Spacer></Spacer>
+                <Box>
                 {
                     !hasClaimed && now < lockup && (
-                        <>
-                            <button onClick={ () => claimVoteTokens() }>claim</button>
-                            <p>until { getTimestampDate(lockup) } (remaining: { formatTimeSpan(now, lockup) })</p>
-                        </>
+                        <Button size='sm' colorScheme='messenger' onClick={ () => claimVoteTokens() }>claim vote tokens</Button>
                     )
                 }
-
-            </div>
+                </Box>
+            </Flex>
         </>
 
     )

@@ -10,18 +10,29 @@ import { ContractFunctionExecutionError } from 'viem';
 import { readContract } from '@wagmi/core';
 import { prepareWriteContract, writeContract,waitForTransaction } from '@wagmi/core';
 
+// Helpers
+import { copyToClipboard } from "@/helpers/utils/index";
+import { formatBlockchainAddress } from "@/helpers/formatter/index";
+
+// Chakra
+import { TableContainer, Table, Tbody, Tr, Td, Button, Thead, Th, Flex, Input, Text, Box, Spacer, NumberInput, NumberInputField, NumberInputStepper, NumberIncrementStepper, NumberDecrementStepper, Center} from '@chakra-ui/react';
+import { CopyIcon, AddIcon } from '@chakra-ui/icons';
+
 // Backend
 import { backend } from "@/backend";
 
 // Contexts
 import useSyndx from '@/app/contexts/syndx/hooks/useSyndx';
+import useCoproperty from '@/app/contexts/coproperty/hook/useCoproperty';
 
 const RegisterOwner = () => {
 
     const { selectedCoproperty } = useSyndx();
+    const { owners } = useCoproperty();
+
 
     const [ownerAddress, setOwnerAddress] = useState('');
-    const [ownerShares, setOwnerShares]   = useState(0);
+    const [ownerShares, setOwnerShares]   = useState(1);
 
     const registerOwner = async () => {
 
@@ -65,19 +76,60 @@ const RegisterOwner = () => {
     return (
 
         <>
-            <div style={{ border: '1px solid black', padding: '1rem', margin: '1rem' }}>
+            <Flex color='white' p='1rem' bg='#262222' marginTop='0.75rem' borderRadius='0.75rem'>
+              <Spacer/>
+              <Box marginRight='1.5rem'>
+                <Center>
+                  <Text paddingTop='0.3rem' as='b' fontSize='sm'><AddIcon marginRight='0.5rem' />new owner</Text>
+                </Center>
+              </Box>
+              <Box marginRight='1.5rem'>
+                <Input bg='white' color='black' borderRadius='0.25rem' size='sm' type="text"  value={ownerAddress} onChange={e => setOwnerAddress(e.target.value)} placeholder="address"></Input>
+              </Box>
+              <Box marginRight='1.5rem'>
+                <NumberInput bg='white' color='black' size='sm' defaultValue={1} value={ownerShares} onChange={(value) => setOwnerShares(value)} min={1} max={10000}>
+                  <NumberInputField borderRadius='0.25rem'  />
+                  <NumberInputStepper>
+                    <NumberIncrementStepper children='+' />
+                    <NumberDecrementStepper children='-' />
+                  </NumberInputStepper>
+                </NumberInput>
+              </Box>
+              <Box>
+                <Button minWidth='5rem' size='sm' onClick={ () => registerOwner() }>add</Button>
+              </Box>
+              <Spacer/>
+            </Flex>
 
-                <h3>REGISTER OWNER</h3>
+            <TableContainer marginTop='2rem'>
+              <Table size='sm'>
+                <Thead>
+                  <Tr>
+                    <Th>Owner</Th>
+                    <Th>Shares</Th>
+                    <Th></Th>
+                  </Tr>
+                </Thead>
+                <Tbody>
+                {
+                  owners.map(owner => (
 
-                <input style={{ marginRight: '0.5rem' }} type="text" value={ownerAddress} onChange={e => setOwnerAddress(e.target.value)} placeholder="owner address"></input>
-                <input style={{ marginRight: '0.5rem' }} type="value" value={ownerShares} onChange={e => setOwnerShares(e.target.value)} placeholder="owner shares"></input>
+                    <Tr key={ owner.address }>
+                      <Td>
+                        { formatBlockchainAddress(owner.address) }
+                        <CopyIcon style={{ cursor: 'pointer' }} onClick={ () => copyToClipboard(owner.address) } marginLeft='0.25rem'/>
+                      </Td>
+                      <Td>{ owner.shares }</Td>
+                      <Td textAlign='right'>
+                        <Button size='xs' onClick={ () => removeOwner(owner) }>remove</Button>
+                      </Td>
+                    </Tr>
+                  ))
+                }
+                </Tbody>
+              </Table>
+            </TableContainer>
 
-                <br></br>
-                <br></br>
-
-                <button onClick={ () => registerOwner() }>register</button>
-
-            </div>
         </>
 
     )

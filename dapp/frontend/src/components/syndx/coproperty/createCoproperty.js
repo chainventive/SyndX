@@ -63,28 +63,28 @@ const CreateCoproperty = () => {
     return (
 
         <>
-            <Box p='1.5rem' w='100%' bg='#1a202c' color='white'>
+            <Box p='1.5rem' w='100%' bg='#f5f5f5' borderBottom='1px solid #eee'>
 
               <Flex w='100%'>
 
                 <Box>
                   <Center>
-                    <Text paddingTop='0.3rem' as='b' fontSize='sm'><AddIcon marginRight='0.5rem' />create new coproperty</Text>
+                    <Text paddingTop='0.3rem' as='b' fontSize='sm'><AddIcon marginRight='0.5rem' />new coproperty</Text>
                   </Center>
                 </Box>
 
                 <Spacer/>
 
                 <Box paddingRight='2rem'>
-                  <Input size='sm' bg='#2f2d2d' borderRadius='0.5rem' marginRight='1rem' type="text" value={copropertyName} onChange={e => setCopropertyName(e.target.value)} placeholder="name"></Input>
+                  <Input size='sm' borderRadius='0.5rem' marginRight='1rem' type="text" bg="white" value={copropertyName} onChange={e => setCopropertyName(e.target.value)} placeholder="name"></Input>
                 </Box>
 
                 <Box paddingRight='2rem'>
-                  <Input size='sm' bg='#2f2d2d' borderRadius='0.5rem' marginRight='1rem' type="text" value={copropertyTokenISO} onChange={e => setCopropertyTokenISO(e.target.value)} placeholder="token iso"></Input>
+                  <Input size='sm' borderRadius='0.5rem' marginRight='1rem' type="text" bg="white" value={copropertyTokenISO} onChange={e => setCopropertyTokenISO(e.target.value)} placeholder="token iso"></Input>
                 </Box>
 
                 <Box paddingRight='2rem'>
-                  <Input size='sm' bg='#2f2d2d' borderRadius='0.5rem' marginRight='1rem' type="text" value={copropertySyndicAddress} onChange={e => setCopropertySyndicAddress(e.target.value)} placeholder="syndic address"></Input>
+                  <Input size='sm' borderRadius='0.5rem' marginRight='1rem' type="text" bg="white" value={copropertySyndicAddress} onChange={e => setCopropertySyndicAddress(e.target.value)} placeholder="syndic address"></Input>
                 </Box>
 
                 <Spacer/>

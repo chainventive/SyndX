@@ -2,9 +2,14 @@
 
 // Helpers
 import { getTimestampDate } from "@/helpers/time/index";
+import { formatBlockchainAddress } from "@/helpers/formatter/index";
 
 // Contexts
 import useCoproperty from '@/app/contexts/coproperty/hook/useCoproperty';
+
+// Chakra
+import { SimpleGrid, Heading, Card, CardHeader, CardBody, CardFooter, Stack, StackDivider, Tbody, Tr, Td, Button, Thead, Th, Flex, Input, Text, Box, Spacer, NumberInput, NumberInputField, NumberInputStepper, NumberIncrementStepper, NumberDecrementStepper, Center} from '@chakra-ui/react';
+import { CopyIcon, AddIcon } from '@chakra-ui/icons';
 
 const Assemblies = ({ onSelectAssembly }) => {
 
@@ -12,30 +17,39 @@ const Assemblies = ({ onSelectAssembly }) => {
 
     return (
 
-        <>
-            <div style={{ border: '1px solid black', padding: '1rem', margin: '1rem' }}>
-
-                <h3>GENERAL ASSEMBLIES</h3>
+        <SimpleGrid minChildWidth='120px' spacing='40px' marginTop='3rem'>
 
                 {
-                    assemblies.length > 0 ? (
+                    assemblies.length > 0 && selectedAssembly == null && (
 
                         assemblies.map(assembly => (
 
-                            <button style={{ margin: '0.5rem', color: selectedAssembly?.contract == assembly.contract ? 'blue' : 'black' }} key={ assembly.contract } onClick={ () => onSelectAssembly(assembly) }>{ assembly.contract } - { getTimestampDate(assembly.voteStartTime) }</button>
-                            
+                            <Box key={ assembly.contract } maxWidth='14rem' style={{ cursor: 'pointer' }} onClick={ () => onSelectAssembly(assembly) }>
+                                <Card>
+                                    <CardBody>
+                                        <Stack divider={<StackDivider/>} spacing='4'>
+                                            <Box>
+                                                <Heading size='sm' textTransform='uppercase'>General Assembly</Heading>
+                                            </Box>
+                                            <Box>
+                                                <Heading size='xs' textTransform='uppercase'>Date</Heading>
+                                                <Text pt='2' fontSize='sm'>{ getTimestampDate(assembly.voteStartTime) }</Text>
+                                            </Box>
+                                            <Box>
+                                                <Heading size='xs' textTransform='uppercase'>Contract</Heading>
+                                                <Text pt='2' fontSize='sm'>{ formatBlockchainAddress(assembly.contract) }</Text>
+                                            </Box>
+                                        </Stack>
+                                    </CardBody>
+                                </Card>
+                            </Box>
+
                         ))
 
-                    ) : (
-
-                        <p>No general assembly created yet</p>
                     )
-
-                    
                 }
 
-            </div>
-        </>
+        </SimpleGrid>
 
     )
 }

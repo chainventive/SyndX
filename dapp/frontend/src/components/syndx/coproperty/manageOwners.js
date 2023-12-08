@@ -4,7 +4,10 @@
 import { ContractFunctionExecutionError } from 'viem';
 
 // Wagmi
-import { prepareWriteContract, writeContract,waitForTransaction } from '@wagmi/core';
+import { prepareWriteContract, writeContract, waitForTransaction } from '@wagmi/core';
+
+// Chakra
+import { TableContainer, Table, Tbody, Tr, Td, Badge } from '@chakra-ui/react';
 
 // Backend
 import { backend } from "@/backend";
@@ -14,7 +17,7 @@ import useCoproperty from '@/app/contexts/coproperty/hook/useCoproperty';
 
 const CopropertyOwners = () => {
 
-    const { owners, tokenName, tokenSymbol, tokenTotalSupply, distributedTokens, tokenContract, syndicBalance } = useCoproperty();
+    const { tokenName, tokenSymbol, tokenTotalSupply, distributedTokens, tokenContract, syndicBalance } = useCoproperty();
 
     const removeOwner = async (owner) => {
 
@@ -47,34 +50,38 @@ const CopropertyOwners = () => {
     
     return (
 
-        <>
-            <div style={{ border: '1px solid black', padding: '1rem', margin: '1rem' }}>
-
-                <h3>GOVERNANCE TOKEN</h3>
-
-                <p>Name : { tokenName }</p>
-                <p>Symbol : { tokenSymbol }</p>
-                <p>Total Supply: { tokenTotalSupply }</p>
-                <p>Distributed Supply: { distributedTokens }</p>
-                <p>Syndic Balance: { syndicBalance }</p>
-                <p>Contract : { tokenContract }</p>
-
-                <h3>REGISTERED OWNERS</h3>
-
-                {
-                    owners.map(owner => (
-
-                        <div key={ owner.address }>
-                            <p>{ owner.address } - { owner.shares }</p>
-                            <button onClick={ () => removeOwner(owner) }>remove</button>
-                        </div>
-
-                    ))
-                }
-
-            </div>
-        </>
-
+        <TableContainer marginTop='2rem'>
+            <Table size='sm'>
+                <Tbody>
+                    <Tr borderTop='1px solid #eee'>
+                        <Td>Token name</Td>
+                        <Td>{ tokenName }</Td>
+                    </Tr>
+                    <Tr borderTop='1px solid #eee'>
+                        <Td>Token contract</Td>
+                        <Td>{ tokenContract }</Td>
+                    </Tr>
+                    <Tr borderTop='1px solid #eee'>
+                        <Td>Token symbol</Td>
+                        <Td>
+                            <Badge>{ tokenSymbol }</Badge>
+                        </Td>
+                    </Tr>
+                    <Tr borderTop='1px solid #eee'>
+                        <Td>Total supply</Td>
+                        <Td>{ tokenTotalSupply } { tokenSymbol }</Td>
+                    </Tr>
+                    <Tr borderTop='1px solid #eee'>
+                        <Td>Distributed</Td>
+                        <Td>{ distributedTokens } { tokenSymbol }</Td>
+                    </Tr>
+                    <Tr borderTop='1px solid #eee'>
+                        <Td>Undistributed</Td>
+                        <Td>{ syndicBalance } { tokenSymbol }</Td>
+                    </Tr>
+                </Tbody>
+            </Table>
+        </TableContainer>
     )
 }
 

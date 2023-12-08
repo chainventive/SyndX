@@ -1,13 +1,11 @@
 'use client'
 
-import CreateCoproperty from '@/components/syndx/coproperty/createCoproperty';
-
 // Helpers
 import { copyToClipboard } from "@/helpers/utils/index";
 import { formatBlockchainAddress } from "@/helpers/formatter/index";
 
 // Chakra
-import { VStack, Box, Text, TableContainer, Table, Tbody, Tr, Td } from '@chakra-ui/react';
+import { VStack, Box, Text, TableContainer, Table, Tbody, Tr, Td, ThemeComponents } from '@chakra-ui/react';
 import { CopyIcon, ChatIcon } from '@chakra-ui/icons';
 
 // Contexts

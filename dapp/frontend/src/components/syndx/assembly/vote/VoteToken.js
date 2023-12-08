@@ -10,6 +10,9 @@ import { ContractFunctionExecutionError } from 'viem';
 import { readContract } from '@wagmi/core';
 import { prepareWriteContract, writeContract,waitForTransaction } from '@wagmi/core';
 
+// Chakra
+import { Flex, Box, Button, Input, Text, Badge, Center, Spacer } from '@chakra-ui/react';
+
 // Backend
 import { backend } from "@/backend";
 
@@ -83,24 +86,21 @@ const VoteToken = () => {
 
     return (
 
-        <>
-            <div style={{ border: '1px solid black', padding: '1rem', margin: '1rem' }}>
-
-                <h4>VOTE TOKEN</h4>
-
-                <p>Contract: { selectedAssembly.voteToken }</p>
-                <p>Total Claimed: { `${totalClaimed}` } / 10000</p>
-                <p>Token Name: { `${tokenSymbol}` }</p>
-                <p>Total Symbol: { `${tokenName}` }</p>
-
-                <b></b>
-
-                
-                <input style={{ marginRight: '0.5rem' }} type="text" value={burnAddress} onChange={e => setBurnAddress(e.target.value)} placeholder="address"></input>
-                <button onClick={ () => burnLostTokens() }>burn lost tokens</button>
-
-            </div>
-        </>
+        <Flex w='100%'>
+            <Box>
+                <Text as='b'>Claimed vote tokens</Text>
+                <Text size='xs'>{ `${totalClaimed}` } / 10000 { `${tokenName}` }</Text>
+            </Box>
+            <Spacer></Spacer>
+            <Box>
+                <Center h='100%'>
+                    <Flex>
+                        <Input minWidth='15rem' borderRadius='0.5rem' size='sm' style={{ marginRight: '1rem' }} type="text" value={burnAddress} onChange={e => setBurnAddress(e.target.value)} placeholder="lost tokens address"></Input>
+                        <Button colorScheme='red' size='sm' onClick={ () => burnLostTokens() }>burn</Button>
+                    </Flex>
+                </Center>    
+            </Box>
+        </Flex>
 
     )
 }

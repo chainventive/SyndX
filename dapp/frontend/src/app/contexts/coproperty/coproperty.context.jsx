@@ -195,6 +195,8 @@ const CopropertyContextProvider = ({ children }) => {
 
     useEffect(() => {
 
+        setSelectedAssembly(null);
+
         if (selectedCoproperty != null) { 
             fetchGovernanceTokenContract();
             fetchAssemblyCount();

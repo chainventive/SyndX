@@ -58,21 +58,20 @@ const Header = () => {
                 isUserConnected &&
                 (   
                     <>
-                        <Flex w='100%' p='1rem' m='0' borderBottom='1px solid #a8a8a8'>
+                        <Flex w='100%' p='1rem' m='0' borderBottom='1px solid #a8a8a8' bg={isUserSyndxOwner ? 'linear-gradient(to bottom, #283048, #1a202c)' : 'linear-gradient(to right, #7474BF, #348AC7)'}>
                             <Box>
-                                <Badge>
-                                    { isUserSyndxOwner ? 'admin' : 'user' }
-                                </Badge>           
-                            </Box>
-                            <Spacer/>
-                            <Box>
-                                <Badge>
+                                <Badge p='0.25rem 1rem' borderRadius='0.25rem' variant='outline' color='white'>
                                     { getTimestampDate(now) }
                                 </Badge> 
                             </Box>
                             <Spacer/>
+                            <Box marginRight='0.5rem'>
+                                <Badge p='0.25rem 1rem' borderRadius='0.25rem' variant='outline' color='white'>
+                                    { isUserSyndxOwner ? 'admin' : 'user' }
+                                </Badge>           
+                            </Box>
                             <Box>
-                                <Badge style={{ cursor: 'pointer' }} onClick={ () => copyToClipboard(backend.contracts.syndx.address) }>
+                                <Badge p='0.25rem 1rem' borderRadius='0.25rem' color='white' variant='outline' style={{ cursor: 'pointer' }} onClick={ () => copyToClipboard(backend.contracts.syndx.address) }>
                                     syndx { formatBlockchainAddress(backend.contracts.syndx.address) }<CopyIcon marginLeft='0.25rem'/>
                                 </Badge>     
                             </Box>
