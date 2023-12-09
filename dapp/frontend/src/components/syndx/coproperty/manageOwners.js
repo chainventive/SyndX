@@ -19,35 +19,6 @@ const CopropertyOwners = () => {
 
     const { tokenName, tokenSymbol, tokenTotalSupply, distributedTokens, tokenContract, syndicBalance } = useCoproperty();
 
-    const removeOwner = async (owner) => {
-
-        try {
-    
-            const { request } = await prepareWriteContract({
-              address: tokenContract,
-              abi: backend.contracts.governanceToken.abi,
-              functionName: "removePropertyOwner",
-              args: [owner.address]
-            });
-      
-            const { txHash } = await writeContract(request);
-            await waitForTransaction({hash: txHash});
-
-            return txHash;
-            
-          } catch (err) {
-      
-            if (err instanceof ContractFunctionExecutionError) { 
-              console.log(err);
-              return;
-            }
-      
-            console.log(err);
-      
-          }
-
-    } 
-    
     return (
 
         <TableContainer marginTop='2rem'>

@@ -77,7 +77,23 @@ const assemblyContextReducer = (reducerState, action) => {
                 }
             }
             else if (event.name == 'VoteCast') {
-    
+                
+                const author = event.args.author;
+                const resolutionId = Number(event.args.resolutionId);
+
+                let votes = reducerState.votes;
+
+                if (!votes.some(vote => vote.author == author && vote.resolutionId == resolutionId)) {
+                    votes.push({
+                        author: author,
+                        resolutionId: resolutionId,
+                    });
+                }
+
+                return {
+                    ...reducerState,
+                    votes: votes,
+                }
             }
             else if (event.name == 'TiebreakerRequested') {
     

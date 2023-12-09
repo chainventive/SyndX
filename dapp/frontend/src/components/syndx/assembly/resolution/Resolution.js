@@ -18,7 +18,7 @@ import { Text, Button, Flex, Select, Box, Spacer, Badge, VStack, Textarea, Cente
 // Backend
 import { backend } from "@/backend";
 
-const Resolution = ({ assembly, resolution, amendments, isSyndicUser, now, lockup, voteEnd }) => {
+const Resolution = ({ assembly, resolution, amendments, isSyndicUser, now, lockup, voteEnd, hasVoted }) => {
 
     const [ description, setDescription ] = useState('');
     const [ voteType, setVoteType ] = useState(0);
@@ -231,7 +231,7 @@ const Resolution = ({ assembly, resolution, amendments, isSyndicUser, now, locku
                 }
 
                 {
-                    !isSyndicUser && now > assembly.voteStartTime && now <= voteEnd &&
+                    !isSyndicUser && now > assembly.voteStartTime && now <= voteEnd && !hasVoted &&
                     (   
                         <Flex w='100%'>
                             <Button colorScheme='red' size='sm' onClick={ () => vote(false) }>vote no</Button>

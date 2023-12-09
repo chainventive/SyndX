@@ -73,6 +73,35 @@ const RegisterOwner = () => {
     
     };
 
+    const removeOwner = async (owner) => {
+
+      try {
+        console.log(owner)
+          const { request } = await prepareWriteContract({
+            address: selectedCoproperty.contract,
+            abi: backend.contracts.governanceToken.abi,
+            functionName: "removePropertyOwner",
+            args: [owner.address]
+          });
+    
+          const { txHash } = await writeContract(request);
+          await waitForTransaction({hash: txHash});
+
+          return txHash;
+          
+        } catch (err) {
+    
+          if (err instanceof ContractFunctionExecutionError) { 
+            console.log(err);
+            return;
+          }
+    
+          console.log(err);
+    
+        }
+
+  } 
+
     return (
 
         <>
