@@ -96,7 +96,6 @@ const   Assembly = () => {
     const verifyHasVoted = (resolutionId) => {
         
         const hasVoted = votes.some(vote => vote.author == userAddress && resolutionId == vote.resolutionId);
-        console.log(hasVoted);
         return hasVoted;
     }
 
