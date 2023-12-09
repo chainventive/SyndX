@@ -11,10 +11,10 @@ async function main() {
   console.log(); 
   // DO NOT REMOVE
 
-  const syndxContractAddress = "0x8A4C040d72cb549D120AAecF3e3692C224f5cF66";
+  const syndxContractAddress = "0x02BBc32BA318f53a5d32B4E257B24eEa7Ff1305c";
 
   const coproperties = [
-    { name: 'BATACOF',   tokenIso: 'BATA', syndicAddress: '0xd510962D041Dc1fBbb1f2c12253Fb48312FcaA2b' },
+    { name: 'BATACOFT',  tokenIso: 'BATA', syndicAddress: '0xd510962D041Dc1fBbb1f2c12253Fb48312FcaA2b' },
     { name: 'KERGELEN',  tokenIso: 'KGN',  syndicAddress: '0xCD07be98C49AaDcc061be484Dda0A773182294e6' },
     { name: 'TROTICORP', tokenIso: 'TTP',  syndicAddress: '0xb652CE6CF512eD9789dBD1ab931adc096D5cc81c' },
     { name: 'ANTIGUA',   tokenIso: 'AGA',  syndicAddress: '0x50E63053B087a44B6AfB2D68bc18b68bf4F0C118' },

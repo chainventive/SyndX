@@ -7,9 +7,9 @@ const COPROPERTY_NAME = "BATACOFT";
 const COPROPERTY_TOKEN_ISO = "BATA";
 const COPROPERTY_TOTAL_SUPPLY = 10000;
 const GENERAL_ASSEMBLY_LOCKUP_DURATION = 30;
-const GENERAL_ASSEMBLY_VOTING_SESSION_DURATION = 120;
+const GENERAL_ASSEMBLY_VOTING_SESSION_DURATION = 240;
 const RANDMNESS_REQUEST_BLOCKS_LOCKUP_BEFORE_RETRY = 5;
-const GENERAL_ASSEMBLY_MIN_DURATION_BEFORE_LOCKUP  = 180;
+const GENERAL_ASSEMBLY_MIN_DURATION_BEFORE_LOCKUP  = 300;
 const ADDRESS_ZERO = "0x0000000000000000000000000000000000000000";
 
 /*** HELPER FUNCTIONS ***/
@@ -1031,8 +1031,8 @@ describe("SyndX", function () {
                 await hre.network.provider.send("evm_mine");
                 const now = (await ethers.provider.getBlock("latest")).timestamp;
 
-                const lockupDuration = 30;
-                const miniDurationBeforeLockup = 180;
+                const lockupDuration = GENERAL_ASSEMBLY_LOCKUP_DURATION;
+                const miniDurationBeforeLockup = GENERAL_ASSEMBLY_MIN_DURATION_BEFORE_LOCKUP;
                 const voteStartTime = now + miniDurationBeforeLockup + lockupDuration + 30;
 
                 const txGeneralAssembly = await coproperty.connect(_syndic).createGeneralAssembly(voteStartTime);
@@ -1083,8 +1083,8 @@ describe("SyndX", function () {
                 await hre.network.provider.send("evm_mine");
                 const now = (await ethers.provider.getBlock("latest")).timestamp;
 
-                const lockupDuration = 30;
-                const miniDurationBeforeLockup = 180;
+                const lockupDuration = GENERAL_ASSEMBLY_LOCKUP_DURATION;
+                const miniDurationBeforeLockup = GENERAL_ASSEMBLY_MIN_DURATION_BEFORE_LOCKUP;
                 const voteStartTime = now + miniDurationBeforeLockup + lockupDuration + 30;
 
                 expect (
