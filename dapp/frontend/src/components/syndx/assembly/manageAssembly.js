@@ -46,9 +46,9 @@ import VoteToken from "./vote/VoteToken";
 
 const   Assembly = () => {
 
-    const { networkNow, selectedCoproperty } = useSyndx();
+    const { networkNow, selectedCoproperty, userAddress } = useSyndx();
     const { selectedAssembly, setSelectedAssembly } = useCoproperty();
-    const { tiebreaker, created, lockup, voteEnd, resolutions, amendments, isSyndicUser } = useAssembly();
+    const { tiebreaker, created, lockup, voteEnd, resolutions, amendments, isSyndicUser, votes } = useAssembly();
 
     const [ currentStep, setCurrentStep ] = useState(1);
 
@@ -91,6 +91,12 @@ const   Assembly = () => {
     
             console.log(err);
         }
+    }
+
+    const verifyHasVoted = (resolutionId) => {
+        
+        const hasVoted = votes.some(vote => vote.author == userAddress && resolutionId == vote.resolutionId);
+        return hasVoted;
     }
 
     useEffect(() => {
@@ -215,7 +221,7 @@ const   Assembly = () => {
 
                             resolutions.map((resolution, index) => (
 
-                                <Resolution key={index} isSyndicUser={ isSyndicUser } now={ networkNow } assembly={ selectedAssembly } lockup={ lockup } voteEnd={ voteEnd } resolution={ resolution } amendments={ amendments.filter(amendment => amendment.resolutionID == resolution.id) }/>
+                                <Resolution key={index} hasVoted={verifyHasVoted(resolution.id)} isSyndicUser={ isSyndicUser } now={ networkNow } assembly={ selectedAssembly } lockup={ lockup } voteEnd={ voteEnd } resolution={ resolution } amendments={ amendments.filter(amendment => amendment.resolutionID == resolution.id) }/>
                                 
                             ))
 
