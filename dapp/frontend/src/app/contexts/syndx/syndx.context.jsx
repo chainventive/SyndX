@@ -146,12 +146,11 @@ const SyndxContextProvider = ({ children }) => {
 
         if (reducerState.selectedCoproperty == null) { 
             clearInterval(interval);
-            setNetworkNow(0);
         };
 
         return () =>  { 
             clearInterval(interval);
-            setNetworkNow(0);
+            //setNetworkNow(0);
         }
 
     }, [isAsyncTaskRunning, reducerState.selectedCoproperty]); 
