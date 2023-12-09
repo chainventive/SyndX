@@ -5,14 +5,15 @@ import { getTimestampDate } from "@/helpers/time/index";
 import { formatBlockchainAddress } from "@/helpers/formatter/index";
 
 // Contexts
+import useSyndx from '@/app/contexts/syndx/hooks/useSyndx';
 import useCoproperty from '@/app/contexts/coproperty/hook/useCoproperty';
 
 // Chakra
-import { SimpleGrid, Heading, Card, CardHeader, CardBody, CardFooter, Stack, StackDivider, Tbody, Tr, Td, Button, Thead, Th, Flex, Input, Text, Box, Spacer, NumberInput, NumberInputField, NumberInputStepper, NumberIncrementStepper, NumberDecrementStepper, Center} from '@chakra-ui/react';
-import { CopyIcon, AddIcon } from '@chakra-ui/icons';
+import { SimpleGrid, Heading, Card, CardBody, Stack, StackDivider, Box, Text } from '@chakra-ui/react';
 
 const Assemblies = ({ onSelectAssembly }) => {
 
+    const { networkNow } = useSyndx();
     const { assemblies, selectedAssembly } = useCoproperty();
 
     return (
@@ -32,7 +33,7 @@ const Assemblies = ({ onSelectAssembly }) => {
                                                 <Heading size='sm' textTransform='uppercase'>General Assembly</Heading>
                                             </Box>
                                             <Box>
-                                                <Heading size='xs' textTransform='uppercase'>Date</Heading>
+                                                <Heading size='xs' textTransform='uppercase'>VOTE DATE</Heading>
                                                 <Text pt='2' fontSize='sm'>{ getTimestampDate(assembly.voteStartTime) }</Text>
                                             </Box>
                                             <Box>

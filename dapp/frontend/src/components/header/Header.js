@@ -17,23 +17,13 @@ import CreateCoproperty from '@/components/syndx/coproperty/createCoproperty';
 // Backend
 import { backend } from "@/backend";
 
-// ReactJS
-import { useEffect, useState } from "react";
-
 // Chakra
 import { Flex, Spacer, Box, Heading, Link, VStack, Badge } from '@chakra-ui/react';
 import { CopyIcon } from '@chakra-ui/icons'
 
 const Header = () => {
 
-    const { userAddress, isUserSyndxOwner, isUserConnected } = useSyndx();
-
-    const [ now, setNow ] = useState(0);
-
-    useEffect(() => {
-        setNow(getDateTimestamp(Date.now())); 
-        setInterval(() => setNow( getDateTimestamp(Date.now()) ), 5000);
-    }, []);
+    const { networkNow, isUserSyndxOwner, isUserConnected, selectedCoproperty } = useSyndx();
 
     return (
 
@@ -61,7 +51,7 @@ const Header = () => {
                         <Flex w='100%' p='1rem' m='0' borderBottom='1px solid #a8a8a8' bg={isUserSyndxOwner ? 'linear-gradient(to bottom, #283048, #1a202c)' : 'linear-gradient(to right, #7474BF, #348AC7)'}>
                             <Box>
                                 <Badge p='0.25rem 1rem' borderRadius='0.25rem' variant='outline' color='white'>
-                                    { getTimestampDate(now) }
+                                    { backend.network } - { networkNow > 0 ? getTimestampDate(networkNow) : (selectedCoproperty != null ? 'syncing ...' : 'standy') }
                                 </Badge> 
                             </Box>
                             <Spacer/>

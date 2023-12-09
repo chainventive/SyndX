@@ -3,7 +3,7 @@
 const { createContext } = require("react");
 
 // ReactJS
-import { useEffect, useReducer } from 'react';
+import { useState, useEffect, useReducer } from 'react';
 
 // Wagmi
 import { readContract, watchContractEvent } from '@wagmi/core';
@@ -41,8 +41,11 @@ const SyndxContextProvider = ({ children }) => {
         coproperties: [],
         selectedCoproperty: null,
         selectedCopropertySyndic: null,
-        isUserSelectedCopropertySyndic: false
+        isUserSelectedCopropertySyndic: false,
     });
+
+    const [ networkNow, setNetworkNow ] = useState(0);
+    const [ isAsyncTaskRunning, setIsAsyncTaskRunning ] = useState(false);
 
     // external setters
 
@@ -106,12 +109,61 @@ const SyndxContextProvider = ({ children }) => {
         
         return () => watcher.stop();
     }
+
+    // Watch network blocktime
+
+    const fetchNetworkBlockTime = async () => {
+        
+        try {
+
+            const block = await viemClient.getBlock({
+                blockTag: 'latest' 
+            });
+  
+            setNetworkNow(Number(block.timestamp));
+
+        } catch (error) {
+
+            console.error("Error in async task", error);
+
+        } finally {
+
+            setIsAsyncTaskRunning(false);
+        }
+    }
+
+    useEffect(() => {
+
+        const interval = setInterval(() => {
+
+            if (!isAsyncTaskRunning) {
+
+                setIsAsyncTaskRunning(true);
+                fetchNetworkBlockTime();
+            }
+
+        }, 15000);
+
+        if (reducerState.selectedCoproperty == null) { 
+            clearInterval(interval);
+            setNetworkNow(0);
+        };
+
+        return () =>  { 
+            clearInterval(interval);
+            setNetworkNow(0);
+        }
+
+    }, [isAsyncTaskRunning, reducerState.selectedCoproperty]); 
     
     // Component lifecycle
 
     useEffect(() => {
 
-        if (reducerState.selectedCoproperty != null) fetchCopropertySyndic(reducerState.selectedCoproperty);
+        if (reducerState.selectedCoproperty != null) {
+
+            fetchCopropertySyndic(reducerState.selectedCoproperty);
+        }
 
     }, [reducerState.selectedCoproperty]);
 
@@ -147,6 +199,7 @@ const SyndxContextProvider = ({ children }) => {
             selectedCoproperty             : reducerState.selectedCoproperty,
             selectedCopropertySyndic       : reducerState.selectedCopropertySyndic,
             isUserSelectedCopropertySyndic : reducerState.isUserSelectedCopropertySyndic,
+            networkNow                     : networkNow,
             setSelectedCoproperty          : setSelectedCoproperty
         }}>
             { children }

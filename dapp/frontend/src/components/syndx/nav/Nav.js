@@ -47,8 +47,11 @@ const Nav = ({ onSelectCoproperty }) => {
 
                     ) : (
 
-                        <p>No registered coproperty</p>
-
+                        <Flex w='100%' paddingTop='0.75rem'>
+                            <Center w='100%'>
+                                <Text fontSize='sm' as='em'>no registered coproperty</Text>
+                            </Center>
+                        </Flex>
                     )
                 }
 

@@ -8,7 +8,7 @@ import { ContractFunctionExecutionError } from 'viem';
 
 // Wagmi
 import { readContract } from '@wagmi/core';
-import { prepareWriteContract, writeContract,waitForTransaction } from '@wagmi/core';
+import { prepareWriteContract, writeContract, waitForTransaction } from '@wagmi/core';
 
 // Helpers
 import { copyToClipboard } from "@/helpers/utils/index";

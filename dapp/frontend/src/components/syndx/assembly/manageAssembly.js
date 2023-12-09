@@ -46,24 +46,24 @@ import VoteToken from "./vote/VoteToken";
 
 const   Assembly = () => {
 
-    const { selectedCoproperty } = useSyndx();
-    const { selectedAssembly, setSelectedAssembly, tokenContract } = useCoproperty();
+    const { networkNow, selectedCoproperty } = useSyndx();
+    const { selectedAssembly, setSelectedAssembly } = useCoproperty();
     const { tiebreaker, created, lockup, voteEnd, resolutions, amendments, isSyndicUser } = useAssembly();
 
-    const [ now, setNow ] = useState(0);
     const [ currentStep, setCurrentStep ] = useState(1);
 
     let steps = [
-        { title: 'created',      description: `${getTimestampDate(created)}` },
-        { title: 'lockup',       description: `${getTimestampDate(lockup)}` },
-        { title: 'vote',         description: `${getTimestampDate(selectedAssembly.voteStartTime)}` },
-        { title: 'tally',        description: `${getTimestampDate(voteEnd)}` },
+        { title: 'created', description: `${getTimestampDate(created)}` },
+        { title: 'lockup', description: `${getTimestampDate(lockup)}` },
+        { title: 'vote', description: `${getTimestampDate(selectedAssembly.voteStartTime)}` },
+        { title: 'tally', description: `${getTimestampDate(voteEnd)}` },
     ]
 
     const getCurrentStep = () => {
-        if (now <= lockup) return 1;
-        if (now <= selectedAssembly.voteStartTime) return 2;
-        if (now <= voteEnd) return 3; 
+        if (networkNow <= 0) return 0;
+        if (networkNow < lockup) return 1;
+        if (networkNow < selectedAssembly.voteStartTime) return 2;
+        if (networkNow < voteEnd) return 3; 
         return 4;
     };
 
@@ -95,12 +95,7 @@ const   Assembly = () => {
 
     useEffect(() => {
         setCurrentStep(getCurrentStep());
-    }, [now]);
-
-    useEffect(() => {
-        setNow(getDateTimestamp(Date.now())); 
-        setInterval(() => setNow( getDateTimestamp(Date.now()) ), 5000);
-    }, []);
+    }, [networkNow]);
 
     return (
 
@@ -178,7 +173,7 @@ const   Assembly = () => {
                     <Spacer></Spacer>
                     <Box>
                         { 
-                            now > voteEnd && tiebreaker <= 0 && (
+                            networkNow > voteEnd && tiebreaker <= 0 && (
                                 <Button colorScheme='messenger' size='sm' onClick={() => tiebreak()}>request tiebreak</Button>
                             )
                         }
@@ -190,13 +185,13 @@ const   Assembly = () => {
                         isSyndicUser ? (
                             <VoteToken/>
                         ) : (
-                            <ClaimVote now={now} lockup={lockup}/>
+                            <ClaimVote now={networkNow} lockup={lockup}/>
                         )
                     }
                 </Flex>
 
                 {
-                    now < lockup && (
+                    networkNow < lockup && (
                         <Flex  w='100%' marginBottom='2rem' paddingBottom='2rem'>
                             <CreateResolution assembly={ selectedAssembly }/>
                         </Flex>
@@ -220,7 +215,7 @@ const   Assembly = () => {
 
                             resolutions.map((resolution, index) => (
 
-                                <Resolution key={index} isSyndicUser={ isSyndicUser } now={ now } assembly={ selectedAssembly } lockup={ lockup } voteEnd={ voteEnd } resolution={ resolution } amendments={ amendments.filter(amendment => amendment.resolutionID == resolution.id) }/>
+                                <Resolution key={index} isSyndicUser={ isSyndicUser } now={ networkNow } assembly={ selectedAssembly } lockup={ lockup } voteEnd={ voteEnd } resolution={ resolution } amendments={ amendments.filter(amendment => amendment.resolutionID == resolution.id) }/>
                                 
                             ))
 
