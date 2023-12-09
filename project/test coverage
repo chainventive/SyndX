@@ -1,0 +1,266 @@
+Version
+=======
+> solidity-coverage: v0.8.5
+
+Instrumenting for coverage...
+=============================
+
+> _common/constants.sol
+> _common/errors/addresses.sol
+> _common/errors/coproperty.sol
+> _common/errors/syndx.sol
+> _common/errors/syndxVRF.sol
+> _common/errors/tokenFactory.sol
+> _common/errors/ValidatorErrors.sol
+> _common/SDX.sol
+> assembly/GeneralAssembly.sol
+> assembly/IGeneralAssembly.sol
+> coproperty/Coproperty.sol
+> coproperty/ICoproperty.sol
+> ISyndx.sol
+> randomness/SyndxVRF.sol
+> randomness/VRFCoordinatorV2.sol
+> randomness/VRFCoordinatorV2Mock.sol
+> Syndx.sol
+> tokens/governance/GovernanceToken.sol
+> tokens/governance/IGovernanceToken.sol
+> tokens/ITokenFactory.sol
+> tokens/TokenFactory.sol
+> tokens/vote/IVoteToken.sol
+> tokens/vote/VoteToken.sol
+
+Compilation:
+============
+
+Nothing to compile
+
+Network Info
+============
+> HardhatEVM: v2.19.0
+> network:    hardhat
+
+
+
+  SyndX
+    SyndX and TokenFactory Deployment Tests
+      SyndX Contract Deployment
+        ✔ Successfully deploys SyndX contract (448ms)
+        ✔ Successfully deploys TokenFactory contract, assigning ownership to SyndX. (61ms)
+      TokenFactory Contract Settings
+        ✔ Allows setting TokenFactory contract when called by the owner
+        ✔ Blocks setting TokenFactory contract when called by a non-owner (61ms)
+    SyndX Functionality Tests
+      Contract Verification
+        ✔ Verifies contract creation by SyndX (133ms)
+        ✔ Checks if a coproperty name is already in use
+      Access and Authorization
+        ✔ Restricts random number requests to authorized customers
+        ✔ Prohibits unknown coproperty contracts from initiating a general assembly
+    Token Factory Tests
+      Retrieving Contract Address
+        ✔ Enables retrieval of SyndX contract address (59ms)
+      Governance Token Tests
+        ✔ Blocks non-administrators from creating governance tokens
+        ✔ Allows Token Factory owner to create governance tokens (40ms)
+        ✔ Prevents creation of governance tokens with zero address as syndic or owner
+        ✔ Ensures governance token ISO length is valid
+      Vote Token Tests
+        ✔ Permits Token Factory owner to create vote tokens (120ms)
+        ✔ Prevents non-administrators from creating vote tokens
+        ✔ Validates vote token creation criteria (address, governance token, ISO length)
+        ✔ Prohibit Creating Vote Tokens with Zero Address as Governance Token by Administrators
+        ✔ Should Block Creation of Vote Tokens by Administrators with Invalid ISO Length
+    Coproperty Tests
+      Coproperty Creation with Governance Token
+        ✔ Allows contract creation if caller is the owner (72ms)
+        ✔ Blocks contract creation if caller is not the owner
+        ✔ Ensures governance token ISO length is valid during creation
+        ✔ Correctly Set the Syndx Contract Address (86ms)
+        ✔ Properly Assign Syndx Contract as the Owner
+        ✔ Should Accurately Assign the Syndic Account as the Coproperty Syndic
+        ✔ Should CREATE a coproperty contract with name: BATACOFT
+      Coproperty Governance Token Configuration
+        ✔ Forbid Creation of Governance Tokens with Invalid ISO Length (44ms)
+        ✔ Successfully Create a Coproperty Governance Token with Syndx Contract Owner as Owner (87ms)
+        ✔ Successfully Create a Coproperty Governance Token with Syndic Account as Admin
+        ✔ Successfully Create a Coproperty Governance Token with 'BATA' as ISO
+        ✔ Successfully Create a Coproperty Governance Token with 'synBATA' Symbol
+        ✔ Create a Coproperty Governance Token with a Total Supply of 10000 synBATA
+        ✔ Enable Checking of Governance Token Decimals
+        ✔ Allow Syndx Contract Owner to Appoint Governance Token Administrator (91ms)
+        ✔ Restrict Setting Governance Token Administrator to Syndx Contract Owner Only
+        ✔ Block Adding Zero Address as Governance Token Administrator
+        ✔ Trigger 'AdministratorSet' Event Upon Setting Governance Token Administrator
+      Governance Token Distribution
+        ✔ Verify if an Account Is Whitelisted
+        ✔ Initially Allocate Entire Token Supply to the Syndic Account
+        ✔ Permit the Syndic to Add Property Owners and Allocate Governance Tokens
+        ✔ Prohibit Adding Zero Address as a Property Owner
+        ✔ Only Allow the Syndic to Add Property Owners and Allocate Tokens
+        ✔ Prevent the Syndic to Add Property Owners and Allocate Tokens Twice
+        ✔ Trigger 'PropertyOwnerAdded' Event on Addition of a Property Owner
+        ✔ Enable the Syndic to Revoke Property Ownership and Retrieve Tokens (115ms)
+        ✔ Forbid Removal of Property Owner with Zero Address
+        ✔ Restrict Property Owner Removal to the Syndic Only (85ms)
+        ✔ Trigger 'PropertyOwnerRemoved' Event on Property Owner Removal
+        ✔ Transfer Tokens to Syndic and Delist from Whitelist on Property Owner Removal
+        ✔ Exclude Property Owner Addresses from Token Whitelist on Removal
+        ✔ Disallow Non-Syndic Accounts from Removing Property Owners
+        ✔ Forbid Property Owners from Transferring Tokens to Non-Syndic Accounts
+        ✔ Allow Property Owners to Return Governance Tokens to the Syndic
+        ✔ Should Restrict Token Receipt to Only Property Owners and the Syndic
+    General Assembly Tests
+      General Assembly Creation with Vote Token
+        ✔ Create a General Assembly with Syndic Address (105ms)
+        ✔ Emit 'GeneralAssemblyContractCreated' Event for New Assembly
+        ✔ Emit 'VoteTokenContractCreated' Event for Each New Assembly
+        ✔ Emit 'LockupTimeSet' Event When Setting Vote Token Contract Lockup Time (78ms)
+        ✔ Restrict General Assembly Creation to the Syndic Account of the Coproperty
+      General Assembly Contract Creation
+        ✔ Create a General Assembly Contract with a Set Vote Token (177ms)
+        ✔ Create a General Assembly Contract with a Set Syndic Account
+        ✔ Create a General Assembly Contract with a Named Vote Token Based on BATA ISO and Assembly ID
+        ✔ Create a General Assembly Contract with a Vote Token Having Zero Decimals
+        ✔ Link the General Assembly Contract to the Parent Coproperty's Governance Token
+        ✔ Initialize a General Assembly Contract with a Tiebreaker Initially Set to Zero
+        ✔ Establish a Valid Timeline for the General Assembly
+        ✔ Enable Retrieval of the Correctly Set General Assembly Timeline
+        ✔ Assign Syndx Contract as the Owner of the Vote Token
+      Vote Token in General Assembly
+        ✔ Link Coproperty's Governance Token to the Vote Token
+        ✔ Set the Syndic as the Administrator of the Vote Token
+        ✔ Sync Vote Token Lockup Time with General Assembly
+        ✔ Allow Property Owners to Claim Vote Tokens Based on Governance Token Balance (38ms)
+        ✔ Prevent Property Owners from Claiming Vote Tokens More Than Once
+        ✔ Emit 'VoteTokensClaimed' Event When Property Owners Successfully Claim Tokens
+        ✔ Restrict Vote Token Claims to Governance Token Holders
+        ✔ Allow anyone to verify if an account claimed his vote tokens
+        ✔ Enable the Syndic to Burn Lost Tokens, Prevent Reclaiming Again and Remove Account From Property Owners (58ms)
+        ✔ Emit 'LostTokensBurned' Event on Token Burning by Administrator (43ms)
+        ✔ Emit 'LostTokensBurned' Event on Token Burning by Administrator.
+        ✔ Allow Transfer of Vote Tokens Among Property Owners Who Claimed Them (73ms)
+        ✔ Prohibit Transfer of Vote Tokens to Non-Property Owner Accounts (115ms)
+        ✔ Block Vote Token Transfer After Lockup Time (46ms)
+      General Assembly Resolutions
+        ✔ Restrict Resolution Creation to Syndic and Property Owners (109ms)
+        ✔ Allow Syndic and Property Owners to Create Resolutions (54ms)
+        ✔ Prevent Resolution Creation After Lockup Time
+        ✔ Block Creation of Resolutions with Invalid Title Lengths
+        ✔ Block Creation of Resolutions with Invalid Description Lengths
+        ✔ Emit 'ResolutionCreated' Event Upon Resolution Creation
+        ✔ Initially Set Resolutions Vote Type to 'Undetermined' (128ms)
+        ✔ Allow Syndic to Specify Resolutions Vote Type (40ms)
+        ✔ Prevent Others from Setting Resolution Vote Types
+        ✔ Block Setting Resolution Vote Types Post Lockup Time
+        ✔ Prohibit Setting Vote Type on Non-Existent Resolutions
+        ✔ Prohibit Setting Vote Type on Undefined Resolutions
+        ✔ Emit 'ResolutionVoteTypeSet' Event When Vote Type is Set by Syndic
+      General Assembly Amendments
+        ✔ Permit Syndic and Property Owners to Create Amendments (55ms)
+        ✔ Restrict Amendment Creation to Syndic and Property Owners (41ms)
+        ✔ Block Amendment Creation on Non-Existent Resolutions
+        ✔ Prohibit Amendment Creation Post Lockup Time (45ms)
+        ✔ Ensure Amendments Have Valid Description Length (52ms)
+        ✔ Emit 'AmendmentCreated' Event on Amendment Creation (42ms)
+        ✔ Allow Retrieval of Amendment Count (118ms)
+        ✔ Allow Retrieval of Specific Amendments
+      General Assembly Votes
+        ✔ Block Non-Vote Token Holders from Voting
+        ✔ Prevent Voting Before Designated Vote Times (71ms)
+        ✔ Prevent Voting After Designated Vote Times
+        ✔ Forbid Voting on Non-Existent Resolutions
+        ✔ Forbid Voting on Repeated Resolutions (55ms)
+        ✔ Forbid Voting on Undefined Vote Type Resolutions
+        ✔ Allow Vote Token Holders to Cast Votes (145ms)
+        ✔ Emit 'VoteCast' Event for Each Vote Cast
+      Vote Results
+        ✔ Prohibit Vote Result Queries Before Session End
+        ✔ Enable Vote Result Queries Post Session (373ms)
+        ✔ Block Queries for Non-Existent Resolution Vote Results
+        Tallies with various outcomes
+          Tallies Without Equality
+            Positive Outcome
+              ✔ Confirm Unanimity Vote Type for Positive Outcome
+              ✔ Confirm Simple Majority Vote Type for Positive Outcome
+              ✔ Confirm Absolute Majority Vote Type for Positive Outcome
+              ✔ Confirm Double Majority Vote Type for Positive Outcome
+            Negative Outcome
+              ✔ Confirm Unanimity Vote Type for Negative Outcome (364ms)
+              ✔ Confirm Simple Majority Vote Type for Negative Outcome
+              ✔ Confirm Absolute Majority Vote Type for Negative Outcome
+              ✔ Confirm Double Majority Vote Type for Negative Outcome
+              ✔ Confirm Double Majority with Unreached Property Shares Threshold for Negative Outcome
+              ✔ Confirm Double Majority with Unreached Property Owner Count Threshold for Negative Outcome (152ms)
+          Tallies With Equality
+            Without Fulfilled Tiebreaker
+              ✔ Revert Tally for Unresolved Equal Vote Without Fulfilled Tiebreaker (315ms)
+            With Fulfilled Tiebreaker
+              ✔ Validate Simple Majority Vote Type with Fulfilled Tiebreaker (77ms)
+              ✔ Validate Absolute Majority Vote Type with Fulfilled Tiebreaker (77ms)
+              ✔ Validate Double Majority Vote Type with Fulfilled Tiebreaker (76ms)
+      General Assembly Tiebreak
+        Tiebreaker Request
+          ✔ Emit 'TiebreakerRequested' Event in General Assembly Contract
+          ✔ Emit 'RandomNumberRequested' Event in Syndx Contrac
+          ✔ Prohibit Duplicate Random Number Requests by the Same Consumer in Syndx Contract (43ms)
+          ✔ Emit 'RandomWordsRequested' Event Once Chainlink Service Receives the Request in Syndx Contract
+        Tiebreaker Request Fulfillment
+          ✔ Emit 'RandomWordsFulfilled' Event Once Chainlink Service Fulfills the Request (63ms)
+          ✔ Prevent Chainlink Service from Fulfilling Requests with Empty Random Words (59ms)
+          ✔ Block Chainlink Service from Fulfilling Random Words for Already Fulfilled Requests (62ms)
+          ✔ Disallow Overwriting an Already Fulfilled Tiebreaker in a General Assembly (65ms)
+          ✔ Emit 'TiebreakerFulfilled' Event When Syndx Contract Provides Random Number to General Assembly (61ms)
+          ✔ Should Ensure a Non-Zero Tiebreaker Number Is Provided to the General Assembly (62ms)
+      Random Number Request Management
+        ✔ Block Syndx Owner from Using Zero Address to Reset a Random Number Request
+        ✔ Forbid Non-Owners of Syndx Contract from Resetting Random Number Requests (38ms)
+        ✔ Prevent Resetting Non-Existent Random Number Requests by Syndx Contract Owner (42ms)
+        ✔ Disallow Resetting Already Fulfilled Random Number Requests (72ms)
+        ✔ Prohibit Resetting Unfulfilled Random Number Requests Before a Set Block Minimum (40ms)
+        ✔ Permit Syndx Contract Owner to Reset Unfulfilled Random Number Requests Post Minimum Block Requirement (79ms)
+        ✔ Allow Access to the State of Consumer Random Number Requests
+        ✔ Emit 'RandomNumberRequestReset' Event on Reset of Unfulfilled Random Number Request by Syndx Owner (77ms)
+
+
+  145 passing (7s)
+
+------------------------------|----------|----------|----------|----------|----------------|
+File                          |  % Stmts | % Branch |  % Funcs |  % Lines |Uncovered Lines |
+------------------------------|----------|----------|----------|----------|----------------|
+ contracts/                   |      100 |    84.38 |      100 |      100 |                |
+  ISyndx.sol                  |      100 |      100 |      100 |      100 |                |
+  Syndx.sol                   |      100 |    84.38 |      100 |      100 |                |
+ contracts/_common/           |      100 |      100 |      100 |      100 |                |
+  SDX.sol                     |      100 |      100 |      100 |      100 |                |
+  constants.sol               |      100 |      100 |      100 |      100 |                |
+ contracts/_common/errors/    |      100 |      100 |      100 |      100 |                |
+  ValidatorErrors.sol         |      100 |      100 |      100 |      100 |                |
+  addresses.sol               |      100 |      100 |      100 |      100 |                |
+  coproperty.sol              |      100 |      100 |      100 |      100 |                |
+  syndx.sol                   |      100 |      100 |      100 |      100 |                |
+  syndxVRF.sol                |      100 |      100 |      100 |      100 |                |
+  tokenFactory.sol            |      100 |      100 |      100 |      100 |                |
+ contracts/assembly/          |      100 |       90 |      100 |      100 |                |
+  GeneralAssembly.sol         |      100 |       90 |      100 |      100 |                |
+  IGeneralAssembly.sol        |      100 |      100 |      100 |      100 |                |
+ contracts/coproperty/        |      100 |    66.67 |      100 |      100 |                |
+  Coproperty.sol              |      100 |    66.67 |      100 |      100 |                |
+  ICoproperty.sol             |      100 |      100 |      100 |      100 |                |
+ contracts/randomness/        |      100 |       50 |      100 |      100 |                |
+  SyndxVRF.sol                |      100 |       50 |      100 |      100 |                |
+  VRFCoordinatorV2.sol        |      100 |      100 |      100 |      100 |                |
+  VRFCoordinatorV2Mock.sol    |      100 |      100 |      100 |      100 |                |
+ contracts/tokens/            |      100 |      100 |      100 |      100 |                |
+  ITokenFactory.sol           |      100 |      100 |      100 |      100 |                |
+  TokenFactory.sol            |      100 |      100 |      100 |      100 |                |
+ contracts/tokens/governance/ |      100 |    88.46 |      100 |      100 |                |
+  GovernanceToken.sol         |      100 |    88.46 |      100 |      100 |                |
+  IGovernanceToken.sol        |      100 |      100 |      100 |      100 |                |
+ contracts/tokens/vote/       |      100 |    88.89 |      100 |      100 |                |
+  IVoteToken.sol              |      100 |      100 |      100 |      100 |                |
+  VoteToken.sol               |      100 |    88.89 |      100 |      100 |                |
+------------------------------|----------|----------|----------|----------|----------------|
+All files                     |      100 |     87.5 |      100 |      100 |                |
+------------------------------|----------|----------|----------|----------|----------------|
+
+> Istanbul reports written to ./coverage/ and ./coverage.json
