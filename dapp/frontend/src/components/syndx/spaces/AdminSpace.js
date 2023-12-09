@@ -55,7 +55,7 @@ const AdminSpace = () => {
                         
                         <Flex w='100%' h="50vh">
                             <Center w='100%' h='100%'>
-                                <Text fontSize='md' color='dimgray'>- no selected a coproperty -</Text>
+                                <Text fontSize='md' color='dimgray'>- no coproperty selected -</Text>
                             </Center>
                         </Flex>
                         
