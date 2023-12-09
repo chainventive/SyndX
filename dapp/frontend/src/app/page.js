@@ -17,7 +17,7 @@ export default function Home() {
         <Header/>
       </Flex>
 
-      <Flex borderBottom='1px solid #eee'>
+      <Flex borderBottom='1px solid #a8a8a8'>
         <Syndx/>
       </Flex>
 

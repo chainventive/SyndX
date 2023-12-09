@@ -5,15 +5,15 @@ import { copyToClipboard } from "@/helpers/utils/index";
 import { formatBlockchainAddress } from "@/helpers/formatter/index";
 
 // Chakra
-import { VStack, Box, Text, TableContainer, Table, Tbody, Tr, Td, ThemeComponents } from '@chakra-ui/react';
-import { CopyIcon, ChatIcon } from '@chakra-ui/icons';
+import { VStack, Box, Text, TableContainer, Table, Tbody, Tr, Td, Flex, Center, Spacer, Button } from '@chakra-ui/react';
+import { CopyIcon } from '@chakra-ui/icons';
 
 // Contexts
 import useSyndx from '@/app/contexts/syndx/hooks/useSyndx';
 
 const AdminSpace = () => {
 
-    const { selectedCoproperty } = useSyndx();
+    const { selectedCoproperty, setSelectedCoproperty } = useSyndx();
     
     return (
 
@@ -25,8 +25,16 @@ const AdminSpace = () => {
 
                         <Box w='100%' marginBottom='1.25rem' fontSize='xl'>
 
-                            <Text fontSize='2xl' as='b' >{ selectedCoproperty.name }</Text>
-
+                            <Flex w='100%'>
+                                <Box>
+                                    <Text fontSize='2xl' as='b' >{ selectedCoproperty.name }</Text>
+                                </Box>
+                                <Spacer></Spacer>
+                                <Box>
+                                    <Button onClick={() => setSelectedCoproperty(null)} size='sm'>close</Button>
+                                </Box>
+                            </Flex>
+                            
                             <TableContainer marginTop='2rem'>
                                 <Table size='sm'>
                                     <Tbody>
@@ -45,7 +53,12 @@ const AdminSpace = () => {
 
                     ) : (
                         
-                        <Text fontSize='xl' ><ChatIcon marginRight='0.75rem'/>please select a coproperty.</Text>
+                        <Flex w='100%' h="50vh">
+                            <Center w='100%' h='100%'>
+                                <Text fontSize='md' color='dimgray'>- no coproperty selected -</Text>
+                            </Center>
+                        </Flex>
+                        
                     )
                 }
             </Box>

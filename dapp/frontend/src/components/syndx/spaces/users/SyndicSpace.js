@@ -8,8 +8,7 @@ import CopropertyOwners from '@/components/syndx/coproperty/manageOwners';
 import VoteToken from '@/components/syndx/assembly/vote/VoteToken';
 
 // Chakra
-import { Tabs, TabList, Text, Tab, TabPanels, TabPanel } from '@chakra-ui/react';
-import { CopyIcon, ChatIcon } from '@chakra-ui/icons';
+import { Tabs, TabList, Text, Tab, TabPanels, TabPanel, Badge } from '@chakra-ui/react';
 
 // Contexts
 import useSyndx from '@/app/contexts/syndx/hooks/useSyndx';
@@ -25,6 +24,7 @@ const SyndicSpace = () => {
 
         <>
             <Text fontSize='2xl' as='b' >{ selectedCoproperty.name }</Text>
+            <Badge borderRadius='0.5rem' marginLeft='0.5rem' variant='outline'>syndic</Badge>
 
             <Tabs variant='enclosed' marginTop='2rem'>
 

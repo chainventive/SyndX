@@ -51,12 +51,7 @@ const CreateCoproperty = () => {
     
           console.log(err);
     
-        } finally {
-            
-          setCopropertyName('');
-          setCopropertyTokenISO('');
-          setCopropertySyndicAddress('');
-      }
+        }
     
     };
 
