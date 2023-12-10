@@ -16,34 +16,44 @@ import "../_common/errors/syndxVRF.sol";
 // Contracts imports
 import "../assembly/IGeneralAssembly.sol";
 
+/// @title SyndxVRF Contract
+/// @notice Contract for handling randomness functionalities using Chainlink VRF within the Syndx ecosystem
+/// @dev Inherits from VRFConsumerBaseV2 for integrating Chainlink VRF services
 contract SyndxVRF is VRFConsumerBaseV2 {
 
+    /// @notice VRFCoordinator interface for interacting with Chainlink VRF
     VRFCoordinatorV2Interface private COORDINATOR;
 
-    // Chainlink subscription ID
+    /// @notice Chainlink subscription ID used for requesting randomness
     uint64 public chainlinkVrfSubscriptionID;
 
-    // The suscription owner of the chainlink VRF account
+    /// @notice Address of the subscription owner for the Chainlink VRF account
     address private subscriptionOwner;
 
-    // Keep tracks of each consumer request to ensure there will be one request per consumer
+    /// @notice Tracks consumer requests for randomness
     mapping(address => SDX.ConsumerRequest) internal consumerRequests;
 
-    // Keep tracks of the random words of each consumer request
+    /// @notice Tracks responses for consumer requests containing random words
     mapping(uint256 => SDX.ConsumerResponse) internal consumerRequestResponses;
 
+    /// @notice Emitted when random words are requested from Chainlink VRF
     event RandomWordsRequested(uint256 requestId);
+
+    /// @notice Emitted when random words are fulfilled by Chainlink VRF
     event RandomWordsFulfilled(uint256 requestId);
 
-    // The chainlink VRF subscription is owned by the syndx contract owner
+    /// @notice Initializes the SyndxVRF contract with Chainlink VRF coordinator and subscription ID
+    /// @param _chainlinkVrfCoordinator Address of the Chainlink VRF Coordinator
+    /// @param _chainlinkVrfSubscriptionID Chainlink VRF subscription ID
     constructor(address _chainlinkVrfCoordinator, uint64 _chainlinkVrfSubscriptionID) VRFConsumerBaseV2(_chainlinkVrfCoordinator) {
         COORDINATOR = VRFCoordinatorV2Interface(_chainlinkVrfCoordinator);
         chainlinkVrfSubscriptionID = _chainlinkVrfSubscriptionID;
         subscriptionOwner = msg.sender;
     }
 
-    // Send a request to chainlink VRF service
-    // Assumes the subscription is funded sufficiently
+    /// @notice Internal function to request random words from Chainlink VRF
+    /// @dev Assumes the subscription is funded sufficiently
+    /// @param _consumer Address of the consumer requesting randomness
     function requestRandomWords(address _consumer) internal {
 
         // Will revert if subscription is not set and funded.
@@ -66,7 +76,10 @@ contract SyndxVRF is VRFConsumerBaseV2 {
         emit RandomWordsRequested(requestID);
     }
 
-    // Callback function used by Chainlink to provide the requested random words
+    /// @notice Callback function used by Chainlink VRF to deliver requested random words
+    /// @dev Overrides the VRFConsumerBaseV2 fulfillRandomWords function
+    /// @param requestId The ID of the randomness request
+    /// @param randomWords Array of random words provided by Chainlink VRF
     function fulfillRandomWords(uint256 requestId, uint256[] memory randomWords) internal override {
 
         // Ensure randomWords are really provided
@@ -87,6 +100,8 @@ contract SyndxVRF is VRFConsumerBaseV2 {
         _invokeConsumerCallback(requestId);
     }
 
+    /// @dev Private function to invoke callback for the consumer after receiving random words
+    /// @param requestId The ID of the randomness request
     function _invokeConsumerCallback(uint256 requestId) private {
 
         // Retrieve the consumer address with its requestID

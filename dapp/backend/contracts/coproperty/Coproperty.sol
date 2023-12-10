@@ -21,34 +21,40 @@ import "../assembly/IGeneralAssembly.sol";
 // Contracts imports
 import "../ISyndx.sol";
 
+/// @title Coproperty Contract
+/// @notice Contract for managing individual coproperties within the Syndx ecosystem
+/// @dev Implements the ICoproperty interface and inherits from Ownable
 contract Coproperty is ICoproperty, Ownable {
 
-    // The syndx contract
+    /// @notice Reference to the Syndx contract
     ISyndx public syndx;
 
-    // The name of the coproperty
+    /// @notice Name of the coproperty
     string public name;
 
-    // Syndic address which administrate the coproperty
+    /// @notice Address of the syndic who administrates the coproperty
     address public syndic;
 
-    // Coproperty gouvernance token contract
+    /// @notice Governance token contract for the coproperty
     IGovernanceToken public governanceToken;
 
-    // List of all coproperty general assemblies
+    /// @notice List of all general assemblies associated with the coproperty
     IGeneralAssembly[] public generalAssemblies;
 
-    // Emitted when a new general assembly contract is created
+    /// @notice Emitted when a new general assembly contract is created
     event GeneralAssemblyContractCreated(uint256 id, address generalAssemblyContract);
 
-    // Ensure the caller is the syndic of the coproperty
+    /// @notice Ensures that the function is only called by the syndic of the coproperty
     modifier onlySyndic {
         if (syndic != msg.sender) revert NotCopropertySyndic(msg.sender);
         _;
     }
 
-    // Syndx remain the owner of the contract;
-    // This contract is administrated by a syndic;
+    /// @notice Initializes a new Coproperty contract
+    /// @dev Sets the coproperty name, syndic, and associated governance token
+    /// @param _name Name of the coproperty
+    /// @param _syndic Address of the coproperty's syndic
+    /// @param _governanceTokenAddress Address of the governance token for the coproperty
     constructor (string memory _name, address _syndic, address _governanceTokenAddress) Ownable (msg.sender) {
         
         if (_syndic == address(0)) revert AddressZeroNotAllowed();
@@ -62,18 +68,21 @@ contract Coproperty is ICoproperty, Ownable {
         governanceToken = IGovernanceToken(_governanceTokenAddress);
     }
 
-    // Get the address of the syndic in charge of the coproperty contract
+    /// @notice Retrieves the address of the syndic in charge of the coproperty
+    /// @return Address of the coproperty's syndic
     function getSyndic() external view returns (address) {
         return syndic;
     }
 
-    // Get the governance token of the coproperty
+    /// @notice Retrieves the governance token of the coproperty
+    /// @return Governance token contract associated with the coproperty
     function getGovernanceToken() external view returns (IGovernanceToken) {
         return governanceToken;
     }
     
-    // Ask Syndx to create a new general assembly contract
-    // Only the syndic account is able to call this function
+    /// @notice Requests Syndx to create a new general assembly contract for the coproperty
+    /// @dev Only callable by the syndic of the coproperty
+    /// @param _voteStartTime The start time for the general assembly's voting process
     function createGeneralAssembly(uint256 _voteStartTime) external onlySyndic {
 
         address generalAssemblyAddress = syndx.createGeneralAssembly(_voteStartTime);
@@ -85,7 +94,9 @@ contract Coproperty is ICoproperty, Ownable {
         emit GeneralAssemblyContractCreated(generalAssemblyID, generalAssemblyAddress);
     }
 
-    // Get the latest created general assembly
+    /// @notice Retrieves the latest created general assembly for the coproperty
+    /// @return The latest general assembly contract
+    /// @dev Reverts if no general assembly has been created yet
     function getLastestGeneralAssembly() external view returns (IGeneralAssembly) {
 
         if (generalAssemblies.length <= 0) revert NoGeneralAssemblyFound();
@@ -93,7 +104,8 @@ contract Coproperty is ICoproperty, Ownable {
         return generalAssemblies[generalAssemblies.length-1];
     }
 
-    // Get the total number of general assembly
+    /// @notice Retrieves the total number of general assemblies created for the coproperty
+    /// @return Total count of general assemblies
     function getGeneralAssemblyCount() external view returns (uint256) {
 
         return generalAssemblies.length;

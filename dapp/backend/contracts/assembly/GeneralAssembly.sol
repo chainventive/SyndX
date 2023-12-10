@@ -25,91 +25,98 @@ import "../ISyndx.sol";
 /// @dev Inherits from IGeneralAssembly, Validator, and Ownable to manage assembly timelines, resolutions, and access control.
 contract GeneralAssembly is IGeneralAssembly, Ownable {
 
-    // The syndx contract
+    /// @notice Address of the Syndx contract
     ISyndx private syndx;
 
-    // The syndic account in charge of this general assembly
+    /// @notice Address of the syndic in charge of this general assembly
     address public syndic;
 
-    // The governance token of the coproperty
+    /// @notice Governance token associated with the coproperty
     IGovernanceToken public governanceToken;
 
-    // The vote token of the coproperty
+    /// @notice Vote token associated with the coproperty
     IVoteToken public voteToken;
 
-    // The unique random number provided by the syndx contract if asked by this contract
+    /// @notice Unique random number provided by Syndx, if requested
     uint256 public tiebreaker;
 
-    // The general assembly timeline
+    /// @notice Timeline details of the general assembly
     uint256 public created;     // When the general assembly was created
     uint256 public lockup;      // Resolution and amendements cannot be created after this time
     uint256 public voteStart;   // When the voting session starts
     uint256 public voteEnd;     // When the voting session ends
 
-    // The resolutions to be voted
+    /// @notice The resolutions to be voted
     SDX.Resolution[] private resolutions;
 
-    // The amendments committed to resolutions
+    /// @notice The amendments committed to resolutions
     SDX.Amendment[] private amendments;
 
-    // Keep track of who has voted for each resolution
+    /// @notice Keep track of who has voted for each resolution
     mapping (uint256 => mapping (address => bool)) public hasVoted;
 
-    // Emmitted when a new resolution is created
+    /// @notice Emitted when a new resolution is created
     event ResolutionCreated(uint256 id, address author);
 
-    // Emmitted when a new amendment is created
+    /// @notice Emitted when a new amendment is created
     event AmendmentCreated(uint256 id, uint256 resolutionID, address author);
 
-    // Emitted when a resolution vote type has changed
+    /// @notice Emitted when a resolution vote type is changed
     event ResolutionVoteTypeSet(uint256 id, SDX.VoteType previousType, SDX.VoteType newType);
 
-    // Emmitted when a new vote is submitted
+    /// @notice Emitted when a new vote is cast
     event VoteCast (address author, uint256 resolutionID, bool ballotChoice);
 
-    // Emmitted when a tiebreaker request is sent
+    /// @notice Emitted when a tiebreaker request is sent
     event TiebreakerRequested (uint256 blocktime);
 
-    // Emmitted when the tiebreaker is successfully fetched
+    /// @notice Emitted when the tiebreaker number is successfully fetched
     event TiebreakerFulfilled (uint256 tiebreaker);
 
-    // Ensure tha the caller is the coproperty syndic
+    /// @notice Modifier to ensure that the caller is the coproperty syndic
     modifier onlyCopropertySyndic {
         if (msg.sender != syndic) revert NotCopropertySyndic(msg.sender);
         _;
     }
 
-    // Ensure that the caller is a member of the coproperty (the syndic and all the property owners)
+    /// @notice Modifier to ensure that the caller is a member of the coproperty
     modifier onlyCopropertyMembers {
         if (msg.sender != syndic && governanceToken.balanceOf(msg.sender) <= 0) revert NotCopropertyMember(msg.sender);
         _;
     }
 
-    // Ensure that the caller detains vote tokens
+    /// @notice Modifier to ensure that the caller owns vote tokens
     modifier onlyVoteTokenOwner {
         if (voteToken.balanceOf(msg.sender) <= 0) revert NotPropertySharesOwner(msg.sender);
         _;
     }
 
-    // Ensure the call was made before the start of lockup period
+    /// @notice Modifier to ensure that the call is made before the start of the lockup period
     modifier onlyBeforeLockup {
         if (block.timestamp > lockup) revert LockupAlreadyStarted(block.timestamp, lockup);
         _;
     }
 
-    // Ensure the call was made during the voting session
+    /// @notice Modifier to ensure that the call is made during the voting session
     modifier onlyDuringVotingSession {
         if (block.timestamp < voteStart) revert VotingSessionNotStartedYet (block.timestamp, voteStart);
         if (block.timestamp > voteEnd) revert VotingSessionAlreadyEnded (block.timestamp, voteEnd);
         _;
     }
 
-    // Ensure the call was made after the voting session ended
+    /// @notice Modifier to ensure that the call is made after the voting session has ended
     modifier onlyAfterVotingSession {
         if (block.timestamp < voteEnd) revert VotingSessionNotEndedYet (block.timestamp, voteEnd);
         _;
     }
 
+    /// @notice Constructor for the General Assembly contract
+    /// @dev Sets up the general assembly with the provided parameters and initial timeline
+    /// @param _syndx Address of the Syndx contract
+    /// @param _syndic Address of the syndic in charge
+    /// @param _governanceTokenAddress Address of the governance token
+    /// @param _voteTokenAddress Address of the vote token
+    /// @param _voteStartTime Start time for the vote
     constructor(ISyndx _syndx, address _syndic, address _governanceTokenAddress, address _voteTokenAddress, uint256 _voteStartTime) Ownable(msg.sender) {
 
         syndx = _syndx;
@@ -120,7 +127,9 @@ contract GeneralAssembly is IGeneralAssembly, Ownable {
         _setTimeline(_voteStartTime);
     }
 
-    // Set the general assembly timeline according to the expected start time
+    /// @notice Sets the timeline for the general assembly based on the expected voting start time
+    /// @dev Private function to initialize and calculate the timeline of the general assembly
+    /// @param _voteStartTime The expected start time for voting
     function _setTimeline(uint256 _voteStartTime) private {
 
         // When the general assembly is created
@@ -143,12 +152,14 @@ contract GeneralAssembly is IGeneralAssembly, Ownable {
     }
 
     /// @notice Retrieves the timeline of the general assembly
-    /// @return The timeline including creation, lockup, vote start and vote end times
+    /// @return The timeline of the general assembly, including creation, lockup, vote start, and vote end times
     function getTimeline() external view returns (SDX.GeneralAssemblyTimeline memory) {
 
         return SDX.GeneralAssemblyTimeline(created, lockup, voteStart, voteEnd);
     }
 
+    /// @notice Retrieves the lockup time of the general assembly
+    /// @return The lockup time of the general assembly
     function getLockupTime() external view returns (uint256) {
 
         return lockup;
@@ -178,7 +189,11 @@ contract GeneralAssembly is IGeneralAssembly, Ownable {
         return resolutionID;
     }
 
-    // Create a new amendment
+    /// @notice Creates a new amendment to a resolution
+    /// @dev Emits an AmendmentCreated event upon successful creation
+    /// @param _resolutionID ID of the resolution to which the amendment is being added
+    /// @param _description Detailed description of the amendment
+    /// @return ID of the newly created amendment
     function createAmendment(uint256 _resolutionID, string calldata _description) external onlyCopropertyMembers onlyBeforeLockup returns (uint256)  {
 
         if (_resolutionID >= resolutions.length) revert ResolutionNotFound(_resolutionID);
@@ -197,12 +212,15 @@ contract GeneralAssembly is IGeneralAssembly, Ownable {
         return amendmentID;
     }
 
-    // Get the total number of resolutions
+    /// @notice Retrieves the total number of resolutions in the general assembly
+    /// @return Total number of resolutions
     function getResolutionCount() external view returns (uint256) {
         return resolutions.length;
     }
 
-    // Get a given resolution
+    /// @notice Retrieves a specific resolution by its ID
+    /// @param _id ID of the resolution to retrieve
+    /// @return The requested resolution
     function getResolution(uint256 _id) external view returns (SDX.Resolution memory) {
         
         if (_id >= resolutions.length) revert ResolutionNotFound(_id);
@@ -210,12 +228,15 @@ contract GeneralAssembly is IGeneralAssembly, Ownable {
         return resolutions[_id];
     }
 
-    // Get the total number of amendments
+    /// @notice Retrieves the total number of amendments in the general assembly
+    /// @return Total number of amendments
     function getAmendmentCount() external view returns (uint256) {
         return amendments.length;
     }
 
-    // Get a given amendment
+    /// @notice Retrieves a specific amendment by its ID
+    /// @param _id ID of the amendment to retrieve
+    /// @return The requested amendment
     function getAmendment(uint256 _id) external view returns (SDX.Amendment memory) {
         
         if (_id >= amendments.length) revert AmendmentNotFound(_id);
@@ -223,7 +244,10 @@ contract GeneralAssembly is IGeneralAssembly, Ownable {
         return amendments[_id];
     }
 
-    // Set a given resolution vote type
+    /// @notice Sets the vote type for a specific resolution
+    /// @dev Can only be called by the coproperty syndic and before the lockup period
+    /// @param _id ID of the resolution for which to set the vote type
+    /// @param _voteType The vote type to be set for the resolution
     function setResolutionVoteType(uint256 _id, SDX.VoteType _voteType) external onlyCopropertySyndic onlyBeforeLockup {
 
         if (_id >= resolutions.length) revert ResolutionNotFound(_id);
@@ -272,8 +296,8 @@ contract GeneralAssembly is IGeneralAssembly, Ownable {
         emit VoteCast (msg.sender, _resolutionID, _ballotChoice);
     }
 
-    // Request for a tibreaker number
-    // As requesting a tiebreaker number my incur costs (ex: with chainlink VRF randmness startegy) we restrict the use of this function to the coproperty memebers
+    /// @notice Requests a tiebreaker number for resolving vote ties
+    /// @dev Can only be called by coproperty members after the voting session
     function requestTiebreaker() public onlyAfterVotingSession onlyCopropertyMembers {
 
         syndx.requestRandomNumber();
@@ -281,8 +305,9 @@ contract GeneralAssembly is IGeneralAssembly, Ownable {
         emit TiebreakerRequested(block.timestamp);
     }
 
-    // Callback function to allow the syndx contract to provide the requested tiebreak number
-    // We protect the contract against tiebreaker overwrites. This mean once the tiebreak number is set, it is forever
+    /// @notice Allows the Syndx contract to provide a requested tiebreaker number
+    /// @dev Can only be called by the contract owner; protects against overwriting an existing tiebreaker
+    /// @param _tiebreaker The tiebreaker number provided
     function fulfillTiebreaker(uint256 _tiebreaker) external onlyOwner {
 
         if (tiebreaker > 0) revert TiebreakerAlreadyFulfilled();
@@ -293,8 +318,10 @@ contract GeneralAssembly is IGeneralAssembly, Ownable {
         emit TiebreakerFulfilled (tiebreaker);
     }
 
-    // Get the vote result of a given resolution
-    // Every body can request vote results once the voting session has ended
+    /// @notice Retrieves the vote result for a specific resolution
+    /// @dev Can be called by anyone after the voting session
+    /// @param _resolutionID ID of the resolution for which to retrieve the vote result
+    /// @return The result of the vote on the specified resolution
     function getVoteResult(uint256 _resolutionID) external view onlyAfterVotingSession returns (SDX.VoteResult memory) {
         
         if (_resolutionID >= resolutions.length) revert ResolutionNotFound(_resolutionID);
