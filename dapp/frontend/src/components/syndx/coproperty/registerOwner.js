@@ -28,8 +28,10 @@ import useCoproperty from '@/app/contexts/coproperty/hook/useCoproperty';
 const RegisterOwner = () => {
 
     const { selectedCoproperty } = useSyndx();
-    const { owners } = useCoproperty();
+    const { owners, fetchTokenDetails } = useCoproperty();
 
+    const [submitting, setSubmitting] = useState(false);
+    const [removing, setRemoving] = useState('');
 
     const [ownerAddress, setOwnerAddress] = useState('');
     const [ownerShares, setOwnerShares]   = useState(1);
@@ -37,6 +39,8 @@ const RegisterOwner = () => {
     const registerOwner = async () => {
 
         try {
+
+          setSubmitting(true);
 
           const governanceToken = await readContract({
             address: selectedCoproperty.contract,
@@ -51,10 +55,10 @@ const RegisterOwner = () => {
             args: [ownerAddress, ownerShares]
           });
     
-          const { txHash } = await writeContract(request);
-          await waitForTransaction({hash: txHash});
+          const { hash } = await writeContract(request);
+          await waitForTransaction({hash});
 
-          return txHash;
+          return hash;
           
         } catch (err) {
     
@@ -67,8 +71,10 @@ const RegisterOwner = () => {
 
         } finally {
             
+            fetchTokenDetails();
             setOwnerAddress('');
-            setOwnerShares(0);
+            setOwnerShares(1);
+            setSubmitting(false);
         }
     
     };
@@ -76,18 +82,26 @@ const RegisterOwner = () => {
     const removeOwner = async (owner) => {
 
       try {
-        console.log(owner)
-          const { request } = await prepareWriteContract({
+
+          setRemoving(owner.address);
+
+          const governanceToken = await readContract({
             address: selectedCoproperty.contract,
+            abi: backend.contracts.coproperty.abi,
+            functionName: 'governanceToken'
+          });
+
+          const { request } = await prepareWriteContract({
+            address: governanceToken,
             abi: backend.contracts.governanceToken.abi,
             functionName: "removePropertyOwner",
             args: [owner.address]
           });
     
-          const { txHash } = await writeContract(request);
-          await waitForTransaction({hash: txHash});
+          const { hash } = await writeContract(request);
+          await waitForTransaction({hash});
 
-          return txHash;
+          return hash;
           
         } catch (err) {
     
@@ -99,17 +113,21 @@ const RegisterOwner = () => {
           console.log(err);
     
         }
+        finally {
+          fetchTokenDetails();
+          setRemoving('');
+        }
 
   } 
 
     return (
 
         <>
-            <Flex color='white' p='1rem' bg='#262222' marginTop='0.75rem' borderRadius='0.75rem'>
+            <Flex p='1rem' bg='#f5f5f5' marginTop='0.75rem' borderRadius='0.75rem'>
               <Spacer/>
               <Box marginRight='1.5rem'>
                 <Center>
-                  <Text paddingTop='0.3rem' as='b' fontSize='sm'><AddIcon marginRight='0.5rem' />new owner</Text>
+                  <Text paddingTop='0.4rem' as='b' fontSize='sm'><AddIcon marginRight='0.5rem' />new owner</Text>
                 </Center>
               </Box>
               <Box marginRight='1.5rem'>
@@ -125,7 +143,7 @@ const RegisterOwner = () => {
                 </NumberInput>
               </Box>
               <Box>
-                <Button minWidth='5rem' size='sm' onClick={ () => registerOwner() }>add</Button>
+                <Button isLoading={submitting} minWidth='5rem' size='sm' onClick={ () => registerOwner() }>add</Button>
               </Box>
               <Spacer/>
             </Flex>
@@ -150,7 +168,7 @@ const RegisterOwner = () => {
                       </Td>
                       <Td>{ owner.shares }</Td>
                       <Td textAlign='right'>
-                        <Button size='xs' onClick={ () => removeOwner(owner) }>remove</Button>
+                        <Button isLoading={removing==owner.address} size='xs' onClick={ () => removeOwner(owner) }>remove</Button>
                       </Td>
                     </Tr>
                   ))

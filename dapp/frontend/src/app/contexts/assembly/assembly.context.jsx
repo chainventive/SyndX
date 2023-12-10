@@ -3,11 +3,11 @@
 const { createContext } = require("react");
 
 // ReactJS
-import { useEffect, useReducer } from 'react';
+import { useEffect, useReducer, useState } from 'react';
 
 // Wagmi
 import { readContract, watchContractEvent } from '@wagmi/core';
-import { usePublicClient } from 'wagmi';
+import { usePublicClient, useAccount } from 'wagmi';
 
 // Backend
 import { backend } from '@/backend/index';
@@ -35,11 +35,13 @@ const AssemblyContextProvider = ({ children }) => {
     const viemClient = usePublicClient();
 
     // hooks
-
     const { userAddress } = useSyndx();
+    const { isConnected } = useAccount();
     const { selectedAssembly } = useCoproperty();
 
     // context state
+
+    const [unwatchEvents, setUnwatchEvents] = useState(null);
     
     const [ reducerState, dispatchToReducerAction ] = useReducer(assemblyContextReducer, {
         syndic: null,
@@ -77,7 +79,6 @@ const AssemblyContextProvider = ({ children }) => {
         });
 
         dispatchToReducerAction({ type: ON_ASSEMBLY_DETAILS_FETCHED, payload: { syndic, tiebreaker, timeline } });
-
     }
 
     const fetchNewResolutionsFromEvents = async (events) => {
@@ -160,39 +161,23 @@ const AssemblyContextProvider = ({ children }) => {
         pastEvents = pastEvents.filter(event => event.name != 'ResolutionCreated' && event.name != 'AmendmentCreated');
         dispatchToReducerAction({ type: ON_NEW_ASSEMBLY_CONTRACT_EVENTS, payload: pastEvents });
     }
-
-    const eventWatcher = async () => {
-
-        const watcher = watchContractEvent({
-            abi: backend.contracts.generalAssembly.abi,
-            address: selectedAssembly.contract,
-            eventName: 'allEvents',
-
-            }, async (newEvents) => { 
-
-                newEvents = easeContractEvent(newEvents);
-
-                const newResolutions = await fetchNewResolutionsFromEvents(newEvents);
-                dispatchToReducerAction({ type: ON_NEW_ASSEMBLY_RESOLUTIONS, payload: newResolutions });
-
-                const newAmendments  = await fetchNewAmendmentsFromEvents(newEvents);
-                dispatchToReducerAction({ type: ON_NEW_ASSEMBLY_AMENDMENTS, payload: newAmendments });
-
-                newEvents = newEvents.filter(event => event.name != 'ResolutionCreated' && event.name != 'AmendmentCreated');
-                dispatchToReducerAction({ type: ON_NEW_ASSEMBLY_CONTRACT_EVENTS, payload: newEvents });
-            }
-        );
-        
-        return () => watcher.stop();
-    }
     
     // Component lifecycle
 
     useEffect(() => {
         
         if (reducerState.syndic != null) { 
+
             fetchPastContractEvents();
-            eventWatcher();
+
+            const unwatch = watchContractEvent({
+                    abi: backend.contracts.syndx.abi,
+                    address: backend.contracts.syndx.address,
+                    eventName: 'allEvents',
+                }, (newEvents) => dispatchToReducerAction({ type: ON_NEW_SYNDX_CONTRACT_EVENTS, payload: newEvents })
+            );
+
+            setUnwatchEvents(() => unwatch);
         }
 
     }, [reducerState.created]);
@@ -202,23 +187,42 @@ const AssemblyContextProvider = ({ children }) => {
         if (selectedAssembly != null) { 
             fetchAssemblyDetails();
         }
+        else {
+            if(unwatchEvents != null) unwatchEvents();
+        }
 
     }, [selectedAssembly]);
+
+    useEffect(() => {
+
+        if (!isConnected) {
+            if(unwatchEvents != null) unwatchEvents();
+        }
+
+    }, [isConnected]);
+
+    useEffect(() => {
+
+        return () => { 
+            if(unwatchEvents != null) unwatchEvents();
+        }
+
+    }, []);
 
     // JSX
 
     return (
 
         <AssemblyContext.Provider value={{
-            syndic       : reducerState.syndic,
-            isSyndicUser : reducerState.syndic === userAddress,
-            tiebreaker   : reducerState.tiebreaker,
-            created      : reducerState.created,
-            lockup       : reducerState.lockup,
-            voteEnd      : reducerState.voteEnd,
-            resolutions  : reducerState.resolutions,
-            amendments   : reducerState.amendments,
-            votes        : reducerState.votes,
+            syndic          : reducerState.syndic,
+            isSyndicUser    : reducerState.syndic === userAddress,
+            tiebreaker      : reducerState.tiebreaker,
+            created         : reducerState.created,
+            lockup          : reducerState.lockup,
+            voteEnd         : reducerState.voteEnd,
+            resolutions     : reducerState.resolutions,
+            amendments      : reducerState.amendments,
+            votes           : reducerState.votes,
             tiebreakerRequested : reducerState.tiebreakerRequested,
         }}>
             { children }

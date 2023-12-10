@@ -24,6 +24,12 @@ const Resolution = ({ assembly, resolution, amendments, isSyndicUser, now, locku
     const [ voteType, setVoteType ] = useState(0);
     const [ voteResult, setVoteResult ] = useState(null);
 
+    const [ updatingVoteType, setUpdatingVoteType ] = useState(false);
+    const [ amending, setAmending ] = useState(false);
+    const [ votingYes, setVotingYes ] = useState(false);
+    const [ votingNo, setVotingNo ] = useState(false);
+    const [ fetchingResult, setFetchingResult ] = useState(false);
+
     const getVoteTypeName = (value) => {
 
         switch (value) {
@@ -44,6 +50,8 @@ const Resolution = ({ assembly, resolution, amendments, isSyndicUser, now, locku
 
         try {
 
+            setAmending(true);
+
             const { request } = await prepareWriteContract({
                 address: assembly.contract,
                 abi: backend.contracts.generalAssembly.abi,
@@ -51,12 +59,12 @@ const Resolution = ({ assembly, resolution, amendments, isSyndicUser, now, locku
                 args: [resolution.id, description]
             });
     
-            const { txHash } = await writeContract(request);
-            await waitForTransaction({hash: txHash});
+            const { hash } = await writeContract(request);
+            await waitForTransaction({hash});
 
             setDescription('');
 
-            return txHash;
+            return hash;
           
         } catch (err) {
     
@@ -66,6 +74,9 @@ const Resolution = ({ assembly, resolution, amendments, isSyndicUser, now, locku
             }
     
             console.log(err);
+        }
+        finally {
+            setAmending(false);
         }
     };
 
@@ -75,6 +86,8 @@ const Resolution = ({ assembly, resolution, amendments, isSyndicUser, now, locku
 
         try {
 
+            setUpdatingVoteType(true);
+
             const { request } = await prepareWriteContract({
                 address: assembly.contract,
                 abi: backend.contracts.generalAssembly.abi,
@@ -82,10 +95,10 @@ const Resolution = ({ assembly, resolution, amendments, isSyndicUser, now, locku
                 args: [resolution.id, voteType]
             });
     
-            const { txHash } = await writeContract(request);
-            await waitForTransaction({hash: txHash});
+            const { hash } = await writeContract(request);
+            await waitForTransaction({hash});
 
-            return txHash;
+            return hash;
           
         } catch (err) {
     
@@ -95,6 +108,9 @@ const Resolution = ({ assembly, resolution, amendments, isSyndicUser, now, locku
             }
     
             console.log(err);
+        }
+        finally {
+            setUpdatingVoteType(false);
         }
     }
 
@@ -104,6 +120,9 @@ const Resolution = ({ assembly, resolution, amendments, isSyndicUser, now, locku
 
         try {
 
+            if (ballot == true) setVotingYes(true);
+            if (ballot == false) setVotingNo(true);
+
             const { request } = await prepareWriteContract({
                 address: assembly.contract,
                 abi: backend.contracts.generalAssembly.abi,
@@ -111,10 +130,10 @@ const Resolution = ({ assembly, resolution, amendments, isSyndicUser, now, locku
                 args: [resolution.id, ballot]
             });
     
-            const { txHash } = await writeContract(request);
-            await waitForTransaction({hash: txHash});
+            const { hash } = await writeContract(request);
+            await waitForTransaction({hash});
 
-            return txHash;
+            return hash;
           
         } catch (err) {
     
@@ -125,12 +144,18 @@ const Resolution = ({ assembly, resolution, amendments, isSyndicUser, now, locku
     
             console.log(err);
         }
+        finally {
+            if (ballot == true) setVotingYes(true);
+            if (ballot == false) setVotingNo(true);
+        }
 
     }
 
     const getVoteResult = async () => {
 
         try {
+
+            setFetchingResult(true);
 
             const voteResult = await readContract({
                 address: assembly.contract,
@@ -150,6 +175,9 @@ const Resolution = ({ assembly, resolution, amendments, isSyndicUser, now, locku
     
             console.log(err);
 
+        }
+        finally {
+            setFetchingResult(false);
         }
     }
 
@@ -176,7 +204,7 @@ const Resolution = ({ assembly, resolution, amendments, isSyndicUser, now, locku
                                         <option value="3">Absolute Majority</option>
                                         <option value="4">Double Majority</option>
                                     </Select>
-                                    <Button w='10rem' size='sm' onClick={ () => setResolutionVoteType() }>set vote type</Button>
+                                    <Button isLoading={updatingVoteType} w='10rem' size='sm' onClick={ () => setResolutionVoteType() }>set vote type</Button>
                                 </Flex>
                             ) : (
                                 <Badge colorScheme='messenger'>{ getVoteTypeName(resolution.voteType) }</Badge>
@@ -225,7 +253,7 @@ const Resolution = ({ assembly, resolution, amendments, isSyndicUser, now, locku
                     now < lockup && (
                         <Flex w='100%'>
                             <Textarea bg='white' size='sm' borderRadius='0.5rem' style={{ marginRight: '0.5rem' }} type="text" value={description} onChange={e => setDescription(e.target.value)} placeholder="description"></Textarea>
-                            <Button size='sm' onClick={ () => createAmendment() }>amend</Button>
+                            <Button isLoading={amending} size='sm' onClick={ () => createAmendment() }>amend</Button>
                         </Flex>
                     )
                 }
@@ -234,9 +262,9 @@ const Resolution = ({ assembly, resolution, amendments, isSyndicUser, now, locku
                     !isSyndicUser && now > assembly.voteStartTime && now <= voteEnd && !hasVoted &&
                     (   
                         <Flex w='100%'>
-                            <Button colorScheme='red' size='sm' onClick={ () => vote(false) }>vote no</Button>
                             <Spacer></Spacer>
-                            <Button colorScheme='green' size='sm' onClick={ () => vote(true)  }>vote yes</Button>
+                            <Button isLoading={votingNo} marginRight='1rem' colorScheme='red' size='sm' onClick={ () => vote(false) }>vote no</Button>
+                            <Button isLoading={votingYes} colorScheme='green' size='sm' onClick={ () => vote(true)  }>vote yes</Button>
                         </Flex>
                     )
                 }
@@ -249,7 +277,7 @@ const Resolution = ({ assembly, resolution, amendments, isSyndicUser, now, locku
                                 voteResult == null ? (
 
                                     <Center w='100%'>
-                                        <Button minWidth='10rem' size='sm' colorScheme='messenger' onClick={ () => getVoteResult() }>result</Button>
+                                        <Button isLoading={fetchingResult} minWidth='10rem' size='sm' colorScheme='messenger' onClick={ () => getVoteResult() }>result</Button>
                                     </Center>
                                     
                                 ) : (
@@ -287,7 +315,7 @@ const Resolution = ({ assembly, resolution, amendments, isSyndicUser, now, locku
                                             </Box>
                                             <Spacer></Spacer>
                                             <Box>
-                                                <Badge>
+                                                <Badge colorScheme={voteResult.approved ? 'green' : 'red'}>
                                                     <span>Approved: </span>
                                                     { 
                                                         voteResult.equality ?  (

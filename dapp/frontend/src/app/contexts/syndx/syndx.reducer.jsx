@@ -58,8 +58,6 @@ const syndxContextReducer = (reducerState, action) => {
         return {
             ...reducerState,
             selectedCoproperty: action.payload,
-            selectedCopropertySyndic: null,
-            isUserSelectedCopropertySyndic: false
         }
     }
 

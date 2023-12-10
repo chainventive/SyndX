@@ -5,47 +5,58 @@ import { getTimestampDate } from "@/helpers/time/index";
 import { formatBlockchainAddress } from "@/helpers/formatter/index";
 
 // Contexts
-import useSyndx from '@/app/contexts/syndx/hooks/useSyndx';
 import useCoproperty from '@/app/contexts/coproperty/hook/useCoproperty';
 
 // Chakra
-import { SimpleGrid, Heading, Card, CardBody, Stack, StackDivider, Box, Text } from '@chakra-ui/react';
+import { SimpleGrid, Heading, Card, CardBody, Stack, StackDivider, Box, Text, Flex, Center } from '@chakra-ui/react';
 
 const Assemblies = ({ onSelectAssembly }) => {
 
-    const { networkNow } = useSyndx();
     const { assemblies, selectedAssembly } = useCoproperty();
 
     return (
 
-        <SimpleGrid minChildWidth='120px' spacing='40px' marginTop='3rem'>
+        <SimpleGrid minChildWidth='120px' spacing='40px' marginTop='1rem'>
 
                 {
-                    assemblies.length > 0 && selectedAssembly == null && (
+                     selectedAssembly == null && (
 
-                        assemblies.map(assembly => (
+                        
+                            assemblies.length > 0 ? (
 
-                            <Box key={ assembly.contract } maxWidth='14rem' style={{ cursor: 'pointer' }} onClick={ () => onSelectAssembly(assembly) }>
-                                <Card>
-                                    <CardBody>
-                                        <Stack divider={<StackDivider/>} spacing='4'>
-                                            <Box>
-                                                <Heading size='sm' textTransform='uppercase'>General Assembly</Heading>
-                                            </Box>
-                                            <Box>
-                                                <Heading size='xs' textTransform='uppercase'>VOTE DATE</Heading>
-                                                <Text pt='2' fontSize='sm'>{ getTimestampDate(assembly.voteStartTime) }</Text>
-                                            </Box>
-                                            <Box>
-                                                <Heading size='xs' textTransform='uppercase'>Contract</Heading>
-                                                <Text pt='2' fontSize='sm'>{ formatBlockchainAddress(assembly.contract) }</Text>
-                                            </Box>
-                                        </Stack>
-                                    </CardBody>
-                                </Card>
-                            </Box>
+                                assemblies.map(assembly => (
 
-                        ))
+                                    <Box key={ assembly.contract } maxWidth='14rem' style={{ cursor: 'pointer' }} onClick={ () => onSelectAssembly(assembly) }>
+                                        <Card>
+                                            <CardBody>
+                                                <Stack divider={<StackDivider/>} spacing='4'>
+                                                    <Box>
+                                                        <Heading size='sm' textTransform='uppercase'>General Assembly</Heading>
+                                                    </Box>
+                                                    <Box>
+                                                        <Heading size='xs' textTransform='uppercase'>VOTE DATE</Heading>
+                                                        <Text pt='2' fontSize='sm'>{ getTimestampDate(assembly.voteStartTime) }</Text>
+                                                    </Box>
+                                                    <Box>
+                                                        <Heading size='xs' textTransform='uppercase'>Contract</Heading>
+                                                        <Text pt='2' fontSize='sm'>{ formatBlockchainAddress(assembly.contract) }</Text>
+                                                    </Box>
+                                                </Stack>
+                                            </CardBody>
+                                        </Card>
+                                    </Box>
+        
+                                ))
+
+                            ) : (
+
+                                <Flex w='100%' h="50vh">
+                                    <Center w='100%' h='100%'>
+                                        <Text fontSize='md' color='dimgray'>- no coproperty selected -</Text>
+                                    </Center>
+                                </Flex>
+                            )
+                        
 
                     )
                 }
