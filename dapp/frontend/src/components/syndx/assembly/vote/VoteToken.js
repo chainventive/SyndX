@@ -11,17 +11,16 @@ import { readContract } from '@wagmi/core';
 import { prepareWriteContract, writeContract,waitForTransaction } from '@wagmi/core';
 
 // Chakra
-import { Flex, Box, Button, Input, Text, Badge, Center, Spacer } from '@chakra-ui/react';
+import { Flex, Box, Button, Input, Text, Badge, Spacer, VStack } from '@chakra-ui/react';
 
 // Backend
 import { backend } from "@/backend";
 
 // Contexts
 import useCoproperty from '@/app/contexts/coproperty/hook/useCoproperty';
-import useAssembly from '@/app/contexts/assembly/hook/useAssembly';
 import useSyndx from "@/app/contexts/syndx/hooks/useSyndx";
 
-const VoteToken = () => {
+const VoteToken = ({lockup, now}) => {
 
     const { userAddress, isUserConnected } = useSyndx();
     const { selectedAssembly } = useCoproperty();
@@ -30,6 +29,8 @@ const VoteToken = () => {
     const [ totalClaimed, setTotalClaimed ] = useState(0);
     const [ tokenSymbol,  setTokenSymbol  ] = useState('');
     const [ tokenName,    setTokenName    ] = useState('');
+
+    const [ burning, setBurning ] = useState(false);
 
     const fetchVoteTokenDetails = async () => {
 
@@ -72,8 +73,9 @@ const VoteToken = () => {
     }
 
     const burnLostTokens = async () => {
+        setBurning(true);
         setBurnAddress('');
-        return;
+        setBurning(false);
     }
 
     useEffect(() => {
@@ -89,16 +91,23 @@ const VoteToken = () => {
         <Flex w='100%'>
             <Box>
                 <Text as='b'>Claimed vote tokens</Text>
-                <Text size='xs'>{ `${totalClaimed}` } / 10000 { `${tokenName}` }</Text>
+                <Text paddingTop='0.5rem' size='xs'>{ `${totalClaimed}` } / 10000 <Badge>{ `${tokenName}` }</Badge></Text>
             </Box>
             <Spacer></Spacer>
             <Box>
-                <Center h='100%'>
-                    <Flex>
-                        <Input minWidth='15rem' borderRadius='0.5rem' size='sm' style={{ marginRight: '1rem' }} type="text" value={burnAddress} onChange={e => setBurnAddress(e.target.value)} placeholder="lost tokens address"></Input>
-                        <Button colorScheme='red' size='sm' onClick={ () => burnLostTokens() }>burn</Button>
-                    </Flex>
-                </Center>    
+               {
+                    now < lockup && (
+
+                    <VStack>          
+                        <Text w='100%' as='b'>A user lost his vote tokens ?</Text>
+                        <Flex alignItems="left">
+                            <Input minWidth='15rem' borderRadius='0.5rem' size='sm' marginRight='1rem' type="text" value={burnAddress} onChange={e => setBurnAddress(e.target.value)} placeholder="account address"></Input>
+                            <Button isLoading={burning} w='12rem' colorScheme='red' size='sm' onClick={ () => burnLostTokens() }>burn them</Button>
+                        </Flex> 
+                    </VStack>
+
+                    )
+               }
             </Box>
         </Flex>
 

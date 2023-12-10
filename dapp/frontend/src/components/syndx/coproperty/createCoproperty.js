@@ -18,6 +18,8 @@ import { backend } from "@/backend";
 
 const CreateCoproperty = () => {
 
+    const [submitting, setSubmitting] = useState(false);
+
     const [copropertyName, setCopropertyName] = useState('');
     const [copropertyTokenISO, setCopropertyTokenISO] = useState('');
     const [copropertySyndicAddress, setCopropertySyndicAddress] = useState('');
@@ -25,6 +27,8 @@ const CreateCoproperty = () => {
     const createCoproperty = async () => {
 
         try {
+
+          setSubmitting(true);
     
           const { request } = await prepareWriteContract({
             address: backend.contracts.syndx.address,
@@ -33,14 +37,10 @@ const CreateCoproperty = () => {
             args: [copropertyName, copropertyTokenISO, copropertySyndicAddress]
           });
     
-          const { txHash } = await writeContract(request);
-          await waitForTransaction({hash: txHash});
+          const { hash } = await writeContract(request);
+          await waitForTransaction({ hash });
     
-          setCopropertyName('');
-          setCopropertyTokenISO('');
-          setCopropertySyndicAddress('');
-    
-          return txHash;
+          return hash;
           
         } catch (err) {
     
@@ -50,7 +50,14 @@ const CreateCoproperty = () => {
           }
     
           console.log(err);
-    
+        }
+        finally {
+
+          setCopropertyName('');
+          setCopropertyTokenISO('');
+          setCopropertySyndicAddress('');
+
+          setSubmitting(false);
         }
     
     };
@@ -62,13 +69,13 @@ const CreateCoproperty = () => {
 
               <Flex w='100%'>
 
+                <Spacer/>
+
                 <Box>
                   <Center>
-                    <Text paddingTop='0.3rem' as='b' fontSize='sm'><AddIcon marginRight='0.5rem' />new coproperty</Text>
+                    <Text paddingTop='0.45rem' marginRight='1.5rem' as='b' fontSize='sm'><AddIcon marginRight='0.5rem' />new coproperty</Text>
                   </Center>
                 </Box>
-
-                <Spacer/>
 
                 <Box paddingRight='2rem'>
                   <Input size='sm' borderRadius='0.5rem' marginRight='1rem' type="text" bg="white" value={copropertyName} onChange={e => setCopropertyName(e.target.value)} placeholder="name"></Input>
@@ -82,11 +89,11 @@ const CreateCoproperty = () => {
                   <Input size='sm' borderRadius='0.5rem' marginRight='1rem' type="text" bg="white" value={copropertySyndicAddress} onChange={e => setCopropertySyndicAddress(e.target.value)} placeholder="syndic address"></Input>
                 </Box>
 
-                <Spacer/>
-
                 <Box>
-                  <Button size='sm' onClick={ () => createCoproperty() }>register</Button>
+                  <Button isLoading={submitting} size='sm' onClick={ () => createCoproperty() }>register</Button>
                 </Box>
+
+                <Spacer/>
 
               </Flex>
 

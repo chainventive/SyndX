@@ -46,9 +46,16 @@ const SyndicSpace = () => {
                         <CopropertyOwners/>
                     </TabPanel>
 
-                    <TabPanel> 
-                        <CreateAssembly/>
+                    <TabPanel>
+
+                        {                 
+                            selectedAssembly == null && (
+                                <CreateAssembly/>
+                            ) 
+                        }
+                        
                         <Assemblies onSelectAssembly={ setSelectedAssembly } />
+
                     </TabPanel>
 
                 </TabPanels>

@@ -11,14 +11,16 @@ import { readContract } from '@wagmi/core';
 import { prepareWriteContract, writeContract,waitForTransaction } from '@wagmi/core';
 
 // Chakra
-import { Input, Text, Button, Flex, Heading, Box, Spacer, Badge, VStack, Textarea, StepNumber, Step, StepIndicator, StepStatus, StepSeparator, StepTitle, StepDescription, Center} from '@chakra-ui/react';
-import { AddIcon, ChevronRightIcon, ChevronDownIcon } from '@chakra-ui/icons';
+import { Input, Text, Button, Flex, Box, Spacer, VStack, Textarea } from '@chakra-ui/react';
+import { AddIcon } from '@chakra-ui/icons';
 
 
 // Backend
 import { backend } from "@/backend";
 
 const CreateResolution = ({ assembly }) => {
+
+    const [submitting, setSubmitting] = useState(false);
 
     const [ title, setTitle ] = useState('');
     const [ description, setDescription ] = useState('');
@@ -27,6 +29,8 @@ const CreateResolution = ({ assembly }) => {
 
         try {
 
+            setSubmitting(true);
+
             const { request } = await prepareWriteContract({
                 address: assembly.contract,
                 abi: backend.contracts.generalAssembly.abi,
@@ -34,13 +38,10 @@ const CreateResolution = ({ assembly }) => {
                 args: [title, description]
             });
     
-            const { txHash } = await writeContract(request);
-            await waitForTransaction({hash: txHash});
+            const { hash } = await writeContract(request);
+            await waitForTransaction({hash});
 
-            setTitle('');
-            setDescription('');
-
-            return txHash;
+            return hash;
           
         } catch (err) {
     
@@ -50,7 +51,13 @@ const CreateResolution = ({ assembly }) => {
             }
     
             console.log(err);
-    
+        }
+        finally {
+
+            setDescription('');
+            setTitle('');
+
+            setSubmitting(false);
         }
     
     };
@@ -64,14 +71,14 @@ const CreateResolution = ({ assembly }) => {
                 </Flex>
                 <Flex w='100%' marginTop='1rem'>
                     <VStack w='100%'>
-                        <Input style={{ marginRight: '0.5rem' }} type="text" value={title} onChange={e => setTitle(e.target.value)} placeholder="title"></Input>
-                        <Textarea style={{ marginRight: '0.5rem' }} type="text" value={description} onChange={e => setDescription(e.target.value)} placeholder="description"></Textarea>
+                        <Input borderRadius='0.5rem' size='sm' marginRight='0.5rem' type="text" value={title} onChange={e => setTitle(e.target.value)} placeholder="title"></Input>
+                        <Textarea size='sm' borderRadius='0.5rem' marginRight='0.5rem'type="text" value={description} onChange={e => setDescription(e.target.value)} placeholder="description"></Textarea>
                     </VStack>
                 </Flex>
                 <Flex w='100%'>
                     <Spacer></Spacer>
                     <Box marginTop='1rem'>
-                        <Button size='sm' colorScheme='messenger' onClick={ () => createResolution() }>submit resolution</Button>
+                        <Button size='sm' isLoading={submitting} colorScheme='messenger' onClick={ () => createResolution() }>submit resolution</Button>
                     </Box>
                 </Flex>
             </VStack>

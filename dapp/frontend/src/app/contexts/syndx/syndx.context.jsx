@@ -46,11 +46,12 @@ const SyndxContextProvider = ({ children }) => {
 
     const [ networkNow, setNetworkNow ] = useState(0);
     const [ isAsyncTaskRunning, setIsAsyncTaskRunning ] = useState(false);
+    const [ unwatchEvents, setUnwatchEvents] = useState(null);
 
     // external setters
 
     const setSelectedCoproperty = (coproperty) => {
-
+        fetchCopropertySyndic(coproperty);
         dispatchToReducerAction({ type: ON_SYNDX_COPROPERTY_SELECTED, payload: coproperty });
     }
 
@@ -96,20 +97,6 @@ const SyndxContextProvider = ({ children }) => {
         dispatchToReducerAction({ type: ON_NEW_SYNDX_CONTRACT_EVENTS, payload: pastEvents });
     }
 
-    const eventWatcher = async () => {
-
-        const watcher = watchContractEvent({
-
-            abi: backend.contracts.syndx.abi,
-            address: backend.contracts.syndx.address,
-            eventName: 'allEvents',
-
-            }, (newEvents) => dispatchToReducerAction({ type: ON_NEW_SYNDX_CONTRACT_EVENTS, payload: newEvents })
-        );
-        
-        return () => watcher.stop();
-    }
-
     // Watch network blocktime
 
     const fetchNetworkBlockTime = async () => {
@@ -139,7 +126,7 @@ const SyndxContextProvider = ({ children }) => {
             if (!isAsyncTaskRunning) {
 
                 setIsAsyncTaskRunning(true);
-                fetchNetworkBlockTime();
+                if (isConnected) fetchNetworkBlockTime();
             }
 
         }, 15000);
@@ -148,13 +135,18 @@ const SyndxContextProvider = ({ children }) => {
             clearInterval(interval);
         };
 
-        return () =>  { 
+        if (!isConnected) {
             clearInterval(interval);
-            //setNetworkNow(0);
+            setNetworkNow(0);
         }
 
-    }, [isAsyncTaskRunning, reducerState.selectedCoproperty]); 
-    
+        return () =>  { 
+            clearInterval(interval);
+        }
+
+    }, [isAsyncTaskRunning, reducerState.selectedCoproperty, isConnected]); 
+
+
     // Component lifecycle
 
     useEffect(() => {
@@ -170,21 +162,27 @@ const SyndxContextProvider = ({ children }) => {
 
         checkUser();
 
-        if (isConnected) fetchSyndxContractOwner();
+        if (isConnected) { 
+
+            fetchSyndxContractOwner();
+            fetchPastContractEvents();
+
+            const unwatch = watchContractEvent({
+                abi: backend.contracts.syndx.abi,
+                address: backend.contracts.syndx.address,
+                eventName: 'allEvents',
+                }, (newEvents) => dispatchToReducerAction({ type: ON_NEW_SYNDX_CONTRACT_EVENTS, payload: newEvents })
+            );
+
+            setUnwatchEvents(() => unwatch);
+        }
+
+        if (!isConnected) {
+
+            if (unwatchEvents != null) unwatchEvents();
+        }
 
     }, [isConnected, address]);
-
-    useEffect(() => {
-
-        checkUser();
-
-        if (isConnected) fetchSyndxContractOwner();
-
-        fetchPastContractEvents();
-
-        eventWatcher();
-
-    }, []);
 
     // JSX
 

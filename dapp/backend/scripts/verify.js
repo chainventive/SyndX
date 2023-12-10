@@ -10,12 +10,13 @@ require("@nomicfoundation/hardhat-toolbox");
 // Place address and args of contracts to be veriyed here 
 const _contracts = [
 
-    { name: 'Syndx'           , address: '0x9f05E7430fac1F6Bb70458F705aCF657053fD9C9' , args: ['0x8103B0A8A00be2DDC778e6e7eaa21791Cd364625', 7287] },
-    { name: 'TokenFactory'    , address: '0xC7eec847D4bb069a314cbF0FEF62dA7124dB7fbd' , args: ['0x9f05E7430fac1F6Bb70458F705aCF657053fD9C9'] },
-
+    { name: 'Syndx'           , address: '0x4E891E32a686e918809ef8e96cBAF8Dfb90aBbd1' , args: ['0x8103B0A8A00be2DDC778e6e7eaa21791Cd364625', 7287] },
+    { name: 'TokenFactory'    , address: '0x40204F011473aC03Ee8c23c5a175E400a367faE8' , args: ['0x4E891E32a686e918809ef8e96cBAF8Dfb90aBbd1'] },
+/*
     { name: 'Coproperty'      , address: '', args: ['COPRO_NAME', 'SYNDIC_ADDR', 'GOV_TOKEN_ADDR'] },
     { name: 'GovernanceToken' , address: '', args: ['TOKEN_ISO', 'TOKEN_NAME', 'TOKEN_SYMBOL', 'TOKEN_ADMIN_ADDR', 'OWNER_ADDR'] },
     { name: 'VoteToken'       , address: '', args: ['OWNER_ADDR', 'GOV_TOKEN_ADDR', 'TOKEN_ADMIN_ADDR', 'TOKEN_NAME', 'TOKEN_SYMBOL'] },
+    */
     
 ];
 

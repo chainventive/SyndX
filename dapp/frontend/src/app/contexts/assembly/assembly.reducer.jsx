@@ -37,7 +37,7 @@ const assemblyContextReducer = (reducerState, action) => {
 
         return {
             ...reducerState,
-            resolutions: resolutions
+            resolutions: resolutions,
         }
     }
 
@@ -53,7 +53,7 @@ const assemblyContextReducer = (reducerState, action) => {
 
         return {
             ...reducerState,
-            amendments: amendments
+            amendments: amendments,
         }
     }
 
@@ -73,7 +73,7 @@ const assemblyContextReducer = (reducerState, action) => {
 
                 return {
                     ...reducerState,
-                    resolutions: resolutions
+                    resolutions: resolutions,
                 }
             }
             else if (event.name == 'VoteCast') {
@@ -99,14 +99,14 @@ const assemblyContextReducer = (reducerState, action) => {
     
                 return {
                     ...reducerState,
-                    tiebreakerRequested: true
+                    tiebreakerRequested: true,
                 }
             }
             else if (event.name == 'TiebreakerFulfilled') {
 
                 return {
                     ...reducerState,
-                    tiebreaker: Number(event.args.tiebreaker)
+                    tiebreaker: Number(event.args.tiebreaker),
                 }
             }
         }

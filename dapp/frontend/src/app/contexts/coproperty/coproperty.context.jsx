@@ -3,11 +3,11 @@
 const { createContext } = require("react");
 
 // ReactJS
-import { useEffect, useReducer } from 'react';
+import { useEffect, useReducer, useState } from 'react';
 
 // Wagmi
 import { readContract, watchContractEvent } from '@wagmi/core';
-import { usePublicClient } from 'wagmi';
+import { usePublicClient, useAccount } from 'wagmi';
 
 // Backend
 import { backend } from '@/backend/index';
@@ -34,10 +34,12 @@ const CopropertyContextProvider = ({ children }) => {
     const viemClient = usePublicClient();
 
     // hooks
-
+    const { isConnected } = useAccount();
     const { selectedCoproperty, selectedCopropertySyndic } = useSyndx();
 
     // context state
+
+    const [unwatchEvents, setUnwatchEvents] = useState(null);
     
     const [ reducerState, dispatchToReducerAction ] = useReducer(copropertyContextReducer, {
         owners: [],
@@ -49,7 +51,7 @@ const CopropertyContextProvider = ({ children }) => {
         syndicBalance: 0,
         assemblyCount: 0,
         assemblies: [],
-        selectedAssembly: null,
+        selectedAssembly: null
     });
 
     // external setters
@@ -163,32 +165,36 @@ const CopropertyContextProvider = ({ children }) => {
     const resetFetchedAssemblies = () => {
         dispatchToReducerAction({ type: ON_RESET_FETCHED_ASSEMBLIES });
     }
-
-    const eventWatcher = async () => {
-
-        const watcher = watchContractEvent({
-
-            abi: backend.contracts.governanceToken.abi,
-            address: reducerState.tokenContract,
-            eventName: 'allEvents',
-
-            }, (newEvents) => dispatchToReducerAction({ type: ON_NEW_COPROPERTY_CONTRACT_EVENTS, payload: newEvents })
-        );
-        
-        return () => watcher.stop();
-    }
     
     // Component lifecycle
 
     useEffect(() => {
 
         if (reducerState.tokenContract != null) {
+
             fetchPastContractEvents();
+
             fetchTokenDetails();
-            eventWatcher();
+
+            const unwatch = watchContractEvent({
+                    abi: backend.contracts.syndx.abi,
+                    address: backend.contracts.syndx.address,
+                    eventName: 'allEvents',
+                }, (newEvents) => dispatchToReducerAction({ type: ON_NEW_SYNDX_CONTRACT_EVENTS, payload: newEvents })
+            );
+
+            setUnwatchEvents(() => unwatch);
         }
 
     }, [reducerState.tokenContract]);
+
+    useEffect(() => {
+
+        if (!isConnected) {
+            if(unwatchEvents != null) unwatchEvents();
+        }
+        
+    }, [isConnected]);
 
     useEffect(() => {
 
@@ -237,6 +243,7 @@ const CopropertyContextProvider = ({ children }) => {
             selectedAssembly    : reducerState.selectedAssembly,
             fetchAssemblyCount  : fetchAssemblyCount,
             setSelectedAssembly : setSelectedAssembly,
+            fetchTokenDetails   : fetchTokenDetails,
         }}>
             { children }
         </CopropertyContext.Provider>

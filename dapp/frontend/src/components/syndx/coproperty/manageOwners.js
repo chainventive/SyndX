@@ -1,16 +1,7 @@
 'use client'
 
-// Viem
-import { ContractFunctionExecutionError } from 'viem';
-
-// Wagmi
-import { prepareWriteContract, writeContract, waitForTransaction } from '@wagmi/core';
-
 // Chakra
 import { TableContainer, Table, Tbody, Tr, Td, Badge } from '@chakra-ui/react';
-
-// Backend
-import { backend } from "@/backend";
 
 // Contexts
 import useCoproperty from '@/app/contexts/coproperty/hook/useCoproperty';

@@ -23,6 +23,8 @@ import useCoproperty from '@/app/contexts/coproperty/hook/useCoproperty';
 
 const CreateAssembly = () => {
 
+    const [submitting, setSubmitting] = useState(false);
+
     const { selectedCoproperty } = useSyndx();
     const { fetchAssemblyCount } = useCoproperty();
 
@@ -31,6 +33,8 @@ const CreateAssembly = () => {
     const createAssembly = async () => {
 
         try {
+
+            setSubmitting(true);
 
             const voteStartDate = Math.floor(new Date(date).getTime() / 1000);
             
@@ -41,12 +45,10 @@ const CreateAssembly = () => {
                 args: [voteStartDate]
             });
     
-            const { txHash } = await writeContract(request);
-            await waitForTransaction({hash: txHash});
+            const { hash } = await writeContract(request);
+            await waitForTransaction({hash});
 
-            setDate('');
-
-            return txHash;
+            return hash;
           
         } catch (err) {
     
@@ -59,7 +61,9 @@ const CreateAssembly = () => {
     
         } finally {
             
+            setDate('');
             fetchAssemblyCount();
+            setSubmitting(false);
         }
     
     };
@@ -67,7 +71,7 @@ const CreateAssembly = () => {
     return (
 
         <>
-            <Flex color='white' p='1rem' bg='#262222' marginTop='0.75rem' borderRadius='0.75rem'>
+            <Flex p='1rem' bg='#f8f8f8' marginTop='0.75rem' borderRadius='0.75rem'>
               <Spacer/>
               <Box marginRight='1.5rem'>
                 <Center>
@@ -75,10 +79,10 @@ const CreateAssembly = () => {
                 </Center>
               </Box>
               <Box marginRight='1.5rem'>
-                <input style={{ color:"black", cursor: 'pointer', borderRadius:'0.25rem', paddingRight:'0.25rem', paddingLeft:'0.5rem', paddingTop:'0.2rem', paddingBottom:'0.2rem' }} type="datetime-local" value={ date } onChange={ (e) => setDate(e.target.value) }/>
+                <Input size='sm' bg='white' borderRadius='0.5rem' color="black" cursor='pointer' paddingRight='0.25rem' paddingLeft='0.5rem' paddingTop='0.2rem' paddingBottom='0.2rem' type="datetime-local" value={ date } onChange={ (e) => setDate(e.target.value) }/>
               </Box>
               <Box>
-                <Button minWidth='5rem' size='sm' onClick={ () => createAssembly() }>create</Button>
+                <Button isLoading={submitting}  minWidth='5rem' size='sm' onClick={ () => createAssembly() }>create</Button>
               </Box>
               <Spacer/>
             </Flex>
