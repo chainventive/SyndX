@@ -20,8 +20,8 @@ import '../tokens/governance/IGovernanceToken.sol';
 // Contracts imports
 import "../ISyndx.sol";
 
-/// @title General Assembly Contract for Syndx Coproperty Management
-/// @notice This contract manages the general assembly processes for a coproperty, including creating and voting on resolutions and amendments.
+/// @title General Assembly Contract for Syndx Co-Property Management
+/// @notice This contract manages the general assembly processes for a co-property, including creating and voting on resolutions and amendments.
 /// @dev Inherits from IGeneralAssembly, Validator, and Ownable to manage assembly timelines, resolutions, and access control.
 contract GeneralAssembly is IGeneralAssembly, Ownable {
 
@@ -40,11 +40,17 @@ contract GeneralAssembly is IGeneralAssembly, Ownable {
     /// @notice Unique random number provided by Syndx, if requested
     uint256 public tiebreaker;
 
-    /// @notice Timeline details of the general assembly
-    uint256 public created;     // When the general assembly was created
-    uint256 public lockup;      // Resolution and amendements cannot be created after this time
-    uint256 public voteStart;   // When the voting session starts
-    uint256 public voteEnd;     // When the voting session ends
+    /// @notice When the general assembly was created
+    uint256 public created;    
+
+    /// @notice Resolution and amendements cannot be created after this time
+    uint256 public lockup;  
+
+    /// @notice When the voting session starts
+    uint256 public voteStart;  
+
+    /// @notice When the voting session ends
+    uint256 public voteEnd;     
 
     /// @notice The resolutions to be voted
     SDX.Resolution[] private resolutions;
@@ -357,9 +363,12 @@ contract GeneralAssembly is IGeneralAssembly, Ownable {
         return voteResult;
     }
 
-    // Tally a given resolution votes according to the 'Unanimity' rules
-    // All property owner are taken into account (included the ones that have not voted)
-    // To be approved a resolution must get the approval of all property share owners
+    /// @notice Tally the votes for a given resolution according to 'Unanimity' rules.
+    /// @notice All property owners are considered, including those who have not voted.
+    /// @notice For a resolution to be approved, it must receive the approval of all property share owners.
+    /// @param _resolutionID The ID of the resolution being tallied.
+    /// @param _resolution The resolution object containing voting details.
+    /// @return voteResult The result of the vote tallying.
     function _unanimityTally(uint256 _resolutionID, SDX.Resolution memory _resolution) private pure returns (SDX.VoteResult memory) {
 
         SDX.VoteResult memory voteResult = SDX.createUntalliedVoteResult(_resolutionID, _resolution);
@@ -369,9 +378,12 @@ contract GeneralAssembly is IGeneralAssembly, Ownable {
         return voteResult;
     }
 
-    // Tally a given resolution votes according to the 'SimpleMajority' rules
-    // Blank votes does not impacts the final result
-    // To be approved a resolution must receive more yes vote shares than no vote shares
+    /// @notice Tally the votes for a given resolution according to 'Simple Majority' rules.
+    /// @notice Blank votes do not impact the final result.
+    /// @notice For a resolution to be approved, it must receive more 'yes' vote shares than 'no' vote shares.
+    /// @param _resolutionID The ID of the resolution being tallied.
+    /// @param _resolution The resolution object containing voting details.
+    /// @return voteResult The result of the vote tallying, including information about any equality in votes.
     function _simpleMajorityTally(uint256 _resolutionID, SDX.Resolution memory _resolution) private pure returns (SDX.VoteResult memory) {
 
         SDX.VoteResult memory voteResult = SDX.createUntalliedVoteResult(_resolutionID, _resolution);
@@ -385,8 +397,11 @@ contract GeneralAssembly is IGeneralAssembly, Ownable {
         return voteResult;
     }
 
-    // Tally a given resolution votes according to the 'AbsoluteMajority' rules
-    // Blank votes impacts the result because they have an effect on the required thresold to obtains the majority
+    /// @notice Tally the votes for a given resolution according to 'Absolute Majority' rules.
+    /// @notice Blank votes impact the result by affecting the required threshold to achieve a majority.
+    /// @param _resolutionID The ID of the resolution being tallied.
+    /// @param _resolution The resolution object containing voting details.
+    /// @return voteResult The result of the vote tallying, including information about any equality in votes.
     function _absoluteMajorityTally(uint256 _resolutionID, SDX.Resolution memory _resolution) private pure returns (SDX.VoteResult memory) {
         
         SDX.VoteResult memory voteResult = SDX.createUntalliedVoteResult(_resolutionID, _resolution);
@@ -408,8 +423,11 @@ contract GeneralAssembly is IGeneralAssembly, Ownable {
         return voteResult;
     }
 
-    // Tally a given resolution votes according to the 'DoubleMajority' rules
-    // Blank votes impacts the result because they have an effect on the required thresolds to obtains both majorities
+    /// @notice Tally the votes for a given resolution according to 'Double Majority' rules.
+    /// @notice Blank votes impact the result by affecting the required thresholds to achieve both majorities.
+    /// @param _resolutionID The ID of the resolution being tallied.
+    /// @param _resolution The resolution object containing voting details.
+    /// @return voteResult The result of the vote tallying, including information about any equality in votes.
     function _doubleMajorityTally(uint256 _resolutionID, SDX.Resolution memory _resolution) private pure returns (SDX.VoteResult memory) {
 
         SDX.VoteResult memory voteResult = SDX.createUntalliedVoteResult(_resolutionID, _resolution);
@@ -436,7 +454,10 @@ contract GeneralAssembly is IGeneralAssembly, Ownable {
         return voteResult;
     }
 
-    // function tie break equality with a random number
+    /// @notice Function to break vote result equality using a random number.
+    /// @dev This function uses a tiebreaker number to resolve vote ties.
+    /// @param _voteResult The vote result object that may contain an equality needing resolution.
+    /// @return The updated vote result, with the tie resolved using the tiebreaker number.
     function _tiebreakVoteResult (SDX.VoteResult memory _voteResult) private view returns (SDX.VoteResult memory) {
 
         // If the tiebreaker number is not already fectched from the syndx contract, we try to request it
