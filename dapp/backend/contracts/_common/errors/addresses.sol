@@ -7,4 +7,7 @@ pragma solidity 0.8.20;
 // Common imports
 import "../SDX.sol";
 
+/* Custom error for Syndx Co-Property Management System */
+
+/// @notice Error indicating that an address zero is not allowed for the specified operation.
 error AddressZeroNotAllowed();

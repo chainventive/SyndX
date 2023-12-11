@@ -16,36 +16,61 @@ import "../../_common/errors/tokenFactory.sol";
 import "./IVoteToken.sol";
 import "../governance/IGovernanceToken.sol";
 
+/// @title A vote token contract for a governance system.
+/// @dev Inherits from IVoteToken, ERC20, and Ownable to provide voting and ownership functionalities.
+/// @notice This contract allows governance token holders to claim vote tokens.
 contract VoteToken is IVoteToken, ERC20, Ownable {
 
+    /// @notice Address of the associated governance token.
     IGovernanceToken public governanceToken;
 
+    /// @notice Address of the contract's administrator.
     address public administrator;
 
+    /// @notice Lockup time after which tokens cannot be transferred.
     uint256 public lockupTime;
 
+    /// @notice Records if a user has already claimed vote tokens.
     mapping (address => bool) public hasClaimed;
 
+    /// @notice Checks if the caller is the contract's administrator.
+    /// @dev This modifier is used to restrict access to certain functions to the administrator only.
+    /// @dev If the caller is not the administrator, the transaction is cancelled, and an error is thrown.
     modifier onlyAdmininistrator {
         if (msg.sender != administrator) revert NotTokenAdministrator (administrator, msg.sender);
         _;
     }
 
+    /// @dev Emitted when the lockup time is set.
     event LockupTimeSet (uint256 lockupTime);
+
+    /// @dev Emitted when vote tokens are claimed.
     event VoteTokensClaimed (address claimer, uint256 amount);
+
+    /// @dev Emitted when lost tokens are burned.
     event LostTokensBurned (address account, uint256 balance);
 
+    /// @notice Creates a new VoteToken contract.
+    /// @param _owner Address of the contract owner.
+    /// @param _governanceTokenAddress Address of the associated governance token.
+    /// @param _administrator Address of the contract's administrator.
+    /// @param _name Name of the vote token.
+    /// @param _symbol Symbol of the vote token.
     constructor(address _owner, address _governanceTokenAddress, address _administrator, string memory _name, string memory _symbol) ERC20(string(_name), string(_symbol)) Ownable(_owner) {
         administrator = _administrator;
         governanceToken = IGovernanceToken(_governanceTokenAddress);
     }
 
+    /// @notice Returns the number of decimals used for user representation.
+    /// @dev Overrides the `decimals` function from ERC20 to set decimals to 0.
+    /// @return The number of decimals of the token.
     function decimals() public view virtual override returns (uint8) {
 
         return 0;
     }
 
-    // Set the lockup time after which tokens are not allowed to move
+    /// @notice Sets the lockup time after which tokens can no longer move.
+    /// @param _lockupTime The lockup time in seconds.
     function setLockupTime (uint256 _lockupTime) external onlyOwner {
 
         lockupTime = _lockupTime;
@@ -53,6 +78,8 @@ contract VoteToken is IVoteToken, ERC20, Ownable {
         emit LockupTimeSet (_lockupTime);
     }
 
+    /// @notice Allows governance token holders to claim their vote tokens.
+    /// @dev Mints vote tokens equivalent to the caller's governance token balance.
     function claimVoteTokens() external {
 
         if (hasClaimed[msg.sender] == true) revert VoteTokensAlreadyClaimed(msg.sender);
@@ -66,9 +93,9 @@ contract VoteToken is IVoteToken, ERC20, Ownable {
         emit VoteTokensClaimed (msg.sender, copropertyShares);
     }
 
-    // Burn all tokens for a given address but does not reset its claim status for safety reason
-    // To provide new vote tokens to a new property address owner the syndic must also remove the old address from governance token contract then add the new one. 
-    // After that the property owner will be able to claim again through is new account
+    /// @notice Burns all tokens of a given address.
+    /// @dev This function is only accessible by the administrator.
+    /// @param _account The address whose tokens will be burned.
     function burnLostToken(address _account) external onlyAdmininistrator {
 
         uint256 balance = balanceOf(_account);
@@ -78,7 +105,10 @@ contract VoteToken is IVoteToken, ERC20, Ownable {
         emit LostTokensBurned (_account, balance);
     }
 
-    // Enforce transfer, minting and burning rules
+    /// @dev Overrides the update function to enforce transfer, mint, and burn rules.
+    /// @param from The sending address.
+    /// @param to The receiving address.
+    /// @param amount The amount to transfer.
     function _update(address from, address to, uint256 amount) internal virtual override {
 
         // The 'super' keyword is mandatory to call the parent hook

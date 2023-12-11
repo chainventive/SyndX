@@ -7,11 +7,16 @@ pragma solidity 0.8.20;
 // Common imports
 import "../_common/SDX.sol";
 
+/// @title Interface for managing general assemblies in a co-property system.
 interface IGeneralAssembly {
 
-    // Callback function to allow the syndx contract to provide the requested tiebreak number
-    // We protect the contract against tiebreaker overwrites. This mean once the tiebreak number is set, it is forever
+    /// @notice Callback function to allow the syndic contract to provide the requested tiebreak number.
+    /// @dev Protects against overwriting the tiebreaker number; once set, it is permanent.
+    /// @param _tiebreaker The tiebreak number provided by the syndic contract.
     function fulfillTiebreaker(uint256 _tiebreaker) external;
 
+    /// @notice Retrieves the lockup time for the general assembly.
+    /// @dev Lockup time is usually set to restrict certain actions during the decision-making process.
+    /// @return The lockup time in seconds.
     function getLockupTime() external view returns (uint256);
 }

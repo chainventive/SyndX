@@ -17,36 +17,42 @@ import "../../_common/errors/addresses.sol";
 // Interfaces imports
 import "./IGovernanceToken.sol";
 
+/// @title A contract for the co-ownership governance token.
+/// @dev Implements IGovernanceToken and extends ERC20 and Ownable for the management of co-ownership tokens.
 contract GovernanceToken is IGovernanceToken, ERC20, Ownable {
 
+    /// @notice The ISO of the governance token.
     string private iso;
 
-    // The token administrator
+    /// @notice The administrator of the governance tokens.
     address public administrator;
 
-    // The token holders whitelist
+    /// @notice The whitelist of token holders.
     mapping (address => bool) public whitelist;
 
-    // Ensure the caller is the administrator
+    /// @notice Checks if the caller is the contract's administrator.
+    /// @dev Restricts access to certain functions to the administrator only.
     modifier onlyAdministrator
     {
         if (msg.sender != administrator) revert NotTokenAdministrator (administrator, msg.sender);
         _;
     }
 
-    // Emitted when the administrator is set
+    /// @notice Emitted when the administrator is set or changed.
     event AdministratorSet(address previousAdministrator, address newAdministrator);
 
-    // Emitted when a property owner is added
+    /// @notice Emitted when a property owner is added.
     event PropertyOwnerAdded(address propertyOwner, uint256 shares);
 
-    // Emitted when a property owner is removed
+    /// @notice Emitted when a property owner is removed.
     event PropertyOwnerRemoved(address propertyOwner, uint256 shares);
 
-    // The owner of this contract is Syndx in order to keep control of this contract
-    // The administrator receive all the token supply and will be in charge to distribute them then
-    // Property shares are transfered in bulk as they represent all the tantiems of a property
-    // The property shares cannot be transfered directly between property owners and they always pass through the administrator's account
+    /// @notice Creates a new GovernanceToken contract.
+    /// @param _iso The ISO of the token.
+    /// @param _name The name of the token.
+    /// @param _symbol The symbol of the token.
+    /// @param _administrator The address of the token's administrator.
+    /// @param _owner The address of the contract's owner.
     constructor(string memory _iso, string memory _name, string memory _symbol, address _administrator, address _owner) ERC20(string(_name), string(_symbol)) Ownable(_owner) {
         
         if (_administrator == address(0)) revert AddressZeroNotAllowed();
@@ -63,24 +69,29 @@ contract GovernanceToken is IGovernanceToken, ERC20, Ownable {
         emit AdministratorSet (address(0), _administrator);
     }
 
-    // As there is one token per coproperty share (tantiem) and because thoses shares are indivisibles the token do not need any decimals
+    /// @notice Returns the number of decimals of the token.
+    /// @dev Overrides the `decimals` function from ERC20 to set decimals to 0.
+    /// @return The number of decimals of the token.
     function decimals() public view virtual override returns (uint8) {
         return 0;
     }
 
-    // Get if an address is whitelisted
+    /// @notice Checks if an address is on the whitelist.
+    /// @param _address The address to check.
+    /// @return True if the address is on the whitelist, false otherwise.
     function isWhitelistedAddress(address _address) external view returns(bool) {
 
         return whitelist[_address];
     }
 
-    // Get the token ISO
+    /// @notice Retrieves the ISO of the token.
+    /// @return The ISO of the token as a string.
     function getTokenISO() external view returns(string memory) {
         
         return iso;
     }
 
-    // Enforce transfer, minting and burning rules
+    /// @dev Overrides the update function to enforce transfer rules.
     function _update(address from, address to, uint256 amount) internal virtual override {
 
         // The 'super' keyword is mandatory to call the parent hook
@@ -93,7 +104,8 @@ contract GovernanceToken is IGovernanceToken, ERC20, Ownable {
         if (whitelist[from] && whitelist[to]) revert TokenTransferUnauthorized (from, to);
     }
 
-    // Set which account is allowed to manage the coproperty governance token contract 
+    /// @notice Sets the administrator of the governance token contract.
+    /// @param _address The address of the new administrator.
     function setAdministrator(address _address) external onlyOwner {
 
         if (_address == address(0)) revert AddressZeroNotAllowed();
@@ -105,7 +117,9 @@ contract GovernanceToken is IGovernanceToken, ERC20, Ownable {
         emit AdministratorSet (previousAdministratorAddress, _address);
     }
 
-    // Add a property owner and its property shares
+    /// @notice Adds a property owner and their property shares.
+    /// @param _address The address of the new owner.
+    /// @param _propertyShares The number of property shares.
     function addPropertyOwner(address _address, uint256 _propertyShares) external onlyAdministrator {
         
         if (_address == address(0)) revert AddressZeroNotAllowed();
@@ -121,7 +135,8 @@ contract GovernanceToken is IGovernanceToken, ERC20, Ownable {
         emit PropertyOwnerAdded(_address, _propertyShares);
     }
 
-    // Remove a property owner and its property shares
+    /// @notice Removes a property owner and their property shares.
+    /// @param _address The address of the owner to remove.
     function removePropertyOwner(address _address) external onlyAdministrator {
 
         if (_address == address(0)) revert AddressZeroNotAllowed();
