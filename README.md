@@ -8,7 +8,7 @@ SyndX propose une large palette de services dédiés aux syndics de copropriét�
 
 ## Démo Vidéo
 
-coming soon ...
+[demo video](https://www.loom.com/share/124842009e934b86be52e73feee07347?sid=c3aa6f6e-3fb9-4cba-869c-0dc500a0c2cc)
 
 ## Déploiement:
 
