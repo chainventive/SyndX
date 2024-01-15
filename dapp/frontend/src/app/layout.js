@@ -11,7 +11,7 @@ import { ChakraProvider } from '@chakra-ui/react'
 import '@rainbow-me/rainbowkit/styles.css';
 import { getDefaultWallets, RainbowKitProvider } from '@rainbow-me/rainbowkit';
 import { configureChains, createConfig, WagmiConfig } from 'wagmi';
-import { hardhat, sepolia } from 'wagmi/chains';
+import { hardhat, sepolia, polygonMumbai } from 'wagmi/chains';
 import { alchemyProvider } from 'wagmi/providers/alchemy';
 import { publicProvider } from 'wagmi/providers/public';
 
@@ -22,6 +22,7 @@ import { backend } from "@/backend";
 import { SyndxContextProvider } from '@/app/contexts/syndx/syndx.context.jsx';
 
 const { chains, publicClient } = configureChains (
+  //[ polygonMumbai ],
   [ backend.network == 'hardhat' ? hardhat : sepolia ],
   [ alchemyProvider({ apiKey: process.env.NEXT_PUBLIC_ALCHEMY_API_KEY }), publicProvider() ]
 );

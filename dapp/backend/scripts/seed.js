@@ -11,15 +11,14 @@ async function main() {
   console.log(); 
   // DO NOT REMOVE
 
-  const syndxContractAddress = "0x4E891E32a686e918809ef8e96cBAF8Dfb90aBbd1";
+  // Contrat Syndx -> http://193.70.112.124:3000/ -> 0x7f99D751BB451E37D49e6BFc89BB1390cE48818A
+  const syndxContractAddress = "0x5cD48B97f5F92f666db53A7567F83Bc2D41A79E2"; // Contrat Syndx -> http://193.70.112.124:3000/
 
   const coproperties = [
-    /*
-    { name: 'BATACOFT',  tokenIso: 'BATA', syndicAddress: '0xd510962D041Dc1fBbb1f2c12253Fb48312FcaA2b' },
-    { name: 'KERGELEN',  tokenIso: 'KGN',  syndicAddress: '0xCD07be98C49AaDcc061be484Dda0A773182294e6' },
-    { name: 'TROTICORP', tokenIso: 'TTP',  syndicAddress: '0xb652CE6CF512eD9789dBD1ab931adc096D5cc81c' },*/
-    { name: 'ANTIGUA',   tokenIso: 'AGA',  syndicAddress: '0x50E63053B087a44B6AfB2D68bc18b68bf4F0C118' },
-    { name: 'ALYRA',     tokenIso: 'ALY',  syndicAddress: '0x50E63053B087a44B6AfB2D68bc18b68bf4F0C118' },
+
+    { name: 'ALYRA',   tokenIso: 'AGA',  syndicAddress: '0x50E63053B087a44B6AfB2D68bc18b68bf4F0C118' },
+    { name: 'DEMO',  tokenIso: 'DMO', syndicAddress: '0xd510962D041Dc1fBbb1f2c12253Fb48312FcaA2b' },
+    
   ];
 
   // Load signers according to accounts provided in hardhat configs

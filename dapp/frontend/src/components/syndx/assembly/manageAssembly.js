@@ -113,6 +113,7 @@ const Assembly = () => {
     const verifyHasVoted = (resolutionId) => {
         
         const hasVoted = votes.some(vote => vote.author == userAddress && resolutionId == vote.resolutionId);
+
         return hasVoted;
     }
 
@@ -157,17 +158,12 @@ const Assembly = () => {
                                 </MenuItem>
                                 <MenuItem>
                                     <Badge bg='transparent'>
-                                        assembly <span style={{ color: '#2b6cb0' }}>{ selectedCoproperty.contract }</span>
+                                        assembly <span style={{ color: '#2b6cb0' }}>{ selectedAssembly.contract }</span>
                                     </Badge>  
                                 </MenuItem>
                                 <MenuItem>
                                     <Badge bg='transparent'>
-                                        governance <span style={{ color: '#2b6cb0' }}>{ selectedCoproperty.contract }</span>
-                                    </Badge>  
-                                </MenuItem>
-                                <MenuItem>
-                                    <Badge bg='transparent'>
-                                        vote <span style={{ color: '#2b6cb0' }}>{ selectedCoproperty.contract }</span>
+                                        vote <span style={{ color: '#2b6cb0' }}>{ selectedAssembly.voteToken }</span>
                                     </Badge>  
                                 </MenuItem>
                             </MenuList>

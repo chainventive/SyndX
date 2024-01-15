@@ -10,8 +10,8 @@ require("@nomicfoundation/hardhat-toolbox");
 // Place address and args of contracts to be veriyed here 
 const _contracts = [
 
-    { name: 'Syndx'           , address: '0xbF865397F8b269B46C4dc01714Ca18d47fA0DF57' , args: ['0x8103B0A8A00be2DDC778e6e7eaa21791Cd364625', 7287] },
-    { name: 'TokenFactory'    , address: '0x1047C8678E13bCf16d25Cb1e2Ef26Dd56C0A59cf' , args: ['0xbF865397F8b269B46C4dc01714Ca18d47fA0DF57'] },
+    { name: 'Syndx'           , address: '0x7f99D751BB451E37D49e6BFc89BB1390cE48818A' , args: ['0x8103B0A8A00be2DDC778e6e7eaa21791Cd364625', 7287] },
+    { name: 'TokenFactory'    , address: '0xf41C6e05561DA2ef5e969Fb1307b94DeDfD4a082' , args: ['0x7f99D751BB451E37D49e6BFc89BB1390cE48818A'] },
 /*
     { name: 'Coproperty'      , address: '', args: ['COPRO_NAME', 'SYNDIC_ADDR', 'GOV_TOKEN_ADDR'] },
     { name: 'GovernanceToken' , address: '', args: ['TOKEN_ISO', 'TOKEN_NAME', 'TOKEN_SYMBOL', 'TOKEN_ADMIN_ADDR', 'OWNER_ADDR'] },

@@ -14,11 +14,14 @@ import { prepareWriteContract, writeContract,waitForTransaction } from '@wagmi/c
 import { Input, Text, Button, Flex, Box, Spacer, VStack, Textarea } from '@chakra-ui/react';
 import { AddIcon } from '@chakra-ui/icons';
 
+import useAssembly from '@/app/contexts/assembly/hook/useAssembly';
 
 // Backend
 import { backend } from "@/backend";
 
 const CreateResolution = ({ assembly }) => {
+
+    const { fetchPastContractEvents } = useAssembly();
 
     const [submitting, setSubmitting] = useState(false);
 
@@ -56,8 +59,9 @@ const CreateResolution = ({ assembly }) => {
 
             setDescription('');
             setTitle('');
-
             setSubmitting(false);
+
+            fetchPastContractEvents();
         }
     
     };

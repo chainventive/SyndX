@@ -197,7 +197,8 @@ const SyndxContextProvider = ({ children }) => {
             selectedCopropertySyndic       : reducerState.selectedCopropertySyndic,
             isUserSelectedCopropertySyndic : reducerState.isUserSelectedCopropertySyndic,
             networkNow                     : networkNow,
-            setSelectedCoproperty          : setSelectedCoproperty
+            setSelectedCoproperty          : setSelectedCoproperty,
+            fetchPastContractEvents        : fetchPastContractEvents
         }}>
             { children }
         </SyndxContext.Provider>

@@ -25,16 +25,26 @@ import { backend } from "@/backend";
 import useSyndx from '@/app/contexts/syndx/hooks/useSyndx';
 import useCoproperty from '@/app/contexts/coproperty/hook/useCoproperty';
 
+import { useRouter } from 'next/navigation';
+
 const RegisterOwner = () => {
 
-    const { selectedCoproperty } = useSyndx();
-    const { owners, fetchTokenDetails } = useCoproperty();
+    const { selectedCoproperty, setSelectedCoproperty } = useSyndx();
+    const { owners, fetchTokenDetails, fetchPastContractEvents } = useCoproperty();
 
     const [submitting, setSubmitting] = useState(false);
     const [removing, setRemoving] = useState('');
 
     const [ownerAddress, setOwnerAddress] = useState('');
     const [ownerShares, setOwnerShares]   = useState(1);
+
+    const router = useRouter();
+
+    const handleRefresh = () => {
+      
+      fetchTokenDetails();
+      fetchPastContractEvents();
+    };
 
     const registerOwner = async () => {
 
@@ -75,6 +85,7 @@ const RegisterOwner = () => {
             setOwnerAddress('');
             setOwnerShares(1);
             setSubmitting(false);
+            handleRefresh();
         }
     
     };
@@ -114,8 +125,10 @@ const RegisterOwner = () => {
     
         }
         finally {
+          setSelectedCoproperty(selectedCoproperty);
           fetchTokenDetails();
           setRemoving('');
+          handleRefresh();
         }
 
   } 

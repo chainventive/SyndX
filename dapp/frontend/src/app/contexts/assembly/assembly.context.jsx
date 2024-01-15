@@ -224,6 +224,7 @@ const AssemblyContextProvider = ({ children }) => {
             amendments      : reducerState.amendments,
             votes           : reducerState.votes,
             tiebreakerRequested : reducerState.tiebreakerRequested,
+            fetchPastContractEvents: fetchPastContractEvents,
         }}>
             { children }
         </AssemblyContext.Provider>

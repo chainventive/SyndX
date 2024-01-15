@@ -1,15 +1,15 @@
 module.exports = {
-  "network": "hardhat",
-  "blocknumber": 7,
+  "network": "sepolia",
+  "blocknumber": 4877922,
   "contracts": {
     "chainlink": {
       "vrf": {
-        "subscriptionId": 1,
-        "coordinatorAddress": "0x5FbDB2315678afecb367f032d93F642f64180aa3"
+        "subscriptionId": 7287,
+        "coordinatorAddress": "0x8103B0A8A00be2DDC778e6e7eaa21791Cd364625"
       }
     },
     "syndx": {
-      "address": "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9",
+      "address": "0x5cD48B97f5F92f666db53A7567F83Bc2D41A79E2",
       "abi": [
         {
           "inputs": [
@@ -583,7 +583,7 @@ module.exports = {
       ]
     },
     "tokenFactory": {
-      "address": "0x5FC8d32690cc91D4c39d9d3abcBD16989F875707",
+      "address": "0x6923261D1EBa49e812C7aF0a1e85F8bBeEB7586F",
       "abi": [
         {
           "inputs": [

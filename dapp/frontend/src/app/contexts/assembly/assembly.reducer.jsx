@@ -58,7 +58,12 @@ const assemblyContextReducer = (reducerState, action) => {
     }
 
     if (action.type == ON_NEW_ASSEMBLY_CONTRACT_EVENTS) {
-        
+
+        let votes = reducerState.votes;
+        let resolutions = reducerState.resolutions;
+        let isTiebreakerRequested = reducerState.tiebreakerRequested;
+        let tiebreakerReceived = reducerState.tiebreaker;
+
         for (let event of action.payload) {
 
             if (event.name == 'ResolutionVoteTypeSet') {
@@ -66,22 +71,13 @@ const assemblyContextReducer = (reducerState, action) => {
                 const resolutionId = Number(event.args.id);
                 const newVoteType  = Number(event.args.newType);
 
-                const resolutions  = reducerState.resolutions;
-
                 let resolution = resolutions.find(resolution => resolution.id === resolutionId);
                 if (resolution) resolution.voteType = newVoteType;
-
-                return {
-                    ...reducerState,
-                    resolutions: resolutions,
-                }
             }
-            else if (event.name == 'VoteCast') {
+            else if (event.name == "VoteCast") {
                 
                 const author = event.args.author;
-                const resolutionId = Number(event.args.resolutionId);
-
-                let votes = reducerState.votes;
+                const resolutionId = Number(event.args.resolutionID);
 
                 if (!votes.some(vote => vote.author == author && vote.resolutionId == resolutionId)) {
                     votes.push({
@@ -89,30 +85,28 @@ const assemblyContextReducer = (reducerState, action) => {
                         resolutionId: resolutionId,
                     });
                 }
-
-                return {
-                    ...reducerState,
-                    votes: votes,
-                }
             }
             else if (event.name == 'TiebreakerRequested') {
-    
-                return {
-                    ...reducerState,
-                    tiebreakerRequested: true,
+                
+                if (isTiebreakerRequested == false) {
+                    isTiebreakerRequested = true;
                 }
+                
             }
             else if (event.name == 'TiebreakerFulfilled') {
 
-                return {
-                    ...reducerState,
-                    tiebreaker: Number(event.args.tiebreaker),
+                if (tiebreakerReceived == 0) {
+                    tiebreakerReceived = Number(event.args.tiebreaker)
                 }
             }
         }
 
         return {
             ...reducerState,
+            votes: votes,
+            resolutions: resolutions,
+            tiebreaker: tiebreakerReceived,
+            tiebreakerRequested: isTiebreakerRequested
         }
     }
 

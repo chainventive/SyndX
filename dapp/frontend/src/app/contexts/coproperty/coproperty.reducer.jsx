@@ -13,6 +13,7 @@ const copropertyContextReducer = (reducerState, action) => {
     if (action.type == ON_NEW_COPROPERTY_CONTRACT_EVENTS) {
 
         const events = easeContractEvent(action.payload);
+    
 
         const propertyOwnerChangeEvents = events.filter(event => event.name == 'PropertyOwnerAdded' || event.name == 'PropertyOwnerRemoved');
 
@@ -22,7 +23,7 @@ const copropertyContextReducer = (reducerState, action) => {
             removed: event.name == 'PropertyOwnerRemoved'
         }));
 
-        let propertyOwners = reducerState.owners;
+        let propertyOwners = []; //reducerState.owners;
 
         for (let propertyOwnerChange of propertyOwnerChanges) {
 
@@ -72,6 +73,7 @@ const copropertyContextReducer = (reducerState, action) => {
             tokenSymbol: action.payload.tokenSymbol,
             tokenTotalSupply: Number(action.payload.tokenTotalSupply),
             syndicBalance: Number(action.payload.syndicBalance),
+            distributedTokens: Number(action.payload.tokenTotalSupply) - Number(action.payload.syndicBalance)
         }
     }
 

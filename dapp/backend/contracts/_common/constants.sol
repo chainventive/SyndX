@@ -49,6 +49,16 @@ uint256 constant RANDMNESS_REQUEST_BLOCKS_LOCKUP_BEFORE_RETRY = 5;
 
 /* Constants for Chainlink VRF Integration */
 
+// https://vrf.chain.link/mumbai
+// Mumbai Subscription -> 6586
+// Mumbai VRF Coordinator -> 0x7a1BaC17Ccc5b313516C5E16fb24f7659aA5ebed
+// Mumbai KeyHash -> 0x4b09e658ed251bcafeebbc69400383d49f344ace09b9576fe248bb02c003fe9f
+
+// https://vrf.chain.link/sepolia
+// Sepolia Subscription -> 7287
+// Sepolia VRF Coordinator -> 0x8103B0A8A00be2DDC778e6e7eaa21791Cd364625
+// Sepolia KeyHash -> 0x474e34a077df58807dbe9c96d3c009b23b3c6d0cce433e59bbf5b34f823bc56c
+
 // The number of confirmations required for a Chainlink VRF request.
 uint16  constant CHAINLINK_VRF_REQUEST_CONFIRMATIONS = 3;
 

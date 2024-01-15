@@ -18,7 +18,11 @@ import { Text, Button, Flex, Select, Box, Spacer, Badge, VStack, Textarea, Cente
 // Backend
 import { backend } from "@/backend";
 
+import useAssembly from '@/app/contexts/assembly/hook/useAssembly';
+
 const Resolution = ({ assembly, resolution, amendments, isSyndicUser, now, lockup, voteEnd, hasVoted }) => {
+
+    const { fetchPastContractEvents } = useAssembly();
 
     const [ description, setDescription ] = useState('');
     const [ voteType, setVoteType ] = useState(0);
@@ -77,6 +81,7 @@ const Resolution = ({ assembly, resolution, amendments, isSyndicUser, now, locku
         }
         finally {
             setAmending(false);
+            fetchPastContractEvents();
         }
     };
 
@@ -111,6 +116,7 @@ const Resolution = ({ assembly, resolution, amendments, isSyndicUser, now, locku
         }
         finally {
             setUpdatingVoteType(false);
+            fetchPastContractEvents();
         }
     }
 
@@ -145,8 +151,9 @@ const Resolution = ({ assembly, resolution, amendments, isSyndicUser, now, locku
             console.log(err);
         }
         finally {
-            if (ballot == true) setVotingYes(true);
-            if (ballot == false) setVotingNo(true);
+            if (ballot == true) setVotingYes(false);
+            if (ballot == false) setVotingNo(false);
+            fetchPastContractEvents();
         }
 
     }
@@ -259,13 +266,24 @@ const Resolution = ({ assembly, resolution, amendments, isSyndicUser, now, locku
                 }
 
                 {
-                    !isSyndicUser && now > assembly.voteStartTime && now <= voteEnd && !hasVoted &&
+                    !isSyndicUser && now > assembly.voteStartTime && now <= voteEnd &&
                     (   
-                        <Flex w='100%'>
-                            <Spacer></Spacer>
-                            <Button isLoading={votingNo} marginRight='1rem' colorScheme='red' size='sm' onClick={ () => vote(false) }>vote no</Button>
-                            <Button isLoading={votingYes} colorScheme='green' size='sm' onClick={ () => vote(true)  }>vote yes</Button>
-                        </Flex>
+                        <>
+                        {
+                            !hasVoted ? (
+                                <Flex w='100%'>
+                                    <Spacer></Spacer>
+                                    <Button isLoading={votingNo} marginRight='1rem' colorScheme='red' size='sm' onClick={ () => vote(false) }>vote no</Button>
+                                    <Button isLoading={votingYes} colorScheme='green' size='sm' onClick={ () => vote(true)  }>vote yes</Button>
+                                </Flex>
+                            ) : (
+                                <Flex w='100%'>
+                                    <Spacer></Spacer>
+                                    <Badge>your vote has been submitted !</Badge>
+                                </Flex>
+                            )
+                        }
+                        </>
                     )
                 }
 

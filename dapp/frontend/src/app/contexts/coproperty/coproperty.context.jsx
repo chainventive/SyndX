@@ -244,6 +244,7 @@ const CopropertyContextProvider = ({ children }) => {
             fetchAssemblyCount  : fetchAssemblyCount,
             setSelectedAssembly : setSelectedAssembly,
             fetchTokenDetails   : fetchTokenDetails,
+            fetchPastContractEvents : fetchPastContractEvents
         }}>
             { children }
         </CopropertyContext.Provider>
